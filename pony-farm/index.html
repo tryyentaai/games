@@ -87,12 +87,13 @@ body.land #hud{left:calc(var(--rail) + var(--sal));height:auto;padding-top:calc(
 .scene{position:absolute;left:0;right:0;top:calc(var(--hud) + var(--sat));bottom:calc(var(--nav) + var(--sab));overflow:hidden;touch-action:none;
   transition:opacity .35s}
 body.land .scene{left:calc(var(--rail) + var(--sal));top:0;bottom:0}
-.scene.gone{opacity:0;pointer-events:none}
+.scene.gone{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .35s,visibility 0s .35s}
+.scene{visibility:visible}
 .world{position:absolute;left:0;top:0;width:1200px;height:900px;transform-origin:0 0;will-change:transform}
 .world .bgwrap{position:absolute;left:0;width:1200px;pointer-events:none}
 .world .bgwrap svg{display:block;width:100%;height:100%}
 .world .night{transition:opacity 1s}
-.obj{position:absolute;left:0;top:0;will-change:transform}
+.obj{position:absolute;left:0;top:0}
 .obj>svg{display:block;width:100%;height:100%;overflow:visible}
 .tint{position:absolute;inset:0;pointer-events:none;transition:opacity 2s}
 .chev{position:absolute;top:50%;width:44px;height:64px;margin-top:-32px;z-index:5;pointer-events:none;opacity:.85;animation:chev 1.4s ease-in-out infinite}
@@ -105,7 +106,7 @@ body.land .scene{left:calc(var(--rail) + var(--sal));top:0;bottom:0}
 /* ---------- PONY VIEW ---------- */
 .pv{position:absolute;left:0;top:0;pointer-events:none}
 .pv-flip,.pv-jump{position:absolute;inset:0;transform-origin:50% 92%}
-.pv-jump{will-change:transform}
+
 .pv svg.pony{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .pv-over{position:absolute;inset:0;pointer-events:none}
 .pv.lying .p-legs-back,.pv.lying .p-legs-front{display:none}
@@ -171,8 +172,8 @@ body.land .scene{left:calc(var(--rail) + var(--sal));top:0;bottom:0}
 .tog .lbl{margin-top:4px}
 
 /* ---------- TITLE / PICK / NAME ---------- */
-.screen{position:absolute;inset:0;z-index:50;overflow:hidden;opacity:0;pointer-events:none;transition:opacity .4s}
-.screen.on{opacity:1;pointer-events:auto}
+.screen{position:absolute;inset:0;z-index:50;overflow:hidden;opacity:0;pointer-events:none;visibility:hidden;transition:opacity .4s,visibility 0s .4s}
+.screen.on{opacity:1;pointer-events:auto;visibility:visible;transition:opacity .4s,visibility 0s}
 .screen .bgfull{position:absolute;inset:0}
 .screen .bgfull svg{width:100%;height:100%;display:block}
 .veil{position:absolute;inset:0;background:linear-gradient(rgba(255,255,255,.0),rgba(255,240,250,.25))}
@@ -390,11 +391,11 @@ body.land #decoShop{bottom:calc(var(--sab) + 12px)}
 .flipb svg{width:70%;height:70%}
 .ghostTint{filter:drop-shadow(0 0 0 #0000)}
 .obj.ghost{opacity:.85;z-index:2000!important}
-.obj.ghost.ok>svg{filter:drop-shadow(0 0 10px #5ed27a) drop-shadow(0 0 3px #5ed27a)}
-.obj.ghost.bad>svg{filter:drop-shadow(0 0 10px #ff5f7e) drop-shadow(0 0 3px #ff5f7e) saturate(.6);animation:wobble .5s ease-in-out infinite}
+.obj.ghost.ok .dIn{filter:drop-shadow(0 0 10px #5ed27a) drop-shadow(0 0 3px #5ed27a)}
+.obj.ghost.bad .dIn{filter:drop-shadow(0 0 10px #ff5f7e) drop-shadow(0 0 3px #ff5f7e) saturate(.6);animation:wobble .5s ease-in-out infinite}
 @keyframes wobble{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
-.obj.lifted>svg{filter:drop-shadow(0 18px 8px rgba(40,20,80,.35));transform:translateY(-14px) scale(1.06)}
-.obj.selected>svg{filter:drop-shadow(0 0 6px #fff) drop-shadow(0 0 3px #ff8fc8)}
+.obj.lifted .dIn{filter:drop-shadow(0 18px 8px rgba(40,20,80,.35));transform:translateY(-14px) scale(1.06)}
+.obj.selected .dIn{filter:drop-shadow(0 0 6px #fff) drop-shadow(0 0 3px #ff8fc8)}
 
 /* ---------- CELEBRATE ---------- */
 #celebrate{position:absolute;inset:0;z-index:85;display:none;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(circle at 50% 45%,rgba(255,250,220,.96),rgba(255,214,240,.94) 55%,rgba(200,180,255,.95))}
@@ -492,7 +493,7 @@ body.land #fbag{left:calc(50% + var(--rail)/2);bottom:calc(var(--sab) + 8px)}
 .ponyObj{pointer-events:none}
 .ponyObj .hb{pointer-events:auto}
 .ponyObj .pv{width:100%!important;height:100%!important}
-.apple>svg{width:100%;height:100%;filter:drop-shadow(0 3px 2px rgba(60,20,20,.25))}
+.apple>svg{position:absolute;left:27%;top:27%;width:46%;height:46%;filter:drop-shadow(0 3px 2px rgba(60,20,20,.25))}
 .giftObj .giftIn{width:100%;height:100%;animation:giftBob 1.6s ease-in-out infinite;transform-origin:50% 100%}
 .giftObj .giftIn svg{filter:drop-shadow(0 0 10px #fff6a0) drop-shadow(0 6px 4px rgba(60,30,90,.25))}
 @keyframes giftBob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-10px) rotate(3deg)}}
@@ -505,15 +506,15 @@ body.land #fbag{left:calc(50% + var(--rail)/2);bottom:calc(var(--sab) + 8px)}
 .plot .ripeC svg{width:100%;height:100%;filter:drop-shadow(0 0 8px #fff6a0)}
 @keyframes ripe{0%,80%,100%{transform:translateY(0) scale(1)}88%{transform:translateY(-14px) scale(1.05,.95)}94%{transform:translateY(0) scale(1.1,.9)}}
 .plot .can{position:absolute;right:-18px;top:-26px}
-.plot .canIn{width:58px;height:58px;animation:needb 1.6s ease-in-out infinite;transform-origin:70% 80%}
-.plot .canIn svg{width:100%;height:100%;pointer-events:none;filter:drop-shadow(0 3px 3px rgba(40,40,90,.25))}
+.plot .canIn{width:100px;height:100px;margin:-21px -21px 0 0;display:flex;align-items:center;justify-content:center;animation:needb 1.6s ease-in-out infinite;transform-origin:70% 80%}
+.plot .canIn svg{width:58%;height:58%;pointer-events:none;filter:drop-shadow(0 3px 3px rgba(40,40,90,.25))}
 .plot .lockv svg{position:absolute;left:-4px;right:-4px;bottom:0;width:108%;height:80%;pointer-events:none}
 .plot .lockv .lv{position:absolute;left:50%;top:20%;transform:translateX(-50%);display:flex;align-items:center;gap:2px;background:#fff;border-radius:999px;padding:2px 10px 2px 4px;font-weight:800;font-size:22px;box-shadow:0 3px 0 #d9c6f5}
 .plot .lockv .lv svg{position:static;width:30px;height:30px}
 .bed{pointer-events:none}
 .bed>svg{width:100%;height:100%}
 .glowbug svg{width:100%;height:100%}
-.ready .gate-glow,.obj.ready .gate-glow{opacity:1;animation:bgTw 1.5s ease-in-out infinite}
+.obj.ready::after{content:'';position:absolute;left:5%;right:5%;top:20%;bottom:5%;border-radius:50% 50% 10% 10%;background:radial-gradient(ellipse at 50% 55%,rgba(255,246,160,.85),rgba(255,246,160,0) 65%);animation:bgTw 1.5s ease-in-out infinite;pointer-events:none}
 .decoObj .dIn{width:100%;height:100%;transform-origin:50% 100%}
 .decoObj .dIn svg{width:100%;height:100%;overflow:visible}
 .decoObj .dglow{position:absolute;left:-40%;top:-50%;width:180%;height:150%;background:radial-gradient(circle at 50% 45%,rgba(255,240,140,.55),rgba(255,240,140,0) 60%);opacity:0;pointer-events:none;transition:opacity 1s}
@@ -524,7 +525,7 @@ body.land #fbag{left:calc(50% + var(--rail)/2);bottom:calc(var(--sab) + 8px)}
 .anim-sun.night .dIn{transform:rotate(-8deg) scaleY(.92)!important}
 @keyframes sway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
 @keyframes floatD{0%,100%{transform:translateY(-6px)}50%{transform:translateY(6px)}}
-@keyframes shim{0%,100%{filter:brightness(1)}50%{filter:brightness(1.18) saturate(1.2)}}
+@keyframes shim{0%,100%{transform:scale(1)}50%{transform:scale(1.03,1.05)}}
 @keyframes flagW{to{transform:skewY(-8deg) scaleX(.85)}}
 .bird{position:absolute;left:62%;top:4%;width:28%;animation:bird 20s linear infinite;pointer-events:none}
 .bird svg{width:100%}
@@ -537,13 +538,13 @@ body.land #fbag{left:calc(50% + var(--rail)/2);bottom:calc(var(--sab) + 8px)}
 #forest.isNight .mush .mglow{opacity:.7}
 #forest.isNight .mush.ready .mglow{opacity:1}
 .berryOn{animation:needb 2.4s ease-in-out infinite}
-.berryOn svg{width:100%;height:100%;pointer-events:none;filter:drop-shadow(0 2px 2px rgba(60,20,80,.3))}
+.berryOn svg{position:absolute;left:21%;top:21%;width:58%;height:58%;pointer-events:none;filter:drop-shadow(0 2px 2px rgba(60,20,80,.3))}
 .obj>.fbtn{width:100%;height:100%;background:#fff;border-radius:28px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 0 #d9c6f5,0 8px 16px rgba(60,30,120,.2)}
 .fbtn svg{width:46%;height:auto}
 .fbug .bugIn{width:100%;height:100%;animation:bugB .5s ease-in-out infinite alternate}
-.fbug svg{width:100%;height:100%;filter:drop-shadow(0 0 10px #fff36a)}
+.fbug svg{position:absolute;left:10%;top:10%;width:80%;height:80%;filter:drop-shadow(0 0 10px #fff36a)}
 @keyframes bugB{to{transform:translateY(-5px) rotate(6deg)}}
-.hoof svg{width:100%;height:100%;opacity:.45;transform:rotate(var(--rot,0deg)) scaleY(.7)}
+.hoof svg{position:absolute;left:13%;top:13%;width:74%;height:74%;opacity:.45;transform:rotate(var(--rot,0deg)) scaleY(.7)}
 .hoof.next svg{opacity:1;animation:hoofP 1s ease-in-out infinite}
 .hoof.next .hglow{opacity:.7}
 @keyframes hoofP{0%,100%{transform:rotate(var(--rot,0deg)) scale(1,.7)}50%{transform:rotate(var(--rot,0deg)) scale(1.22,.86)}}
@@ -555,9 +556,15 @@ body.land #fbag{left:calc(50% + var(--rail)/2);bottom:calc(var(--sab) + 8px)}
 .wildObj .wildThink{left:52%;top:4%;width:32%;display:block}
 .wildQ{position:absolute;left:58%;top:12%;font-size:64px;font-weight:800;color:#fff;-webkit-text-stroke:3px #8a5cf6;animation:pulse .6s ease-in-out infinite}
 .wildObj .pv{width:100%!important;height:100%!important}
-.silObj .pv{width:100%!important;height:100%!important;filter:brightness(0) opacity(.35)}
+.silObj .pv{width:100%!important;height:100%!important;filter:grayscale(1) sepia(.5) hue-rotate(215deg) saturate(2.2) brightness(1.12) contrast(.85) opacity(.88) drop-shadow(0 0 8px rgba(255,255,255,.9))}
+.silObj .pv-jump{animation:silBreath 3.4s ease-in-out infinite;transform-origin:50% 90%}
+@keyframes silBreath{0%,100%{transform:scale(1,1)}50%{transform:scale(1.02,1.04)}}
+.silZ{position:absolute;left:72%;top:36%;pointer-events:none}
+.silZ b{position:absolute;font:800 28px var(--font);color:#b49bff;-webkit-text-stroke:2px #fff;animation:silZ 3s ease-in-out infinite;opacity:0}
+.silZ b:nth-child(2){animation-delay:1s;font-size:34px}.silZ b:nth-child(3){animation-delay:2s;font-size:42px}
+@keyframes silZ{0%{opacity:0;transform:translate(0,0)}30%{opacity:1}100%{opacity:0;transform:translate(26px,-60px)}}
 .silObj{pointer-events:none}.silObj .hb{pointer-events:auto}
-.silTag{position:absolute;left:50%;top:28%;transform:translateX(-50%);display:flex;align-items:center;gap:4px;background:#fff;border-radius:999px;padding:4px 14px 4px 6px;font-size:24px;box-shadow:0 4px 0 #d9c6f5;white-space:nowrap}
+.silTag{position:absolute;left:40%;top:8%;transform:translateX(-50%);display:flex;align-items:center;gap:4px;background:#fff;border-radius:999px;padding:4px 14px 4px 6px;font-size:24px;box-shadow:0 4px 0 #d9c6f5;white-space:nowrap}
 .silTag svg{width:44px;height:44px}
 .awayIn{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
 .awayIn .mn{position:absolute;right:-6px;top:-6px;width:44px;height:44px}
@@ -577,11 +584,11 @@ body.land #title .play{bottom:calc(var(--sab) + 5vh);width:110px;height:110px;ma
 
 .pv.paused *{animation-play-state:paused!important}
 .ponyObj .pony.lite .p-tail{animation-duration:3.6s}
-.ponyObj,.decoObj.anim-sway,.decoObj.anim-float,.decoObj.anim-shimmer,.decoObj.anim-flags,.decoObj.anim-bird,.fbug,.mush,.hoof,.wildObj{will-change:transform}
-.world .bgwrap{will-change:transform}
+.ponyObj.moving,.glowbug,.fbug,.wildObj{will-change:transform}
+
 /* farm perf: part animations only while walking / for a few "featured" ponies; idle = cheap whole-sprite bob */
 .ponyObj .pony.lite:not(.walking) .p-body,.ponyObj .pony.lite:not(.walking) .p-head,.ponyObj .pony.lite:not(.walking) .p-mane,.ponyObj .pony.lite:not(.walking) .p-tail,.ponyObj .pony.lite:not(.walking) .p-eyes{animation:none}
-.ponyObj .pv:not(.lying) .pv-flip{animation:idleBob 2.2s ease-in-out infinite}
+.ponyObj .pv-flip{animation:none}
 .ponyObj .pv.walk .pv-flip{animation:none}
 @keyframes idleBob{0%,100%{transform:var(--fl,none) translateY(0)}50%{transform:var(--fl,none) translateY(-1.2%)}}
 
@@ -590,6 +597,35 @@ body.land #title .play{bottom:calc(var(--sab) + 5vh);width:110px;height:110px;ma
 #sheet .plus{font-size:28px}
 #sheet .sheet h2 svg{width:56px;height:56px}
 #fbag .food:not(.btn),#fbag .food{min-height:56px}
+
+/* ---------- image-rendered sprites (cheap DOM) ---------- */
+img.simg{position:absolute;display:block;pointer-events:none;-webkit-user-drag:none;user-select:none;max-width:none}
+.obj{position:absolute}
+.world .bgwrap{position:absolute;overflow:hidden}
+.world .bgwrap img.simg{left:0;top:0;width:100%;height:100%;object-fit:cover}
+.pv-jump img.pimg{position:absolute;left:-10%;top:-10%;width:120%;height:120%;pointer-events:none;-webkit-user-drag:none;max-width:none}
+.decoObj .dIn{position:relative}
+.treeIn{position:absolute;inset:0;transform-origin:50% 95%}
+.glowbug{border-radius:50%;background:radial-gradient(circle,#fffbc0 0 12%,rgba(255,243,106,.85) 16%,rgba(255,243,106,0) 60%)}
+.tw{position:absolute;width:14px;height:14px;margin:-7px;border-radius:50%;background:radial-gradient(circle,#fffbe0 0 22%,rgba(255,248,208,.5) 38%,rgba(255,248,208,0) 70%);animation:twk 2.6s ease-in-out infinite;will-change:opacity}
+@keyframes twk{0%,100%{opacity:.25}50%{opacity:1}}
+
+/* keep every looping farm/forest animation on its own compositor layer (no repaints) */
+.decoObj[class*="anim-"]:not(.anim-none) .dIn,.plot .ripeC,.plot .canIn,.plot .crop .plus,.giftObj .giftIn,.chev,.needb,.cloudy,.bird,.berryOn,.fbug .bugIn,.hoof.next svg{will-change:transform}
+.pv.glitter .pv-jump::after{animation:none;opacity:.85}
+#hand,#hand .hi,#hand .ring,.nb .badge,#bubble,#stoast,.miniHeart{will-change:transform}
+.nb img.navpony{width:calc(42px*var(--u));height:calc(42px*var(--u));transition:transform .25s cubic-bezier(.3,1.6,.5,1)}.nb.on img.navpony{transform:translateY(-4px) scale(1.12)}
+#fx{will-change:transform}
+
+.obj.crystal>svg,.obj[data-hit^="crystal"]>svg{position:absolute;left:10%;bottom:0;width:80%;height:92%}
+.troughIn{position:absolute;left:3%;right:3%;bottom:0;height:74%}
+.troughIn img.simg{left:0!important;top:0!important;width:100%!important;height:100%!important}
+/* QA P1-5: every touch target >= 56px on all sizes */
+.meter{min-width:56px;min-height:56px}
+.sw{min-width:56px;min-height:56px}
+#style .stab{min-width:56px;min-height:56px}
+.hearts.main{min-height:56px;min-width:56px}
+body.land #care .progress{top:auto;bottom:4px}
 
 </style>
 </head>
@@ -1664,17 +1700,17 @@ const DECOR = [
   { id: 'hay', name: 'Hay Bale', stars: 15, items: {}, level: 4, art: 'haybale', size: 120 },
   { id: 'lantern', name: 'Glow Lantern', stars: 20, items: { glowbug: 3 }, level: 5, art: 'lantern', size: 120, glow: true },
   { id: 'swing', name: 'Pony Swing', stars: 50, items: {}, level: 5, art: 'swing', size: 170, gather: true },
-  { id: 'cloudbench', name: 'Cloud Bed', stars: 40, items: {}, level: 6, art: 'cloudBed', size: 160 },
-  { id: 'starlamp', name: 'Star Lamp', stars: 45, items: { glowbug: 2 }, level: 7, art: 'starLamp', size: 130, glow: true },
-  { id: 'teatable', name: 'Picnic Blanket', stars: 60, items: {}, level: 7, art: 'picnicBlanket', size: 170, gather: true },
-  { id: 'crystalarch', name: 'Crystal Tree', stars: 60, items: { crystal: 5 }, level: 8, art: 'crystalTree', size: 160, anim: 'shimmer' },
-  { id: 'pond', name: 'Duck Pond', stars: 70, items: {}, level: 9, art: 'pondDuck', size: 170, anim: 'duck' },
-  { id: 'fountain', name: 'Rainbow Fountain', stars: 90, items: { drop: 5 }, level: 10, art: 'fountain', size: 170 },
-  { id: 'balloon', name: 'Hot Air Balloon', stars: 100, items: {}, level: 11, art: 'balloon', size: 150, anim: 'float' },
-  { id: 'treehouse', name: 'Mushroom House', stars: 120, items: {}, level: 12, art: 'mushroomHouse', size: 190 },
-  { id: 'cottage', name: 'Rainbow Arch', stars: 130, items: {}, level: 13, art: 'rainbowArch', size: 200 },
-  { id: 'gazebo', name: 'Moon Gazebo', stars: 150, items: { glowbug: 5 }, level: 14, art: 'gazebo', size: 200, glow: true },
-  { id: 'castle', name: 'Wish Castle', stars: 200, items: { crystal: 3, drop: 3, glowbug: 3 }, level: 15, art: 'own:castle', size: 230, anim: 'flags' },
+  { id: 'cloudbench', name: 'Cloud Bed', stars: 50, items: {}, level: 6, art: 'cloudBed', size: 160 },
+  { id: 'starlamp', name: 'Star Lamp', stars: 55, items: { glowbug: 2 }, level: 7, art: 'starLamp', size: 130, glow: true },
+  { id: 'teatable', name: 'Picnic Blanket', stars: 75, items: {}, level: 7, art: 'picnicBlanket', size: 170, gather: true },
+  { id: 'crystalarch', name: 'Crystal Tree', stars: 75, items: { crystal: 5 }, level: 8, art: 'crystalTree', size: 160, anim: 'shimmer' },
+  { id: 'pond', name: 'Duck Pond', stars: 95, items: {}, level: 9, art: 'pondDuck', size: 170, anim: 'duck' },
+  { id: 'fountain', name: 'Rainbow Fountain', stars: 140, items: { drop: 5 }, level: 10, art: 'fountain', size: 170 },
+  { id: 'balloon', name: 'Hot Air Balloon', stars: 160, items: {}, level: 11, art: 'balloon', size: 150, anim: 'float' },
+  { id: 'treehouse', name: 'Mushroom House', stars: 190, items: {}, level: 12, art: 'mushroomHouse', size: 190 },
+  { id: 'cottage', name: 'Rainbow Arch', stars: 210, items: {}, level: 13, art: 'rainbowArch', size: 200 },
+  { id: 'gazebo', name: 'Moon Gazebo', stars: 240, items: { glowbug: 5 }, level: 14, art: 'gazebo', size: 200, glow: true },
+  { id: 'castle', name: 'Wish Castle', stars: 320, items: { crystal: 3, drop: 3, glowbug: 3 }, level: 15, art: 'own:castle', size: 230, anim: 'flags' },
   { id: 'giftbow', name: 'Big Bow Statue', stars: 0, items: {}, level: 99, art: 'own:giftbow', size: 130, gift: true }
 ];
 const DECOR_BY = {}; DECOR.forEach(function (d) { DECOR_BY[d.id] = d; });
@@ -1707,16 +1743,20 @@ const HEART_COOLDOWN = [0, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 5, 5, 5, 5].map(func
 const HEART_AT = [0, 5, 20, 45, 75, 110];
 const FRIEND_DAILY_CAP = 25;
 const CARE_STAR_CAP = 60;
+const STAT_FLOOR = 40; /* QA: returning players find mildly-wanting ponies, never a chore list */
+const STAR_TRIM = 0.6;
+/* QA economy pass: recurring rewards ~40% lower so decorations stay meaningful to ~day 10 */
+const REWARD = { levelUp: 12, sticker: 3, newPony: 15, grow: 9, song: 3, glowbug: 1 }; /* care & harvest stars trimmed ~40% (fractional, accumulated) */
 
 /* Daily gift */
 const GIFT_STEPS = [null,
-  { stars: 20, items: { apple: 2 } },
-  { stars: 25, items: { carrot: 3 } },
-  { stars: 30, items: { berry: 2, crystal: 1 } },
-  { stars: 30, items: { drop: 1, glowbug: 2 } },
-  { stars: 35, items: { crystal: 2, drop: 2 } },
-  { stars: 40, items: { cake: 1 } },
-  { stars: 50, items: {} }
+  { stars: 12, items: { apple: 2 } },
+  { stars: 15, items: { carrot: 3 } },
+  { stars: 18, items: { berry: 2, crystal: 1 } },
+  { stars: 18, items: { drop: 1, glowbug: 2 } },
+  { stars: 21, items: { crystal: 2, drop: 2 } },
+  { stars: 24, items: { cake: 1 } },
+  { stars: 30, items: {} }
 ];
 
 /* Stickers (36) */
@@ -1946,7 +1986,7 @@ var Game = {
     var L = Game.levelFor(S.xp);
     while (S.level < L) {
       S.level++;
-      Game.addStars(20);
+      Game.addStars(REWARD.levelUp);
       Celebrate.push({ type: 'level', level: S.level });
       if (S.level === MAX_LEVEL) Game.award('m_farmstar');
     }
@@ -1971,18 +2011,25 @@ var Game = {
     if (!STICKER_BY[id] || S.stickers[id]) return false;
     S.stickers[id] = now();
     S.newStickers = true;
-    Game.addStars(5);
+    Game.addStars(REWARD.sticker);
     StickerToast.push(id);
     Save.dirty();
     Bus.emit('sticker', id);
     return true;
   },
+  /* fractional star income (trimmed rewards stay whole numbers on screen) */
+  addStarsFrac: function (x, from) {
+    S.counters.starFrac = (S.counters.starFrac || 0) + x;
+    var w = Math.floor(S.counters.starFrac + 1e-9);
+    if (w > 0) { S.counters.starFrac -= w; Game.addStars(w, from); }
+    return w;
+  },
   careStar: function (from) {
     var dk = Time.dayKey();
-    if (S.counters.careDay !== dk) { S.counters.careDay = dk; S.counters.careStarsToday = 0; }
+    if (dk > S.counters.careDay) { S.counters.careDay = dk; S.counters.careStarsToday = 0; }
     if (S.counters.careStarsToday >= CARE_STAR_CAP) return false;
     S.counters.careStarsToday++;
-    Game.addStars(1, from);
+    Game.addStarsFrac(STAR_TRIM, from);
     return true;
   },
 
@@ -1990,7 +2037,7 @@ var Game = {
   makePony: function (breedKey, starter) {
     var b = BREED[breedKey];
     var p = {
-      id: 'p' + S.nextPonyId++, breed: breedKey, name: b.name.split(' ')[0], joinedAt: now(),
+      id: 'p' + S.nextPonyId++, breed: breedKey, name: Game.freshName(), joinedAt: now(),
       look: Game.defaultLook(breedKey),
       stats: { full: starter ? 50 : 80, happy: 80, clean: 80, energy: 80 },
       sleeping: false, stage: 'foal', stageSeen: 'foal',
@@ -2000,6 +2047,11 @@ var Game = {
     Game.award('pony_' + breedKey);
     Save.dirty();
     return p;
+  },
+  freshName: function () {
+    var used = {}; S.ponies.forEach(function (q) { used[q.name] = 1; });
+    var free = NAMES.filter(function (n) { return !used[n]; });
+    return pick(free.length ? free : NAMES);
   },
   defaultLook: function (breedKey) {
     var b = BREED[breedKey];
@@ -2031,7 +2083,7 @@ var Game = {
   },
   addFriend: function (p, n) {
     var dk = Time.dayKey();
-    if (p.friendDay !== dk) { p.friendDay = dk; p.friendToday = 0; }
+    if (dk > p.friendDay) { p.friendDay = dk; p.friendToday = 0; }
     var room = FRIEND_DAILY_CAP - p.friendToday;
     n = Math.max(0, Math.min(n, room));
     if (!n) return;
@@ -2045,17 +2097,17 @@ var Game = {
     Save.dirty();
   },
   /* stat change with floors */
-  setStat: function (p, k, v, allowLow) { p.stats[k] = clamp(v, allowLow ? 5 : 25, 100); },
+  setStat: function (p, k, v, allowLow) { p.stats[k] = clamp(v, allowLow ? 5 : STAT_FLOOR, 100); },
   addStat: function (p, k, d, allowLow) {
     var old = p.stats[k];
-    var nv = clamp(old + d, d < 0 ? Math.min(old, allowLow ? 5 : 25) : 0, 100);
+    var nv = clamp(old + d, d < 0 ? Math.min(old, allowLow ? 5 : STAT_FLOOR) : 0, 100);
     p.stats[k] = nv; return nv - old;
   },
 
   /* ---------- simulation ---------- */
   simulate: function (p, hours, night) {
     var s = p.stats;
-    function decay(k, amt) { if (s[k] > 25) s[k] = Math.max(25, s[k] - amt); }
+    function decay(k, amt) { if (s[k] > STAT_FLOOR) s[k] = Math.max(STAT_FLOOR, s[k] - amt); }
     if (p.sleeping) {
       s.energy = Math.min(100, s.energy + 25 * hours);
       decay('full', 3 * hours); decay('clean', 2 * hours);
@@ -2076,6 +2128,8 @@ var Game = {
       elapsed -= d; t += d;
     }
     S.lastTick = to;
+    /* saves from before the floor change: lift anything under the floor */
+    S.ponies.forEach(function (p) { ['full', 'happy', 'clean', 'energy'].forEach(function (k) { if (p.stats[k] < STAT_FLOOR) p.stats[k] = STAT_FLOOR; }); });
     Game.regenAll();
     Save.dirty();
   },
@@ -2103,7 +2157,12 @@ var Game = {
     /* clock went backwards safety: never let ready times be further than their max duration in the future */
     S.forest.mushrooms = S.forest.mushrooms.map(function (r) { return r > t + 10 * T.MIN ? t + 10 * T.MIN : r; });
     S.forest.crystals = S.forest.crystals.map(function (r) { return r > t + 2 * T.HOUR ? t + 2 * T.HOUR : r; });
-    S.garden.forEach(function (g) { if (g.crop && g.readyAt - t > CROPS[g.crop].time) { g.readyAt = t + CROPS[g.crop].time; } });
+    S.garden.forEach(function (g) { if (g.crop && g.readyAt - t > CROPS[g.crop].time) { g.readyAt = t + CROPS[g.crop].time; g.plantedAt = t; } });
+    /* clock moved back: clamp every 'future' timestamp so nothing pays out twice and nothing waits forever */
+    var w = S.wild;
+    if (w.lastBefriendedAt > t) w.lastBefriendedAt = t;
+    if (w.current && w.current.awayUntil > t + 5 * T.MIN) w.current.awayUntil = t + HEART_COOLDOWN[Math.max(1, Math.min(15, w.index + 1))];
+    S.ponies.forEach(function (p) { if (p.lastCozyAt > t) p.lastCozyAt = t; if (p.lastSleepRewardAt > t) p.lastSleepRewardAt = t; if (p.joinedAt > t) p.joinedAt = t; });
     Wild.update();
   },
 
@@ -2130,7 +2189,7 @@ var Game = {
   harvest: function (i, from) {
     var g = S.garden[i], c = CROPS[g.crop], total = 0;
     for (var k in c.yield) { Game.addItem(k, c.yield[k], from); total += c.yield[k]; }
-    Game.addStars(total + (c.stars || 0), from);
+    Game.addStarsFrac(total * STAR_TRIM + (c.stars || 0) * STAR_TRIM, from);
     Game.addXP(3);
     S.counters.harvests++;
     Game.award('m_harvest');
@@ -2140,7 +2199,7 @@ var Game = {
   },
 
   /* ---------- gift ---------- */
-  giftAvailable: function () { return S.tutorial.done && S.gift.lastClaimDay !== Time.dayKey(); },
+  giftAvailable: function () { return S.tutorial.done && Time.dayKey() > (S.gift.lastClaimDay || ''); }, /* strictly later day: moving the clock back never re-grants */
   claimGift: function (from) {
     S.gift.lastClaimDay = Time.dayKey();
     S.gift.step = (S.gift.step % 7) + 1;
@@ -2244,7 +2303,7 @@ var Wild = {
     var w = S.wild, breed = w.current ? w.current.breed : w.queue[w.index];
     w.current = null; w.index++; w.lastBefriendedAt = now();
     var p = Game.makePony(breed, false);
-    Game.addStars(25);
+    Game.addStars(REWARD.newPony);
     Game.addXP(50);
     Save.dirty();
     return p;
@@ -2486,6 +2545,30 @@ var Speech = {
 };
 
 /* ============================ PONY ART =============================== */
+/* Every inserted SVG copy must own its gradient ids: a duplicated id whose first copy sits in a
+   display:none subtree makes url(#id) fail everywhere (flat brown ponies). */
+var _uid = 0;
+function uniq(s) {
+  if (s.indexOf(' id="') < 0) return s;
+  var sfx = '_' + (++_uid).toString(36), map = {};
+  s = s.replace(/ id="([^"]+)"/g, function (m, id) { map[id] = id + sfx; return ' id="' + id + sfx + '"'; });
+  return s.replace(/url\(#([^)]+)\)/g, function (m, id) { return map[id] ? 'url(#' + map[id] + ')' : m; })
+          .replace(/href="#([^"]+)"/g, function (m, id) { return map[id] ? 'href="#' + map[id] + '"' : m; });
+}
+/* turn an inline SVG string into a self-contained image (1 DOM node instead of ~100) */
+function svgURL(s) { return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s); }
+function svgPrep(s, m, css) {
+  if (s.indexOf('xmlns=') < 0) s = s.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+  var vb = /viewBox="([^"]+)"/.exec(s);
+  if (vb && m) { var a = vb[1].trim().split(/[\s,]+/).map(Number); s = s.replace(vb[0], 'viewBox="' + (a[0] - a[2] * m) + ' ' + (a[1] - a[3] * m) + ' ' + a[2] * (1 + 2 * m) + ' ' + a[3] * (1 + 2 * m) + '"'); }
+  if (css) s = s.replace(/<svg[^>]*>/, function (t) { return t + '<style>' + css + '</style>'; });
+  return s;
+}
+function toImg(s, m, css, cls) {
+  m = m || 0; var pct = m * 100, full = 100 + 2 * pct;
+  return '<img class="simg' + (cls ? ' ' + cls : '') + '" draggable="false" alt="" src="' + svgURL(svgPrep(s, m, css)) + '" style="left:-' + pct + '%;top:-' + pct + '%;width:' + full + '%;height:' + full + '%">';
+}
+(function () { var oi = ART.icon; ART.icon = function (n, sz) { return uniq(oi(n, sz)); }; })();
 var PonyArt = {
   cache: {},
   /* head / mouth anchors in the 200x200 pony viewBox per stage (from ART STAGES) */
@@ -2496,7 +2579,7 @@ var PonyArt = {
     if (p._moodOverride) return p._moodOverride;
     if (Game.isSleepy(p)) return 'sleepy';
     var m = Game.mood(p);
-    return m >= 70 ? 'happy' : m >= 45 ? 'neutral' : 'sad';
+    return m >= 70 ? 'happy' : m >= 40 ? 'neutral' : 'sad'; /* sad only after an exhausting play session */
   },
   manes: function (look) { return (look.mane[0] === 'rainbow') ? RAINBOW.slice() : look.mane.slice(0, 3); },
   key: function (p, mood, extra) {
@@ -2512,6 +2595,8 @@ var PonyArt = {
       accessory: p.sleeping ? 'nightcap' : L.acc, mood: mood, stage: p.stage, wings: !!b.wings, horn: !!b.horn
     });
     if (L.charmColor) s = PonyArt.recolorCharm(s, L.charmColor);
+    /* ponies never cry: drop the art's teardrop on the sad face (sad = pouty only) */
+    s = s.replace(/<path d="[^"]*" fill="#7fd0ff" stroke="#3b8fd0"[^>]*\/>/g, '');
     var n = 0; for (var kk in PonyArt.cache) n++;
     if (n > 120) PonyArt.cache = {};
     PonyArt.cache[k] = s;
@@ -2533,10 +2618,20 @@ var PonyArt = {
   },
   /* small portrait (head) svg string */
   portrait: function (p, mood) {
-    var s = PonyArt.svg(p, mood || 'happy');
+    var s = uniq(PonyArt.svg(p, mood || 'happy'));
     var h = PonyArt.HEAD[p.stage] || PonyArt.HEAD.grown;
     var vb = (h.x - 62) + ' ' + (h.y - 62) + ' 120 120';
     return s.replace('viewBox="0 0 200 200"', 'viewBox="' + vb + '"').replace('class="pony"', 'class="pony portrait" style="overflow:hidden"');
+  },
+  imgCache: {}, imgN: 0,
+  imgURL: function (p, mood, bake) {
+    var k = PonyArt.key(p, mood, '') + '|' + bake;
+    var u = PonyArt.imgCache[k]; if (u) return u;
+    var s = PonyArt.svg(p, mood).replace('class="pony"', 'class="pony still ' + bake + '"');
+    u = svgURL(svgPrep(s, 0.1, pvImgCss()));
+    if (++PonyArt.imgN > 160) { PonyArt.imgCache = {}; PonyArt.imgN = 0; }
+    PonyArt.imgCache[k] = u;
+    return u;
   },
   breedPony: function (breedKey, stage, mood) {
     var b = BREED[breedKey];
@@ -2548,7 +2643,7 @@ var PonyArt = {
 /* DOM: .pv > .pv-flip(scaleX) > .pv-jump(WAAPI reactions) > svg.pony ; .pv-over (not flipped) */
 function PonyView(p, opts) {
   opts = opts || {};
-  this.p = p; this.size = opts.size || 200; this.left = false;
+  this.p = p; this.size = opts.size || 200; this.left = false; this.imgMode = !!opts.img; this._tok = 0;
   this.el = el('div', 'pv' + (opts.cls ? ' ' + opts.cls : ''));
   this.el.style.width = this.el.style.height = this.size + 'px';
   this.flip = el('div', 'pv-flip'); this.jump = el('div', 'pv-jump');
@@ -2557,22 +2652,59 @@ function PonyView(p, opts) {
   this.classes = {};
   this.render(true);
 }
+/* classes that change the picture and must be baked into an <img> pony */
+var PV_BAKE = ['sleeping', 'lying', 'gloss', 'eyesClosed'];
+var PV_IMG_CSS = null;
+function pvImgCss() {
+  /* static only: any @keyframes inside an <img> SVG makes the browser re-rasterize it every frame */
+  if (!PV_IMG_CSS) PV_IMG_CSS = '.pony g,.pony ellipse{transform-box:view-box}.pony .p-zzz,.pony .p-eyes-closed{display:none}.pony.sleeping .p-eyes,.pony.sleeping .p-float{display:none}.pony.sleeping .p-eyes-closed,.pony.sleeping .p-zzz{display:inline}.pony.sleeping .p-head{transform:rotate(12deg)}' +
+    '.pony.lying .p-legs-back,.pony.lying .p-legs-front{display:none}.pony.lying .p-root{transform:translateY(48px)}.pony.lying.st-young .p-root{transform:translateY(40px)}.pony.lying.st-foal .p-root{transform:translateY(30px)}' +
+    '.pony.bestie .p-charm{filter:drop-shadow(0 0 3px #fff6a0)}.pony.gloss .p-mane,.pony.gloss .p-tail{filter:brightness(1.3)}.pony.eyesClosed .p-eyes{display:none}.pony.eyesClosed .p-eyes-closed{display:inline}';
+  return PV_IMG_CSS;
+}
 PonyView.prototype = {
+  useImg: function () { return this.imgMode && !this.classes.walking; },
+  bakeKey: function () {
+    var c = this.classes, out = [];
+    PV_BAKE.forEach(function (n) { if (c[n]) out.push(n); });
+    if (this.p.sleeping) out.push('sleeping');
+    if (Game.hearts && this.p.friend != null && Game.hearts(this.p) >= 5) out.push('bestie');
+    if (c.lying || this.p.sleeping) out.push('st-' + this.p.stage);
+    return out.join(' ');
+  },
   render: function (force) {
     var mood = PonyArt.moodOf(this.p), extra = '';
-    var k = PonyArt.key(this.p, mood, extra);
+    var img = this.useImg();
+    var k = PonyArt.key(this.p, mood, extra) + (img ? '#img:' + this.bakeKey() : '#live');
     if (!force && k === this.key) return;
     this.key = k;
-    this.jump.innerHTML = PonyArt.svg(this.p, mood, extra);
-    this.svg = this.jump.firstChild;
-    var c = this.classes, sv = this.svg;
-    Object.keys(c).forEach(function (n) { if (c[n]) sv.classList.add(n); });
-    this.setCls('sleeping', !!this.p.sleeping);
     this.el.classList.toggle('glitter', !!this.p.look.glitter);
     this.el.classList.toggle('bestie', Game.hearts && this.p.friend != null && Game.hearts(this.p) >= 5);
     this.el.classList.toggle('sad', mood === 'sad' && !this.p.sleeping);
+    if (img) {
+      var url = PonyArt.imgURL(this.p, mood, this.bakeKey());
+      if (this._isImg && this._url === url) return;
+      var im = new Image(), self = this, tok = ++this._tok;
+      im.className = 'pimg'; im.alt = ''; im.draggable = false; im.src = url;
+      var done = function () { if (tok !== self._tok) return; self.jump.innerHTML = ''; self.jump.appendChild(im); self.svg = null; self._isImg = true; self._url = url; };
+      if (!this.jump.firstChild) done(); else if (im.decode) im.decode().then(done, done); else im.onload = done;
+      return;
+    }
+    this._tok++; this._isImg = false;
+    this.jump.innerHTML = uniq(PonyArt.svg(this.p, mood, extra));
+    this.svg = this.jump.firstChild;
+    var c = this.classes, sv = this.svg;
+    Object.keys(c).forEach(function (n) { if (c[n]) sv.classList.add(n); });
+    sv.classList.toggle('sleeping', !!this.p.sleeping);
+    if (c.lying) sv.classList.add('st-' + this.p.stage);
   },
-  setCls: function (n, on) { this.classes[n] = !!on; if (this.svg) this.svg.classList.toggle(n, !!on); if (n === 'walking') this.el.classList.toggle('walk', !!on); },
+  setCls: function (n, on) {
+    on = !!on; var was = !!this.classes[n]; this.classes[n] = on;
+    if (n === 'walking') this.el.classList.toggle('walk', on);
+    if (n === 'lying') this.el.classList.toggle('lying', on);
+    if (this.imgMode && (n === 'walking' || PV_BAKE.indexOf(n) >= 0)) { if (was !== on) this.render(true); return; }
+    if (this.svg) this.svg.classList.toggle(n, on);
+  },
   face: function (left) { if (left === this.left) return; this.left = left; this.flip.style.transform = left ? 'scaleX(-1)' : ''; this.flip.style.setProperty('--fl', left ? 'scaleX(-1)' : 'none'); },
   /* WAAPI reactions on the jump wrapper (composited, cheap) */
   anim: function (frames, ms, ease) {
@@ -2772,6 +2904,8 @@ var Bubble = {
   t: 0,
   show: function (text, anchor) {
     var b = document.getElementById('bubble');
+    /* never float a screen bubble over a full-screen celebration */
+    if (window.Celebrate && Celebrate.active && !(anchor && anchor.closest && anchor.closest('#celebrate'))) return;
     b.textContent = text;
     b.classList.remove('top');
     var x = innerWidth / 2, y = innerHeight * 0.3;
@@ -2860,6 +2994,8 @@ var UI = {
   isMain: function (n) { return n === 'farm' || n === 'forest' || n === 'ponies' || n === 'book' || n === 'decor'; },
   /* main router */
   go: function (name, arg) {
+    /* during the farm<->forest wipe, the last tap wins: just retarget the pending navigation */
+    if (UI._wiping) { UI._wipeTo = { name: name, arg: arg }; return; }
     var from = UI.cur;
     if (from === name && !arg) { if (name === 'farm' || name === 'forest') Scenes[name].bounceTab(); return; }
     Hints.hide();
@@ -2867,6 +3003,10 @@ var UI = {
     if (from && Scenes[from] && Scenes[from].leave) Scenes[from].leave(name);
     var wipe = (from === 'farm' && name === 'forest') || (from === 'forest' && name === 'farm');
     var doIt = function () {
+      if (UI._wipeTo) {
+        var nx = UI._wipeTo; UI._wipeTo = null;
+        name = nx.name; arg = nx.arg;
+      }
       UI.cur = name;
       if (UI.isMain(name)) UI.prev = name;
       var main = UI.isMain(name);
@@ -2886,8 +3026,9 @@ var UI = {
     };
     if (wipe && !REDUCED) {
       sfx('whoosh');
+      UI._wiping = true; UI._wipeTo = null;
       $('#wipe').classList.add('on');
-      setTimeout(function () { doIt(); setTimeout(function () { $('#wipe').classList.remove('on'); }, 60); }, 280);
+      setTimeout(function () { UI._wiping = false; doIt(); setTimeout(function () { $('#wipe').classList.remove('on'); }, 60); }, 280);
     } else doIt();
   },
   back: function () { UI.go(UI.prev || 'farm'); },
@@ -3018,7 +3159,7 @@ var Celebrate = {
     if (Celebrate.active) return;
     var ev = Celebrate.q.shift(); if (!ev) return;
     if (UI.cur === 'title' || UI.cur === 'pick') { Celebrate.q.unshift(ev); setTimeout(Celebrate.next, 1000); return; }
-    Celebrate.active = true; Hints.hide(); Bubble.hide();
+    Celebrate.active = true; Hints.hide(); Bubble.hide(); $('#hand').style.opacity = 0;
     var c = $('#celebrate'); c.innerHTML = '<div class="rays"></div><div class="ct"></div><button class="tap btn round green">' + ic('check', 60) + '</button>';
     c.classList.add('on');
     var ct = c.querySelector('.ct');
@@ -3169,7 +3310,7 @@ World.prototype = {
   layout: function () {
     var sw = this.root.clientWidth, sh = this.root.clientHeight;
     if (!sw || !sh) return;
-    this.sw = sw; this.sh = sh;
+    this.sw = sw; this.sh = sh; this.rr = null;
     /* tall (portrait) viewports: crop the empty upper sky so the ground fills the screen */
     var top = this.o.viewTop || 0, ar = sh / sw;
     this.top = ar > 1.15 ? top : ar > 0.8 ? top * 0.5 : 0;
@@ -3198,8 +3339,9 @@ World.prototype = {
     if (this.o.onCam) this.o.onCam();
   },
   /* client <-> world */
-  toWorld: function (cx, cy) { var r = this.root.getBoundingClientRect(); return { x: (cx - r.left - this.sw / 2) / this.scale + this.camX, y: (cy - r.top) / this.scale + (this.top || 0) }; },
-  toScreen: function (wx, wy) { var r = this.root.getBoundingClientRect(); return { x: r.left + this.sw / 2 + (wx - this.camX) * this.scale, y: r.top + (wy - (this.top || 0)) * this.scale }; },
+  rect: function () { if (!this.rr || this.rr.width !== this.root.clientWidth) { var b = this.root.getBoundingClientRect(); this.rr = { left: b.left, top: b.top, width: b.width }; } return this.rr; },
+  toWorld: function (cx, cy) { var r = this.rect(); return { x: (cx - r.left - this.sw / 2) / this.scale + this.camX, y: (cy - r.top) / this.scale + (this.top || 0) }; },
+  toScreen: function (wx, wy) { var r = this.rect(); return { x: r.left + this.sw / 2 + (wx - this.camX) * this.scale, y: r.top + (wy - (this.top || 0)) * this.scale }; },
   visible: function (wx, margin) { margin = margin || 0; var h = this.visW / 2; return wx > this.camX - h + margin && wx < this.camX + h - margin; },
   panTo: function (wx, ms) {
     var self = this, from = this.camX, t0 = performance.now(); ms = ms || 400; this.vx = 0;
@@ -3279,6 +3421,7 @@ function hitBox(parent, hit, l, t, w, h) {
 
 /* ============================== SCENE ART (own) ====================== */
 var Own = {
+  _w: function () { var o = this; ['gate','glowbug','mushroom','crystal','hoofprint'].forEach(function (k) { var f = o[k]; o[k] = function (a, b) { return uniq(f.call(o, a, b)); }; }); },
   appleTree: function () {
     return '<svg viewBox="0 0 260 300" overflow="visible">' +
       '<ellipse cx="130" cy="292" rx="80" ry="10" fill="#2a4a20" opacity=".18"/>' +
@@ -3438,7 +3581,7 @@ Scenes.farm = {
     var W = this.world, L = FARM_L;
     /* backgrounds */
     this.bgDay = el('div', 'bgwrap'); this.bgDay.style.top = -L.bgTop + 'px'; this.bgDay.style.height = (900 + L.bgTop) + 'px';
-    this.bgDay.innerHTML = ART.farmBackground(1200, 900 + L.bgTop, false);
+    this.bgDay.innerHTML = toImg(ART.farmBackground(1200, 900 + L.bgTop, false));
     W.w.insertBefore(this.bgDay, W.layer);
     this.bgNight = null;
     this.tint = el('div', 'tint'); this.tint.style.cssText += 'background:#3b48a8;mix-blend-mode:multiply;opacity:0;z-index:3;pointer-events:none;width:1200px;height:900px'; W.w.appendChild(this.tint);
@@ -3448,18 +3591,18 @@ Scenes.farm = {
     var bd = el('div', 'obj'); bd.dataset.hit = 'barn'; bd.style.cssText = 'left:' + L.barnDoor.x0 + 'px;top:' + L.barnDoor.y0 + 'px;width:' + (L.barnDoor.x1 - L.barnDoor.x0) + 'px;height:' + (L.barnDoor.y1 - L.barnDoor.y0) + 'px;z-index:1';
     this.layer.appendChild(bd);
     /* trough */
-    this.trough = W.obj(Own.trough(), L.trough.x, L.trough.y, 160, 80, 'trough');
+    this.trough = W.obj('<div class="troughIn">' + toImg(Own.trough()) + '</div>', L.trough.x, L.trough.y + 8, 170, 108, 'trough');
     /* apple tree */
-    this.tree = W.obj(Own.appleTree(), L.tree.x, L.tree.y, 260, 300, 'tree');
+    this.tree = W.obj('<div class="treeIn">' + toImg(Own.appleTree(), 0.05) + '</div>', L.tree.x, L.tree.y, 260, 300, 'tree');
     for (var i = 0; i < 3; i++) {
       var a = el('div', 'obj apple', Own.apple()); a.dataset.hit = 'apple' + i;
-      a.style.cssText = 'width:46px;height:46px;transform:translate3d(' + (L.apples[i][0] - 23) + 'px,' + (L.apples[i][1] - 23) + 'px,0);z-index:' + (L.tree.y + 1);
+      a.style.cssText = 'width:100px;height:100px;transform:translate3d(' + (L.apples[i][0] - 50) + 'px,' + (L.apples[i][1] - 50) + 'px,0);z-index:' + (L.tree.y + 1); /* big invisible hit pad, art stays 46u */
       this.layer.appendChild(a); this.apples.push(a);
     }
     /* gate */
-    this.gate = W.obj(Own.gate(), L.gate.x, L.gate.y, 160, 240, 'gate');
+    this.gate = W.obj(toImg(Own.gate(), 0.05), L.gate.x, L.gate.y, 160, 240, 'gate');
     /* treat table */
-    this.treat = W.obj(Own.treatTable(S.level < 4), L.treat.x, L.treat.y, 140, 130, 'treat');
+    this.treat = W.obj(toImg(Own.treatTable(S.level < 4), 0.1), L.treat.x, L.treat.y, 140, 130, 'treat');
     this.treatLocked = S.level < 4;
     /* gift */
     this.gift = W.obj('<div class="giftIn">' + ART.icon('gift', 64).replace('width="64" height="64"', 'width="100%" height="100%"') + '</div>', L.gift.x, L.gift.y, 100, 100, 'gift', 'giftObj');
@@ -3473,7 +3616,7 @@ Scenes.farm = {
     this.beds = [];
     /* glow bugs (night) */
     this.glowLayer = el('div', 'layer'); this.glowLayer.style.cssText = 'pointer-events:none;z-index:1000;width:1200px;height:900px'; this.layer.appendChild(this.glowLayer);
-    for (var g = 0; g < 10; g++) { var gb = el('div', 'obj glowbug', Own.glowbug()); gb.style.width = gb.style.height = '40px'; gb.style.display = 'none'; this.glowLayer.appendChild(gb); this.glows.push({ el: gb, x: rand(60, 1140), y: rand(560, 860), p: rand(0, 6.28), s: rand(0.4, 0.9) }); }
+    for (var g = 0; g < 10; g++) { var gb = el('div', 'obj glowbug'); gb.style.width = gb.style.height = '40px'; gb.style.display = 'none'; this.glowLayer.appendChild(gb); this.glows.push({ el: gb, x: rand(60, 1140), y: rand(560, 860), p: rand(0, 6.28), s: rand(0.4, 0.9) }); }
     this.built = true;
     this.syncDecor();
     this.syncPonies(true);
@@ -3496,6 +3639,7 @@ Scenes.farm = {
     var me = this; this.timer = setInterval(function () { me.refresh(); }, 1000);
     if (Time.isNight() && !this.nightShown && S.tutorial.done) { this.nightShown = true; setTimeout(function () { Speech.sayKey('stars', null, { anchor: { x: innerWidth / 2, y: innerHeight * 0.25 } }); }, 900); }
     if (arg && arg.arrive) this.arrive(arg.arrive);
+    else if (Main.welcome && S.tutorial.done) { var me2 = this; setTimeout(function () { me2.welcome(); }, 900); }
     if (arg && arg.decor) Decor.enter();
   },
   leave: function (to) {
@@ -3503,8 +3647,57 @@ Scenes.farm = {
     if (Decor.active) Decor.exit(true);
     Loop.remove(this.frame); clearInterval(this.timer); Pop.close();
   },
+  /* coming back after a while: the herd says hello (happy hops + hearts), not a list of chores */
+  welcome: function () {
+    if (!Main.welcome || UI.cur !== 'farm') return;
+    Main.welcome = false;
+    var me = this, k = 0;
+    for (var id in this.ponies) {
+      var F = this.ponies[id]; if (F.bed != null || F._vis === false) continue;
+      (function (F, d) { setTimeout(function () { F.view.hop(18, 2); var h = F.view.headPt(); FX.burst('heart', h.x, h.y, 5, { up: 120, max: 140, size: 8 }); }, d); })(F, 120 * k++);
+    }
+    sfx('giggle'); setTimeout(function () { sfx('sparkle'); }, 300);
+    Speech.say('Hello, friend!', { force: true, anchor: { x: innerWidth / 2, y: innerHeight * 0.32 } });
+  },
   bounceTab: function () { this.world.panTo(620, 500); },
 
+  makeStars: function (host) {
+    var h = '';
+    for (var i = 0; i < 18; i++) h += '<i class="tw" style="left:' + (Math.random() * 100).toFixed(1) + '%;top:' + (Math.random() * 38).toFixed(1) + '%;animation-delay:' + (Math.random() * 3).toFixed(2) + 's;transform:scale(' + (0.6 + Math.random()).toFixed(2) + ')"></i>';
+    host.insertAdjacentHTML('beforeend', h);
+  },
+  /* grass areas ponies may roam; the herd spreads out as it grows */
+  zones: function () {
+    var n = S.ponies.length, Z = [];
+    if (n <= 4) Z.push([450, 750, 690, 880]);
+    else if (n <= 8) Z.push([370, 840, 670, 890]);
+    else {
+      Z.push([350, 845, 655, 895]); Z.push([60, 320, 604, 664]);
+      /* the hay-bed area is grass too when few ponies are asleep */
+      var sleepers = S.ponies.filter(function (q) { return q.sleeping; }).length;
+      if (sleepers <= 3) Z.push([40, 330, 770, 895]);
+    }
+    return Z;
+  },
+  /* pick the spot that keeps the most room from other ponies and is not hidden behind a decoration */
+  freeSpot: function (F) {
+    var Z = this.zones(), best = null, bs = -1e9, me = this, tries = 30;
+    var area = Z.map(function (z) { return (z[1] - z[0]) * (z[3] - z[2]); }), tot = area.reduce(function (a, b) { return a + b; }, 0);
+    for (var c = 0; c < tries; c++) {
+      var r = Math.random() * tot, zi = 0; while (r > area[zi] && zi < Z.length - 1) { r -= area[zi]; zi++; }
+      var z = Z[zi], cx = rand(z[0], z[1]), cy = rand(z[2], z[3]), md = 400;
+      for (var oid in me.ponies) {
+        var O = me.ponies[oid]; if (O === F || O.bed != null) continue;
+        md = Math.min(md, Math.hypot(O.x - cx, (O.y - cy) * 1.8));
+        if (O.state === 'walk') md = Math.min(md, Math.hypot(O.tx - cx, (O.ty - cy) * 1.8));
+      }
+      var pen = 0;
+      S.decor.placed.forEach(function (d) { var sz = (DECOR_BY[d.id] || {}).size || 120; if (d.y > cy && d.y - cy < 150 && Math.abs(d.x - cx) < sz * 0.5 + 40) pen += 160; });
+      var sc = md - pen;
+      if (sc > bs) { bs = sc; best = [cx, cy]; }
+    }
+    return best;
+  },
   /* ---------------- ponies ---------------- */
   syncPonies: function (initial) {
     var self = this, seen = {};
@@ -3524,14 +3717,15 @@ Scenes.farm = {
   },
   makePony: function (p) {
     var o = el('div', 'obj ponyObj'); o.style.width = o.style.height = PONY_BOX + 'px';
-    var v = new PonyView(p, { size: PONY_BOX });
+    var v = new PonyView(p, { size: PONY_BOX, img: true });
     o.appendChild(v.el);
     var hb = el('div', 'hb'); hb.dataset.hit = 'pony:' + p.id; o.appendChild(hb);
     var need = el('div', 'needb'); need.style.display = 'none'; v.over.appendChild(need);
     var cloud = el('div', 'cloudy', Own.rainCloud()); cloud.style.display = 'none'; v.over.appendChild(cloud);
     this.layer.appendChild(o);
     var pd = FARM_L.paddock;
-    var F = { p: p, obj: o, view: v, hb: hb, need: need, cloud: cloud, x: rand(pd.x0, pd.x1), y: rand(pd.y0, pd.y1), tx: 0, ty: 0, state: 'idle', until: performance.now() + rand(500, 3000), stage: p.stage, sparkT: 0, trailT: 0, needKey: '' };
+    var s0 = this.freeSpot(null);
+    var F = { p: p, obj: o, view: v, hb: hb, need: need, cloud: cloud, x: s0[0], y: s0[1], tx: 0, ty: 0, state: 'idle', until: performance.now() + rand(500, 3000), stage: p.stage, sparkT: 0, trailT: 0, needKey: '' };
     v.setCls('lite', true);
     this.styleHit(F);
     this.placePony(F);
@@ -3552,16 +3746,17 @@ Scenes.farm = {
     F.cloud.style.left = (hx * 100 - 22) + '%'; F.cloud.style.top = (F.headY * 100 - 18) + '%';
   },
   placePony: function (F) {
-    var sc = F.bed != null ? 0.78 : 0.86 + 0.16 * clamp((F.y - 660) / 230, 0, 1);
+    var n = S.ponies.length, herd = n > 10 ? 0.84 : n > 6 ? 0.92 : 1; /* big herds: slightly smaller so faces stay readable */
+    var sc = (F.bed != null ? 0.78 : 0.86 + 0.16 * clamp((F.y - 660) / 230, 0, 1)) * herd;
     F.obj.style.transform = 'translate3d(' + (F.x - PONY_BOX / 2).toFixed(1) + 'px,' + (F.y - PONY_BOX * 0.95).toFixed(1) + 'px,0) scale(' + sc.toFixed(3) + ')';
     F.obj.style.transformOrigin = '50% 95%';
-    F.obj.style.zIndex = Math.round(F.y);
+    var z = Math.round(F.y); if (F._z == null || Math.abs(z - F._z) >= 6 || F.bed != null) { F._z = z; F.obj.style.zIndex = z; }
   },
   layoutBeds: function () {
     var self = this, sleepers = S.ponies.filter(function (p) { return p.sleeping; });
     var n = Math.min(16, sleepers.length + 2);
     while (this.beds.length < n) {
-      var b = el('div', 'obj bed', Own.bed()); b.style.width = '150px'; b.style.height = '66px'; this.layer.appendChild(b); this.beds.push(b);
+      var b = el('div', 'obj bed', toImg(Own.bed(), 0.05)); b.style.width = '150px'; b.style.height = '66px'; this.layer.appendChild(b); this.beds.push(b);
     }
     this.beds.forEach(function (b, i) {
       if (i >= n) { b.style.display = 'none'; return; }
@@ -3575,11 +3770,11 @@ Scenes.farm = {
       if (p.sleeping) {
         var pos = FARM_L.beds[bi]; F.bed = bi++;
         F.x = pos[0] + 34; F.y = pos[1] + 4; F.state = 'bed';
-        F.view.setCls('walking', false); F.view.el.classList.add('lying');
+        F.view.setCls('walking', false); F.view.setCls('lying', true);
         self.placePony(F);
       } else if (F.bed != null) {
-        F.bed = null; F.state = 'idle'; F.view.el.classList.remove('lying');
-        var pd = FARM_L.paddock; F.x = rand(pd.x0, pd.x1); F.y = rand(pd.y0, pd.y1);
+        F.bed = null; F.state = 'idle'; F.view.setCls('lying', false);
+        var s1 = self.freeSpot(F); F.x = s1[0]; F.y = s1[1];
         self.placePony(F);
       }
     });
@@ -3602,6 +3797,12 @@ Scenes.farm = {
       this._gathers = gathers = S.decor.placed.filter(function (d) { return DECOR_BY[d.id] && DECOR_BY[d.id].gather; });
       /* cull ponies & decor outside the camera so they cost nothing to paint */
       var Wd = this.world;
+      /* gentle separation: an idle pony crowded by another wanders off to more room */
+      var ids = Object.keys(this.ponies);
+      for (var ia = 0; ia < ids.length; ia++) {
+        var A = this.ponies[ids[ia]]; if (A.state !== 'idle' || A.busy) continue;
+        for (var ib = 0; ib < ids.length; ib++) { if (ia === ib) continue; var Bp = this.ponies[ids[ib]]; if (Bp.bed != null) continue; if (Math.abs(A.x - Bp.x) < 95 && Math.abs(A.y - Bp.y) < 45) { A.until = Math.min(A.until, ts + 300); A._crowd = true; break; } }
+      }
       for (var vid in this.ponies) { var Fv = this.ponies[vid], on = Wd.visible(Fv.x, -140); if (Fv._vis !== on) { Fv._vis = on; Fv.obj.style.visibility = on ? '' : 'hidden'; Fv.view.el.classList.toggle('paused', !on); } }
       for (var du in Decor.els) { var de = Decor.els[du], on2 = Wd.visible(de._x, -120); if (de._vis !== on2) { de._vis = on2; de.style.visibility = on2 ? '' : 'hidden'; } }
     }
@@ -3612,31 +3813,26 @@ Scenes.farm = {
       if (F.state === 'bed' || F.busy) continue;
       var lying = night && p.stats.energy < 60 && !F.arriving;
       if (lying) {
-        if (F.state !== 'lie') { F.state = 'lie'; v.setCls('walking', false); v.el.classList.add('lying'); }
+        if (F.state !== 'lie') { F.state = 'lie'; v.setCls('walking', false); v.setCls('lying', true); }
         continue;
-      } else if (F.state === 'lie') { F.state = 'idle'; v.el.classList.remove('lying'); }
-      if (F.state === 'idle' && ts > F.until && walkers >= 5) F.until = ts + rand(1500, 3500);
+      } else if (F.state === 'lie') { F.state = 'idle'; v.setCls('lying', false); }
+      if (F.state === 'idle' && ts > F.until && walkers >= (F._crowd ? 6 : 3)) F.until = ts + rand(1500, 3500);
       if (F.state === 'idle' && ts > F.until) {
         F.state = 'walk'; walkers++;
         if (gathers.length && Math.random() < 0.3) { var g = pick(gathers); F.tx = clamp(g.x + rand(-120, 120), 380, 760); F.ty = clamp(g.y + rand(-20, 30), 680, 870); }
         else {
           /* pick the candidate spot farthest from other ponies so the herd spreads out */
-          var best = null, bd = -1;
-          for (var c = 0; c < 6; c++) {
-            var cx = rand(pd.x0, pd.x1), cy = rand(pd.y0, pd.y1), md = 1e9;
-            for (var oid in self.ponies) { var O = self.ponies[oid]; if (O === F) continue; md = Math.min(md, Math.hypot(O.x - cx, (O.y - cy) * 1.6)); }
-            if (md > bd) { bd = md; best = [cx, cy]; }
-          }
-          F.tx = best[0]; F.ty = best[1];
+          var sp = self.freeSpot(F); F.tx = sp[0]; F.ty = sp[1]; F._crowd = false;
         }
         F.until = ts + 12000;
       }
       if (F.state === 'walk') {
         var dx = F.tx - F.x, dy = F.ty - F.y, d = Math.hypot(dx, dy), sp = (F.arriving ? 70 : 40) * dt;
         if (d < 3 || ts > F.until) {
-          F.state = 'idle'; F.until = ts + rand(3000, 7000); v.setCls('walking', false); F.arriving = false;
+          F.state = 'idle'; F.until = ts + rand(3000, 7000); v.setCls('walking', false); F.arriving = false; F._mv = false; F.obj.classList.remove('moving');
         } else {
-          if (!v.classes.walking) v.setCls('walking', true);
+          var vis = F._vis !== false; if (v.classes.walking !== vis) v.setCls('walking', vis); /* off-camera walkers stay a cheap static image */
+          if (!F._mv) { F._mv = true; F.obj.classList.add('moving'); }
           var left = dx < 0; if (Math.abs(dx) > 4 && left !== v.left) { v.face(left); self.posBubble(F); }
           F.x += dx / d * Math.min(sp, d); F.y += dy / d * Math.min(sp, d);
           self.placePony(F);
@@ -3651,6 +3847,13 @@ Scenes.farm = {
         F.sparkT = ts + 800;
         if (self.world.visible(F.x)) { var s3 = self.world.toScreen(F.x + rand(-60, 60), F.y - rand(60, 170) * (p.stage === 'foal' ? 0.6 : 1)); FX.burst('sparkle', s3.x, s3.y, 1, { min: 5, max: 20, size: 7, g: -20 }); }
       }
+    }
+    /* fidget: one idle, visible pony does a small cute move at a time (cheap, no permanent layers) */
+    if (!REDUCED && ts > (this._fidT || 0)) {
+      this._fidT = ts + rand(900, 1800);
+      var idle = [];
+      for (var fid in this.ponies) { var Fi = this.ponies[fid]; if (Fi.state === 'idle' && Fi._vis !== false && !Fi.busy) idle.push(Fi); }
+      if (idle.length) { var Fp = pick(idle), r = Math.random(); if (r < 0.4) Fp.view.squish(); else if (r < 0.7) Fp.view.anim([{ transform: 'rotate(0)' }, { transform: 'rotate(-4deg) translateY(-2%)' }, { transform: 'rotate(2deg)' }, { transform: 'rotate(0)' }], 900, 'ease-in-out'); else Fp.view.hop(8); }
     }
     /* glow bugs */
     if (this.nightAmt > 0.01) {
@@ -3672,7 +3875,7 @@ Scenes.farm = {
     var na = Time.nightAmt();
     if (na !== this.nightAmt || force) {
       this.nightAmt = na;
-      if (na > 0 && !this.bgNight) { this.bgNight = el('div', 'bgwrap night'); this.bgNight.style.top = -FARM_L.bgTop + 'px'; this.bgNight.style.height = (900 + FARM_L.bgTop) + 'px'; this.bgNight.innerHTML = ART.farmBackground(1200, 900 + FARM_L.bgTop, true); this.world.w.insertBefore(this.bgNight, this.tint); }
+      if (na > 0 && !this.bgNight) { this.bgNight = el('div', 'bgwrap night'); this.bgNight.style.top = -FARM_L.bgTop + 'px'; this.bgNight.style.height = (900 + FARM_L.bgTop) + 'px'; this.bgNight.innerHTML = toImg(ART.farmBackground(1200, 900 + FARM_L.bgTop, true)); Scenes.farm.makeStars(this.bgNight); this.world.w.insertBefore(this.bgNight, this.tint); }
       if (this.bgNight) this.bgNight.style.opacity = na;
       if (na >= 1) this.bgDay.style.visibility = 'hidden'; else this.bgDay.style.visibility = '';
       if (na === 0 && this.bgNight) { this.bgNight.remove(); this.bgNight = null; }
@@ -3688,16 +3891,23 @@ Scenes.farm = {
     /* gift */
     var g = Game.giftAvailable(); this.gift.style.display = g ? '' : 'none';
     /* treat lock */
-    if (this.treatLocked !== (S.level < 4)) { this.treatLocked = S.level < 4; this.treat.innerHTML = Own.treatTable(this.treatLocked); }
+    if (this.treatLocked !== (S.level < 4)) { this.treatLocked = S.level < 4; this.treat.innerHTML = toImg(Own.treatTable(this.treatLocked), 0.1); }
     /* gate sparkle */
     var wr = Wild.ready(); this.gate.classList.toggle('ready', wr);
     if (wr && Math.random() < 0.6 && this.world.visible(FARM_L.gate.x)) { var gp = this.world.toScreen(FARM_L.gate.x + rand(-60, 60), FARM_L.gate.y - rand(40, 220)); FX.burst('sparkle', gp.x, gp.y, 2, { min: 10, max: 50, g: -30 }); }
     /* plots */
     this.plots.forEach(function (P, i) { self.drawPlot(P, i); });
     /* ponies: mood/need/stage. Only the 3 neediest show a bubble so a big herd stays readable */
-    var needy = S.ponies.filter(function (q) { return Game.need(q); }).sort(function (x, y) { return Math.min(x.stats.full, x.stats.clean, x.stats.happy, x.stats.energy) - Math.min(y.stats.full, y.stats.clean, y.stats.happy, y.stats.energy); }).slice(0, 3).map(function (q) { return q.id; });
+    var me = this, picked = [];
+    S.ponies.filter(function (q) { return Game.need(q) && me.ponies[q.id] && me.ponies[q.id].bed == null; }).sort(function (x, y) { return Math.min(x.stats.full, x.stats.clean, x.stats.happy, x.stats.energy) - Math.min(y.stats.full, y.stats.clean, y.stats.happy, y.stats.energy); }).forEach(function (q) {
+      if (picked.length >= 3) return;
+      var Fq = me.ponies[q.id];
+      /* bubbles never stack: skip a pony whose head is right next to an already-chosen bubble */
+      if (picked.some(function (o) { var Fo = me.ponies[o]; return Math.abs(Fo.x - Fq.x) < 170 && Math.abs(Fo.y - Fq.y) < 90; })) return;
+      picked.push(q.id);
+    });
+    var needy = picked;
     var n = S.ponies.length, pd = FARM_L.paddock;
-    pd.x0 = n > 6 ? 360 : 450; pd.x1 = n > 6 ? 840 : 750; pd.y0 = n > 10 ? 650 : 680;
     for (var id in this.ponies) {
       var F = this.ponies[id], p = F.p;
       if (p.sleeping !== (F.state === 'bed')) { this.layoutBeds(); }
@@ -3721,7 +3931,7 @@ Scenes.farm = {
         if (p.stageSeen === 'foal' && p.stage !== 'foal') Game.award('m_bigkid');
         if (p.stage === 'grown') Game.award('m_grown');
         p.stageSeen = p.stage;
-        Game.addStars(15); Game.addXP(20);
+        Game.addStars(REWARD.grow); Game.addXP(20);
         var F = me.ponies[p.id]; if (F) { F.growQueued = false; F.stage = p.stage; F.view.render(true); me.styleHit(F); }
         Save.dirty();
       }
@@ -3803,7 +4013,7 @@ Scenes.farm = {
   },
   rustle: function () {
     sfx('rustle');
-    var c = this.tree.querySelector('.canopy');
+    var c = this.tree.querySelector('.treeIn');
     if (c) c.animate([{ transform: 'rotate(0)' }, { transform: 'rotate(2deg)' }, { transform: 'rotate(-2deg)' }, { transform: 'rotate(1deg)' }, { transform: 'rotate(0)' }], { duration: 500 });
     var sp = this.world.toScreen(FARM_L.tree.x, FARM_L.tree.y - 200);
     FX.burst('leaf', sp.x, sp.y, 8, { colors: ['#6fd36f', '#9be88a', '#4fbf55'], g: 160, max: 120, size: 7, jx: 60, life: 1.6 });
@@ -3975,7 +4185,20 @@ var Care = {
     stage.addEventListener('pointerup', Care.stageUp);
     stage.addEventListener('pointercancel', Care.stageUp);
     Care.built = true;
-    Bus.on('layout', function () { if (UI.cur === 'care') Care.sizeHero(); });
+    Bus.on('layout', function () {
+      if (UI.cur !== 'care') return;
+      Care.sizeHero();
+      /* rotation: put the tool back on the pony and the ball back on the grass */
+      setTimeout(function () {
+        if (Care.mode === 'brush' || Care.mode === 'wash' || Care.mode === 'butterfly') {
+          var st = $('#care .stage').getBoundingClientRect(), r = Care.view.jump.getBoundingClientRect();
+          Care.moveCursor(r.left + r.width * 0.6 - st.left, r.top + r.height * 0.45 - st.top);
+          if (Care.mode === 'butterfly') Care.bfTarget = { x: r.left + r.width * 0.8, y: r.top + r.height * 0.35 };
+        }
+        if (Care.mode === 'ball' && !Care.ballBusy) { var s2 = $('#care .stage'); Care.ballPos = { x: s2.clientWidth * 0.5, y: s2.clientHeight * 0.85 }; $('#care .ball').style.transform = 'translate3d(' + Care.ballPos.x + 'px,' + Care.ballPos.y + 'px,0)'; }
+        Care.ponyX = 0; Care.view.el.style.transform = '';
+      }, 60);
+    });
     Bus.on('heart', function (e) { setTimeout(function () { MiniHeart.show(e.hearts); }, 700); });
     Bus.on('autowake', function (p) { if (UI.cur === 'care' && p === Care.p) Care.wakeUp(true); });
   },
@@ -4003,6 +4226,9 @@ var Care = {
     /* grow-up pending? */
     if (p.stage !== p.stageSeen && S.tutorial.done) setTimeout(function () { var F = Scenes.farm.ponies[p.id]; if (!F || !F.growQueued) { if (F) F.growQueued = true; Scenes.farm.growUp(p); } }, 600);
     Care.sleepyT = 0;
+    /* per-visit state reset */
+    Care.ponyX = 0; Care.feeding = false; Care._wheee = false; Care._tickled = false; Care.tosses = 0; Care.ballBusy = false; Care.drag = null;
+    Care.view.el.style.transform = '';
     Tutorial.event('careOpen');
   },
   leave: function () { clearInterval(Care.timer); Care.endMode(); },
@@ -4153,9 +4379,13 @@ var Care = {
   },
   feed: function (k, from, dropped) {
     var p = Care.p, v = Care.view;
-    if ((S.inv[k] || 0) <= 0) return;
+    if (Care.feeding || (S.inv[k] || 0) <= 0) return;
     if (p.stats.full >= 95) { v.shake(3); sfx('hmm'); Care.react('full', 'full'); Care.endMode(); return; }
+    Care.feeding = true; /* one food in flight at a time: rapid taps can't waste food */
     var go = function () {
+      /* re-check inside the apply step: the pony may have filled up while this one was flying */
+      if (Care.p !== p || (S.inv[k] || 0) <= 0) { Care.feeding = false; return; }
+      if (p.stats.full >= 95) { Care.feeding = false; v.shake(3); sfx('hmm'); Care.react('full', 'full'); Care.endMode(); return; }
       S.inv[k]--; Bus.emit('items', {});
       var f = ITEMS[k].food, fav = (k === BREED[p.breed].fav) || k === 'cake';
       var g1 = Game.addStat(p, 'full', f.full), g2 = Game.addStat(p, 'happy', f.happy * (fav ? 1.5 : 1));
@@ -4172,6 +4402,7 @@ var Care = {
         else { Care.hearts(5); Care.react('feed', 'feed'); }
         Care.effective(fav ? 'fav' : 'eat', g1 + g2 >= 5 ? Math.max(g1, 5) : g1);
         Care.refresh(); Care.cozy();
+        Care.feeding = false;
         Tutorial.event('feed');
         /* refresh tray counts */
         if (Care.mode === 'eat') { var t = $('#care .tools .food[data-f="' + k + '"]'); if (t) { if (S.inv[k] > 0) t.querySelector('.cnt').textContent = fmt99(S.inv[k]); else t.remove(); } if (!$('#care .tools .food')) Care.endMode(); }
@@ -4416,12 +4647,13 @@ var Care = {
     var g = Game.addStat(p, 'energy', 10), g2 = Game.addStat(p, 'happy', 5);
     sfx('lullaby'); sfx('yawn');
     v.render(true);
-    var cap = v.svg.querySelector('.p-acc');
+    var cap = v.svg && v.svg.querySelector('.p-acc');
     if (cap) cap.animate([{ transform: 'translateY(-60px)', opacity: 0 }, { transform: 'translateY(4px)', opacity: 1 }, { transform: 'translateY(0)' }], { duration: 600, easing: 'ease-out' });
     $('#care').classList.add('night');
     Care.react('sleep', 'sleep');
     var h = v.headPt(); FX.burst('sparkle', h.x, h.y, 10, { colors: ['#fff6a0', '#c9b8ff'], max: 120 });
-    Care.effective('sleep', Math.max(g, g2) >= 5 ? 5 : 0);
+    /* no rewards for sleep/wake spam: at most one rewarded bedtime per pony per 30 min */
+    if (!(p.lastSleepRewardAt <= now()) || now() - p.lastSleepRewardAt >= 30 * T.MIN) { p.lastSleepRewardAt = now(); Care.effective('sleep', Math.max(g, g2) >= 5 ? 5 : 0); }
     Game.award('m_sleep');
     Save.dirty();
     Care.refresh();
@@ -4430,7 +4662,7 @@ var Care = {
   wakeUp: function (auto) {
     var p = Care.p, v = Care.view;
     p.sleeping = false;
-    var cap = v.svg.querySelector('.p-acc');
+    var cap = v.svg && v.svg.querySelector('.p-acc');
     var fin = function () {
       v.render(true); $('#care').classList.remove('night');
       v.stretch(); sfx('yawn'); setTimeout(function () { sfx('nicker'); }, 700);
@@ -4484,7 +4716,7 @@ Scenes.forest = {
     });
     var W = this.world;
     this.bgDay = el('div', 'bgwrap'); this.bgDay.style.top = -L.bgTop + 'px'; this.bgDay.style.height = (900 + L.bgTop) + 'px';
-    this.bgDay.innerHTML = ART.forestBackground(1200, 900 + L.bgTop, false);
+    this.bgDay.innerHTML = toImg(ART.forestBackground(1200, 900 + L.bgTop, false));
     W.w.insertBefore(this.bgDay, W.layer);
     W.layer.style.zIndex = 2;
     /* pool hit */
@@ -4501,13 +4733,13 @@ Scenes.forest = {
       var berries = [];
       L.berrySpots.forEach(function (s, j) {
         var be = el('div', 'berryOn', ART.icon('berry', 64)); be.dataset.hit = 'berry' + i + '_' + j;
-        be.style.cssText = 'position:absolute;width:56px;height:56px;left:' + (85 + s[0] - 28) + 'px;top:' + (128 + s[1] - 28) + 'px';
+        be.style.cssText = 'position:absolute;width:96px;height:96px;left:' + (85 + s[0] - 48) + 'px;top:' + (128 + s[1] - 48) + 'px';
         o.appendChild(be); berries.push(be);
       });
       self.bushes.push({ el: o, berries: berries });
     });
     /* crystals */
-    L.crystals.forEach(function (c, i) { var o = W.obj('', c[0], c[1], 80, 110, 'crystal' + i); self.crystals.push({ el: o, key: '' }); });
+    L.crystals.forEach(function (c, i) { var o = W.obj('', c[0], c[1], 100, 120, 'crystal' + i); self.crystals.push({ el: o, key: '' }); });
     /* mushrooms */
     L.mush.forEach(function (m, i) { var o = W.obj(Own.mushroom(L.mushCol[i]), m[0], m[1], 120, 120, 'mush' + i, 'mush'); self.mush.push(o); });
     /* farm button */
@@ -4516,11 +4748,11 @@ Scenes.forest = {
     this.wildWrap = el('div', 'obj wildObj'); this.wildWrap.style.width = this.wildWrap.style.height = PONY_BOX + 'px'; this.wildWrap.style.display = 'none'; W.layer.appendChild(this.wildWrap);
     this.awayEl = W.obj('', 0, 0, 120, 120, 'away', 'awayObj'); this.awayEl.style.display = 'none';
     this.silEl = el('div', 'obj silObj'); this.silEl.style.width = this.silEl.style.height = PONY_BOX + 'px'; this.silEl.style.display = 'none'; W.layer.appendChild(this.silEl);
-    for (var h = 0; h < 5; h++) { var hf = W.obj(Own.hoofprint(), 0, 0, 74, 74, 'hoof' + h, 'hoof'); hf.style.display = 'none'; this.hoofs.push(hf); }
+    for (var h = 0; h < 5; h++) { var hf = W.obj(Own.hoofprint(), 0, 0, 100, 100, 'hoof' + h, 'hoof'); hf.style.display = 'none'; this.hoofs.push(hf); }
     /* glow bugs */
     for (var g = 0; g < 8; g++) {
       var b = el('div', 'obj fbug', '<div class="bugIn">' + ART.icon('firefly', 64) + '</div>'); b.dataset.hit = 'bug' + g;
-      b.style.width = b.style.height = '84px'; b.style.zIndex = 1500; b.style.display = 'none';
+      b.style.width = b.style.height = '104px'; b.style.zIndex = 1500; b.style.display = 'none';
       W.layer.appendChild(b);
       this.bugs.push({ el: b, ph: rand(0, 6.28), sx: rand(0.15, 0.3), sy: rand(0.2, 0.4), cx: rand(150, 1050), cy: rand(260, 640), on: false });
     }
@@ -4586,7 +4818,7 @@ Scenes.forest = {
     var na = Time.nightAmt();
     if (na !== this.na || force) {
       this.na = na;
-      if (na > 0 && !this.bgNight) { this.bgNight = el('div', 'bgwrap night'); this.bgNight.style.top = -L.bgTop + 'px'; this.bgNight.style.height = (900 + L.bgTop) + 'px'; this.bgNight.innerHTML = ART.forestBackground(1200, 900 + L.bgTop, true); this.world.w.insertBefore(this.bgNight, this.world.layer); }
+      if (na > 0 && !this.bgNight) { this.bgNight = el('div', 'bgwrap night'); this.bgNight.style.top = -L.bgTop + 'px'; this.bgNight.style.height = (900 + L.bgTop) + 'px'; this.bgNight.innerHTML = toImg(ART.forestBackground(1200, 900 + L.bgTop, true)); Scenes.farm.makeStars(this.bgNight); this.world.w.insertBefore(this.bgNight, this.world.layer); }
       if (this.bgNight) this.bgNight.style.opacity = na;
       this.bgDay.style.visibility = na >= 1 ? 'hidden' : '';
       if (na === 0 && this.bgNight) { this.bgNight.remove(); this.bgNight = null; }
@@ -4616,10 +4848,12 @@ Scenes.forest = {
       if (this.silKey !== st.s + S.wild.index) {
         this.silKey = st.s + S.wild.index;
         var bp = PonyArt.breedPony(S.wild.queue[S.wild.index], 'foal', 'sleepy'); bp.sleeping = true;
-        var v = new PonyView(bp, { size: PONY_BOX }); v.el.classList.add('lying', 'st-foal', 'sil');
+        var v = new PonyView(bp, { size: PONY_BOX, img: true }); v.el.classList.add('st-foal', 'sil');
         this.silEl.innerHTML = ''; this.silEl.appendChild(v.el); this.silEl.appendChild(el('div', 'silTag'));
+        this.silEl.appendChild(el('div', 'silZ', '<b>z</b><b>z</b><b>Z</b>'));
         var hb = el('div', 'hb'); hb.dataset.hit = 'sil'; hb.style.cssText = 'position:absolute;left:20%;top:45%;width:60%;height:50%'; this.silEl.appendChild(hb);
-        var sp2 = L.spots[3]; this.silEl.style.transform = 'translate3d(' + (sp2.x - PONY_BOX / 2 - 30) + 'px,' + (sp2.y + 20 - PONY_BOX * 0.95) + 'px,0) scale(.85)'; this.silEl.style.zIndex = sp2.y + 30;
+        /* in the open, in front of the crystal tree and the mushroom: clearly a sleeping friend, not a dark blob */
+        var sp2 = L.spots[3]; this.silEl.style.transform = 'translate3d(' + (sp2.x - PONY_BOX / 2 - 40) + 'px,' + (sp2.y + 40 - PONY_BOX * 0.95) + 'px,0) scale(.9)'; this.silEl.style.zIndex = 1450;
       }
       this.silEl.style.display = '';
       var tag = this.silEl.querySelector('.silTag');
@@ -4633,7 +4867,7 @@ Scenes.forest = {
     this.hoofs.forEach(function (h, i) {
       if (!trailOn) { h.style.display = 'none'; return; }
       h.style.display = i < c.trail ? 'none' : '';
-      W.place(h, pts[i].x, pts[i].y, 74, 74);
+      W.place(h, pts[i].x, pts[i].y + 13, 100, 100);
       h.style.zIndex = 1400;
       h.classList.toggle('next', i === c.trail);
       h.style.setProperty('--rot', pts[i].a + 'deg');
@@ -4661,7 +4895,7 @@ Scenes.forest = {
       this.wildWrap.style.display = '';
       var hidden = st.s === 'trail';
       var dx = hidden ? (faceLeft ? 80 : -80) : 0;
-      this.wildWrap.style.transform = 'translate3d(' + (spot.x - PONY_BOX / 2 + (faceLeft ? 40 : -40) + dx).toFixed(1) + 'px,' + (spot.y + 10 - PONY_BOX * 0.95) + 'px,0) scale(.92)';
+      this.wildWrap.style.transform = 'translate3d(' + (clamp(spot.x + (faceLeft ? 40 : -40), PONY_BOX / 2 - 20, 1200 - PONY_BOX / 2 + 10) - PONY_BOX / 2 + dx).toFixed(1) + 'px,' + (spot.y + 10 - PONY_BOX * 0.95) + 'px,0) scale(.92)';
       this.wildWrap.classList.toggle('hidden-wild', hidden);
       E.think.style.display = hidden ? 'none' : '';
       E.hearts.style.display = hidden ? 'none' : '';
@@ -4754,7 +4988,7 @@ Scenes.forest = {
       setTimeout(function () { sfx('jingle'); }, 350);
       var dk = Time.dayKey();
       FX.rain('confetti', 40, { life: 2 });
-      if (f.songDay !== dk) { f.songDay = dk; Game.addStars(5); for (var k = 0; k < 5; k++) FX.fly(ART.icon('star', 64), { x: innerWidth / 2, y: innerHeight / 2 }, $('#starPill .ic'), { size: 44, delay: k * 90 }); }
+      if (dk > (f.songDay || '')) { f.songDay = dk; Game.addStars(REWARD.song); for (var k = 0; k < 3; k++) FX.fly(ART.icon('star', 64), { x: innerWidth / 2, y: innerHeight / 2 }, $('#starPill .ic'), { size: 44, delay: k * 90 }); }
     }
     Tutorial.event('mushroom');
   },
@@ -4805,7 +5039,7 @@ Scenes.forest = {
     FX.burst('sparkle', sp.x, sp.y, 10, { colors: ['#fff36a', '#fffbc0'] });
     var jar = $('#fbag .jar');
     FX.fly(ART.icon('firefly', 64), sp, jar, { size: 50, done: function () { bump(jar); } });
-    Game.addItem('glowbug', 1); Game.addStars(2); Game.addXP(1);
+    Game.addItem('glowbug', 1); Game.addStars(REWARD.glowbug); Game.addXP(1);
     S.counters.bugsCaught++;
     if (S.counters.bugsCaught >= 10) Game.award('m_firefly');
     this.refresh();
@@ -4957,6 +5191,7 @@ function dragItem(btn, ghostHtml, o) {
 
 /* ============================== TITLE ================================ */
 Scenes.title = {
+  leave: function () { setTimeout(function () { if (UI.cur !== 'title') $('#title').innerHTML = ''; }, 450); },
   enter: function () {
     var t = $('#title');
     t.innerHTML = '<div class="bgfull">' + ART.farmBackground(innerWidth, innerHeight, Time.isNight()) + '</div><div class="veil"></div>' +
@@ -4992,6 +5227,7 @@ Scenes.title = {
 
 /* ============================== PICK ================================= */
 Scenes.pick = {
+  leave: function () { setTimeout(function () { if (UI.cur !== 'pick') $('#pick').innerHTML = ''; }, 450); },
   enter: function () {
     var t = $('#pick'), self = this;
     t.innerHTML = '<div class="bgfull">' + ART.farmBackground(innerWidth, innerHeight, false) + '</div><div class="veil"></div><div class="big-title">' + ic('heart', 0) + 'Pick a pony!</div><div class="picks"></div>';
@@ -5010,9 +5246,11 @@ Scenes.pick = {
       self.views.push(v);
     });
     setTimeout(function () { Speech.sayKey('pick', null, { force: true, anchor: { x: innerWidth / 2, y: innerHeight * 0.3 } }); }, 300);
+    this.chosen = false;
+    setTimeout(function () { if (UI.cur === 'pick' && !Scenes.pick.chosen) { var hb = $$('#pick .hbp')[1]; if (hb) Hand.show(Hints.elm(hb), { pulse: true }); } }, 700);
   },
   choose: function (k, v, pk) {
-    if (this.chosen) return; this.chosen = true;
+    if (this.chosen) return; this.chosen = true; Hand.hide();
     sfx('nicker'); setTimeout(function () { sfx('sparkle'); }, 200);
     pk.classList.add('chosen');
     v.el.getAnimations().forEach(function (a) { a.cancel(); });
@@ -5028,7 +5266,8 @@ Scenes.name = {
     var t = $('#name'), self = this;
     this.arg = arg; var p = arg.pony; this.p = p;
     this.names = this.draw3();
-    if (p.name && arg.back === 'care') this.names[0] = p.name;
+    /* the pony already carries a suggested name: it is the default first bubble */
+    if (p.name) this.names = [p.name].concat(this.names.filter(function (n) { return n !== p.name; }).slice(0, 2));
     this.sel = this.names[0];
     t.innerHTML = '<div class="bgfull">' + ART.farmBackground(innerWidth, innerHeight, false) + '</div><div class="veil"></div>' +
       (arg.back ? '<button class="back-btn btn round">' + ART.icon('back', 64) + '</button>' : '') +
@@ -5042,6 +5281,7 @@ Scenes.name = {
     Input.tap(t.querySelector('.ok'), function () { self.done(); });
     if (arg.back) Input.tap(t.querySelector('.back-btn'), function () { sfx('tap'); UI.go('care', p); });
     setTimeout(function () { Speech.sayKey('nameAsk', null, { force: true, anchor: self.v.headPt() }); self.v.hop(10); }, 400);
+    setTimeout(function () { if (UI.cur === 'name' && !$('#name input')) Hand.show(Hints.elm($('#name .ok')), { pulse: true }); }, 1100);
   },
   draw3: function () { return shuffle(NAMES).slice(0, 3); },
   drawNames: function () {
@@ -5067,7 +5307,7 @@ Scenes.name = {
     inp.addEventListener('blur', fin);
   },
   done: function () {
-    var p = this.p, arg = this.arg, inp = $('#name input'); if (inp) inp.blur();
+    var p = this.p, arg = this.arg, inp = $('#name input'); if (inp) inp.blur(); Hand.hide();
     p.name = this.sel; Save.dirty();
     sfx('levelUp'); var h = this.v.headPt(); FX.burst('heart', h.x, h.y, 14, { max: 260 }); FX.burst('sparkle', h.x, h.y, 16);
     Speech.sayKey('nameLove', null, { force: true, anchor: h });
@@ -5249,6 +5489,8 @@ var Decor = {
     if (d.art.indexOf('own:') === 0) return Own[d.art.slice(4)]();
     return ART.decor(d.art);
   },
+  imgs: {},
+  img: function (id) { return Decor.imgs[id] || (Decor.imgs[id] = toImg(Decor.art(id), 0.25)); },
   /* ---------- placed objects on farm ---------- */
   sync: function () {
     var F = Scenes.farm; if (!F.built) return;
@@ -5264,7 +5506,7 @@ var Decor = {
   },
   make: function (d) {
     var def = DECOR_BY[d.id], sz = def.size;
-    var o = el('div', 'obj decoObj anim-' + (def.anim || 'none'), (def.glow ? '<div class="dglow"></div>' : '') + '<div class="dIn">' + Decor.art(d.id) + '</div>');
+    var o = el('div', 'obj decoObj anim-' + (def.anim || 'none'), (def.glow ? '<div class="dglow"></div>' : '') + '<div class="dIn">' + Decor.img(d.id) + '</div>');
     o.dataset.hit = 'decor:' + d.uid; o._uid = d.uid;
     o.style.width = sz + 'px'; o.style.height = sz + 'px';
     Scenes.farm.layer.appendChild(o);
@@ -5365,7 +5607,9 @@ var Decor = {
     var cost = ART.icon('star', 46) + d.stars; for (var k in d.items) cost += ART.icon(ITEMS[k].icon, 40) + d.items[k];
     c.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;background:#fff;border-radius:34px;padding:16px 20px;box-shadow:0 8px 0 #e2d0fb,0 20px 50px rgba(50,20,100,.3)"><div style="width:140px;height:140px">' + Decor.art(id) + '</div><div style="display:flex;gap:12px"><button class="btn green yes">' + ic('check', 52) + '<span>' + cost + '</span></button><button class="btn round no" style="width:88px;height:88px">' + ART.icon('close', 70) + '</button></div></div>';
     c.classList.add('on');
+    var bought = false;
     Input.tap(c.querySelector('.yes'), function () {
+      if (bought) return; bought = true;
       c.classList.remove('on');
       if (!Game.buyDecor(id)) { sfx('hmm'); return; }
       sfx('buy'); var sp = { x: innerWidth / 2, y: innerHeight * 0.4 }; FX.burst('confetti', sp.x, sp.y, 50, { up: 250, max: 340 });
@@ -5389,7 +5633,7 @@ var Decor = {
     var W = Scenes.farm.world, x = this.snap(W.camX), y = 820;
     if (!this.valid(x, y)) { var best = null; for (var dx = 0; dx < 600 && !best; dx += 20) for (var s = -1; s <= 1; s += 2) { for (var yy = 820; yy >= 600; yy -= 40) if (this.valid(x + dx * s, yy) && W.visible(x + dx * s, 60)) { best = [x + dx * s, yy]; break; } if (best) break; } if (best) { x = best[0]; y = best[1]; } }
     var def = DECOR_BY[id];
-    var g = el('div', 'obj decoObj ghost', '<div class="dIn">' + Decor.art(id) + '</div>'); g.dataset.hit = 'ghost';
+    var g = el('div', 'obj decoObj ghost', '<div class="dIn">' + Decor.img(id) + '</div>'); g.dataset.hit = 'ghost';
     g.style.width = g.style.height = def.size + 'px';
     Scenes.farm.layer.appendChild(g);
     this.ghost = { el: g, id: id, x: x, y: y };
@@ -5529,6 +5773,8 @@ var Treat = {
     Input.tap(sh.querySelector('.bake'), function () { if (!ok) { var m = sh.querySelector('.ing.miss'); if (m) wiggleEl(m); return; } Treat.bake(sh); });
   },
   bake: function (sh) {
+    if (Treat.baking || !['berry', 'crystal', 'drop'].every(function (k) { return S.inv[k] > 0; })) return;
+    Treat.baking = true;
     ['berry', 'crystal', 'drop'].forEach(function (k) { S.inv[k]--; });
     var box = sh.querySelector('.bowlBox'), btn = sh.querySelector('.bake');
     btn.style.display = 'none';
@@ -5536,7 +5782,7 @@ var Treat = {
     var r = FX.screenOf(box); var it = setInterval(function () { FX.burst('sparkle', r.x, r.y - 20, 4, { colors: RAINBOW, max: 140 }); sfx('swish', 1); }, 220);
     setTimeout(function () {
       clearInterval(it);
-      Game.addItem('cake', 1); Game.addXP(5);
+      Game.addItem('cake', 1); Game.addXP(5); Treat.baking = false;
       sfx('levelUp'); FX.burst('confetti', r.x, r.y, 50, { colors: RAINBOW, up: 200, max: 320 });
       box.innerHTML = '<div style="width:130px;height:130px;margin:0 auto">' + ART.icon('rainbowCake', 130) + '</div>';
       box.firstChild.animate([{ transform: 'scale(0) rotate(-20deg)' }, { transform: 'scale(1.2)' }, { transform: 'scale(1)' }], { duration: 500, easing: 'ease-out' });
@@ -5572,7 +5818,7 @@ var Hand = {
       p = { x: lerp(a.x, b.x, e), y: lerp(a.y, b.y, e) };
       h.style.opacity = k > 0.9 ? (1 - (k - 0.9) * 10) : 1;
     } else { p = Hand.get(); h.style.opacity = 1; }
-    if (!p) { h.style.opacity = 0; return; }
+    if (!p || Celebrate.active) { h.style.opacity = 0; return; }
     /* keep the hand on screen; if the point is off-screen, clamp to the edge */
     var x = clamp(p.x, 20, innerWidth - 60), y = clamp(p.y, 40, innerHeight - 60);
     h.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)' + (p.x < 20 ? ' scaleX(-1)' : '');
@@ -5592,8 +5838,9 @@ var Hints = {
   forceTarget: function (elm) { Hints.forced = elm; Hand.show(function () { return elm.offsetParent ? FX.screenOf(elm) : null; }, { pulse: true }); },
   check: function () {
     if (!S || Tutorial.active() || Celebrate.active || Sheets.isOpen() || Hand.on) return;
-    var scr = UI.cur; if (['farm', 'forest', 'care', 'decor'].indexOf(scr) < 0) return;
-    if (Date.now() - Hints.last < 8000) return;
+    var scr = UI.cur; if (['farm', 'forest', 'care', 'decor', 'pick', 'name'].indexOf(scr) < 0) return;
+    if ((scr === 'pick' || scr === 'name') && Date.now() - Hints.last < 3500) return;
+    if (scr !== 'pick' && scr !== 'name' && Date.now() - Hints.last < 8000) return;
     var t = Hints.target(scr); if (!t) return;
     Hand.show(t.get, { pulse: true });
     if (t.line && !Hints.spoken[t.id]) { Hints.spoken[t.id] = 1; Speech.say(t.line, { anchor: t.get() }); }
@@ -5643,6 +5890,8 @@ var Hints = {
       if (!sel) return null;
       return { id: 'care' + sel, get: Hints.elm($('#care .act[data-a="' + sel + '"]')) };
     }
+    if (scr === 'pick') { var hb = $$('#pick .hbp')[1]; return hb ? { id: 'pick', get: Hints.elm(hb) } : null; }
+    if (scr === 'name') { var ok = $('#name .ok'); return ok && !$('#name input') ? { id: 'nameok', get: Hints.elm(ok) } : null; }
     if (scr === 'decor') {
       if (Decor.ghost) return { id: 'ghost', get: Hints.elm(Decor.ghost.el) };
       var d = $('#drawer .dc:not(.locked)'); if (d && $('#drawer').classList.contains('on')) return { id: 'dc', get: Hints.elm(d) };
@@ -5671,7 +5920,8 @@ var Tutorial = {
   allow: function (elm) {
     if (!Tutorial.active()) return true;
     var s = Tutorial.step();
-    if (elm.closest('#sheet') || elm.closest('#celebrate')) return true;
+    /* title / pick / name screens are never gated (reload mid-tutorial must always be able to press play) */
+    if (elm.closest('#title') || elm.closest('#pick') || elm.closest('#name') || elm.closest('#sheet') || elm.closest('#celebrate') || elm.closest('#dbg')) return true;
     if (s === 4) return !!elm.closest('#care .tools') || elm.dataset.a === 'eat';
     if (s === 5) return elm.dataset.a === 'brush';
     if (s === 6) return elm.dataset.b === 'back';
@@ -5850,10 +6100,12 @@ var Main = {
     var fresh = !S;
     if (!S) S = freshSave();
     /* catch-up from timestamps */
+    Main.welcome = !fresh && now() - S.lastTick > 3 * T.HOUR;
     Game.catchUp(S.lastTick, now());
     S.ponies.forEach(function (p) { Game.updateStage(p); });
+    Own._w();
     var st = document.createElement('style'); st.textContent = ART.ponyCSS; document.head.appendChild(st);
-    IC2._pony = PonyArt.portrait(PonyArt.breedPony('skybloom', 'grown')).replace('<svg ', '<svg width="42" height="42" ');
+    IC2._pony = '<img class="navpony" alt="" draggable="false" width="42" height="42" src="' + svgURL(svgPrep(PonyArt.portrait(PonyArt.breedPony('skybloom', 'grown')).replace('class="pony portrait"', 'class="pony portrait still"'), 0, pvImgCss())) + '">';
     Speech.init();
     UI.init();
     Hints.init();
@@ -5869,7 +6121,7 @@ var Main = {
     setInterval(Save.write, 10000);
     document.addEventListener('visibilitychange', function () {
       if (document.hidden) Save.write();
-      else { Game.catchUp(S.lastTick, now()); Debug.rerender(); if (Audio.ctx && Audio.ctx.state === 'suspended') Audio.ctx.resume(); }
+      else { if (now() - S.lastTick > 3 * T.HOUR && S.tutorial.done) { Main.welcome = true; if (UI.cur === 'farm') setTimeout(function () { Scenes.farm.welcome(); }, 600); } Game.catchUp(S.lastTick, now()); Debug.rerender(); if (Audio.ctx && Audio.ctx.state === 'suspended') Audio.ctx.resume(); }
     });
     window.addEventListener('pagehide', Save.write);
     Bus.on('items', function () { if (UI.cur === 'care' && Care.mode === 'eat') { } });
@@ -5880,7 +6132,7 @@ var Main = {
     var s = S.tutorial.step;
     if (!S.ponies.length) { UI.go('pick'); return; }
     if (!S.tutorial.done && s <= 2) { UI.go('name', { pony: S.ponies[0] }); return; }
-    if (!S.tutorial.done && s >= 4 && s <= 5) { UI.go('farm'); setTimeout(function () { Care.open(S.ponies[0]); }, 400); return; }
+    if (!S.tutorial.done && s >= 4 && s <= 6) { UI.go('care', S.ponies[0]); return; }
     UI.go('farm');
   },
   startNew: function (breed) {
