@@ -1,0 +1,13 @@
+{
+  "name": "ninja-star-academy",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests.mjs",
+    "check": "node --check app.js && node --check game.js && node --check art.js && node --check sw.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

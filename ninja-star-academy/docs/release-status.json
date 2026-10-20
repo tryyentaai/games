@@ -1,0 +1,13 @@
+{
+  "status": "blocked",
+  "app": "Ninja Star Academy",
+  "route": "pwa",
+  "blockers": [
+    "Development workspace and browser connection disconnected; no successful browser play-test.",
+    "Physical iPhone installation, performance, and standalone offline behavior remain unverified."
+  ],
+  "verification": {
+    "originalDraft": "Six model/worker tests passed before workspace disconnection; not equivalent to this recovery source.",
+    "recovery": "Syntax and core-model checks in tool JavaScript runtime; see docs/verification.md."
+  }
+}
