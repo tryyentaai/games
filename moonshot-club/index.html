@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07121e"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="Step into the spotlight. One-tap baseball, gigantic home runs, and stadium-sized celebrations for little big hitters.">
+<title>Moonshot Club · Swing big. Go legend.</title>
+<link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon-192.png"><link rel="apple-touch-icon" href="./icon-192.png"><link rel="stylesheet" href="./style.css">
+<link rel="preload" href="./fonts/BarlowCondensed-BlackItalic.ttf" as="font" type="font/ttf" crossorigin>
+</head>
+<body>
+<svg class="icon-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+<symbol id="i-ball" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12.5"/><path d="M8 6c9 6 9 14 0 20M24 6c-9 6-9 14 0 20M9 9l-3 2m6 2-3 2m3 4-3-1m0 6-3-2M23 9l3 2m-6 2 3 2m-3 4 3-1m0 6 3-2"/></symbol>
+<symbol id="i-bat" viewBox="0 0 32 32"><path d="m7 26 4-4m-6 2 3 3m3-5 4-4c2-2 3-2 6-5l6-6c1-1 1-3-1-4s-3-1-4 0l-6 6c-3 3-3 4-5 6l-4 4 4 3Z"/></symbol>
+<symbol id="i-stadium" viewBox="0 0 32 32"><path d="M3 13v11c4 5 22 5 26 0V13M3 13c5-5 21-5 26 0-4 6-22 6-26 0ZM4 19c6 5 18 5 24 0M10 28v-7m12 7v-7M7 4v6m9-8v6m9-4v6M5 4h4m5-2h4m5 2h4"/></symbol>
+<symbol id="i-trophy" viewBox="0 0 32 32"><path d="M9 4h14v9c0 5-3 7-7 7s-7-2-7-7V4Zm0 3H4v4c0 4 3 6 7 6m12-10h5v4c0 4-3 6-7 6m-5 3v7m-6 1h12"/></symbol>
+<symbol id="i-sound" viewBox="0 0 24 24"><path d="m11 4-6 5H2v6h3l6 5V4Z"/><path class="sound-wave" d="M15 8c3 2 3 6 0 8m3-11c5 4 5 10 0 14"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><path d="m9 3-.6 2.4-2 .9L4 5.6 1.8 9.4l1.8 1.8v2L1.8 15 4 18.8l2.4-.7 2 .9L9 21h4l.6-2 2-.9 2.4.7 2.2-3.8-1.8-1.8v-2l1.8-1.8L18 5.6l-2.4.7-2-.9L13 3H9Z" transform="translate(1 0)"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1 3-6Z"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M3 12h17M13 5l7 7-7 7"/></symbol>
+<symbol id="i-bolt" viewBox="0 0 24 24"><path d="m14 2-11 12h8l-1 8L21 9h-8l1-7Z"/></symbol>
+</defs></svg>
+<main id="app">
+ <canvas id="field" aria-label="A floodlit three-dimensional baseball stadium"></canvas>
+ <canvas id="effects" aria-hidden="true"></canvas><div class="vignette"></div><div class="broadcast-grain" aria-hidden="true"></div>
+ <header class="topbar"><button id="brand" aria-label="Return to clubhouse"><span class="brand-icon"><svg><use href="#i-ball"/></svg></span><span class="brand-name">MOONSHOT<span class="brand-club">CLUB / BASEBALL</span></span></button><div class="top-actions"><button id="sound" class="icon-btn" aria-label="Toggle sound"><svg><use href="#i-sound"/></svg></button><button id="settings" class="icon-btn" aria-label="Settings"><svg><use href="#i-settings"/></svg></button></div></header>
+ <section id="home" class="screen">
+  <div class="home-heading"><div class="eyebrow"><span></span> WELCOME TO THE BIG LEAGUES</div><h1>SWING BIG.<br><em>GO LEGEND.</em></h1><p>One tap. A whole new ballgame.</p><div class="stadium-tag"><i></i> NIGHT GAME <span>01</span></div></div>
+  <div class="home-bottom"><div class="record-strip"><div><strong id="home-runs">0</strong><span>HOME RUNS</span></div><span class="strip-divider"></span><div><strong id="home-best">—</strong><span>LONGEST BLAST</span></div><span class="strip-divider"></span><div><strong id="home-stars">0</strong><span>CAREER STARS</span></div></div>
+   <button id="play" class="primary play-btn"><span class="play-triangle"><svg viewBox="0 0 24 24"><path d="m7 4 13 8-13 8V4Z"/></svg></span><span>PLAY BALL<small>YOUR STADIUM. YOUR SHOW.</small></span><span class="button-arrow"><svg><use href="#i-arrow"/></svg></span></button>
+   <nav class="home-nav" aria-label="Your clubhouse"><button id="open-gear"><svg><use href="#i-bat"/></svg><span>BAT BAG</span></button><button id="open-parks"><svg><use href="#i-stadium"/></svg><span>BALLPARKS</span></button><button id="open-stickers"><svg><use href="#i-trophy"/></svg><span>REWARDS</span></button></nav><div class="home-foot">ONE TAP <span>/</span> NO OUTS <span>/</span> ALL HEART</div>
+  </div>
+ </section>
+ <section id="game" class="screen hidden">
+  <div class="game-top"><button id="pause" class="icon-btn" aria-label="Pause game"><svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button><div class="score-pill"><span>HOME<br>RUNS</span><strong id="score">0</strong><i>HR</i></div><div class="star-pill"><svg><use href="#i-star"/></svg><b id="stars">0</b></div></div>
+  <div class="goal" id="goal"><span id="goal-icon"><svg><use href="#i-trophy"/></svg></span><div><strong id="goal-title">Hit 3 home runs</strong><div class="goal-track"><i id="goal-fill"></i></div></div><small id="goal-count">0/3</small></div>
+  <div id="callout" class="callout" aria-live="polite"><span id="callout-kicker"></span><strong id="callout-title"></strong><span id="callout-sub"></span></div>
+  <div class="game-bottom"><div id="pitch-cue" class="pitch-cue">Here comes the ball!</div><div class="power-line"><span><svg><use href="#i-bolt"/></svg> MEGA POWER</span><div id="power-dots"><i></i><i></i><i></i><i></i><i></i></div><span id="power-label">0 / 5</span></div><div class="timing-bar"><div class="sweet-zone"></div><i id="timing-marker"></i><span>TAP IN THE BRIGHT ZONE</span></div><button id="swing" class="primary swing-btn"><span><svg><use href="#i-bat"/></svg></span><strong>SWING!</strong><span class="swing-arrow"><svg><use href="#i-arrow"/></svg></span></button><div class="game-hint" id="game-hint">Tap the button or anywhere on the field</div></div>
+ </section>
+ <div id="toast" role="status"></div>
+ <div id="modal" class="modal hidden"><section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="modal-head"><div><div id="modal-kicker" class="eyebrow">THE CLUBHOUSE</div><h2 id="modal-title"></h2></div><button id="close-modal" class="icon-btn" aria-label="Close dialog">×</button></div><div id="modal-body"></div></section></div>
+ <div id="loading"><div class="loading-ball"><svg><use href="#i-ball"/></svg></div><span class="eyebrow">MOONSHOT CLUB</span><strong>LIGHTS ON. GAME ON.</strong><div class="loading-track"><i></i></div></div>
+ <div id="fatal" class="hidden"><h2>Let’s try that again</h2><p>The ballpark couldn’t start. Try reloading in Safari with WebGL enabled.</p><button onclick="location.reload()" class="primary">Reload ballpark</button></div>
+</main>
+<script type="module" src="./app.js"></script>
+</body></html>

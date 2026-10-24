@@ -1,0 +1,20 @@
+export const BATS=[{name:'Club classic',color:0xf5c36a,icon:'🏏',at:0},{name:'Bubblegum',color:0xff88ba,icon:'🍬',at:5},{name:'Ocean wave',color:0x5be2df,icon:'🌊',at:12},{name:'Dino power',color:0xb7ed63,icon:'🦖',at:25},{name:'Rocket pop',color:0xff704b,icon:'🚀',at:45},{name:'Galaxy glow',color:0xc39cff,icon:'🪐',at:75},{name:'Golden legend',color:0xffe68b,icon:'👑',at:125},{name:'Rainbow magic',color:0xffffff,icon:'🌈',at:200}];
+export const PARKS=[{name:'Champions Park',icon:'🏟',at:0,desc:'Big lights. Bigger home runs.'},{name:'Candy Coast',icon:'🌴',at:15,desc:'Pink sunsets & ocean-sized hits'},{name:'Moonbase Stadium',icon:'🌙',at:40,desc:'Low gravity. Cosmic celebrations.'}];
+export const STICKERS=[['First flight','⚾',1],['High five','🖐',5],['Big hitter','💪',10],['Beach day','🌴',15],['Dino-mite','🦖',25],['Space cadet','🚀',40],['Half century','⭐',50],['Cosmic kid','🪐',75],['Century club','💯',100],['Gold standard','👑',125],['On fire','🔥',150],['Rainbow hero','🌈',200],['Super slugger','🏆',300],['Moon legend','🌕',500],['Star explorer','🌠',750],['Club champion','💎',1000],['Meteor master','☄️',1500],['Diamond dream','✨',2000]];
+export const DEFAULT={version:1,hr:0,stars:0,best:0,perfect:0,missions:0,missionProgress:0,park:0,bat:0,sound:true,calm:false,assist:true,mode:'endless'};
+export function sanitize(raw={}){if(!raw||typeof raw!=='object')raw={};const s={...DEFAULT};for(const k of ['hr','stars','best','perfect','missions','missionProgress'])s[k]=Number.isFinite(raw[k])?Math.max(0,Math.floor(raw[k])):0;for(const k of ['sound','calm','assist'])if(typeof raw[k]==='boolean')s[k]=raw[k];s.mode=raw.mode==='derby'?'derby':'endless';s.park=Number.isInteger(raw.park)&&PARKS[raw.park]?.at<=s.hr?raw.park:0;s.bat=Number.isInteger(raw.bat)&&BATS[raw.bat]?.at<=s.hr?raw.bat:0;return s;}
+export function readSave(storage){try{return sanitize(JSON.parse(storage.getItem('moonshot-club-v1')||'{}'));}catch{return {...DEFAULT};}}
+export function saveState(storage,s){try{storage.setItem('moonshot-club-v1',JSON.stringify(s));return true;}catch{return false;}}
+export function classifySwing(progress,assist){if(assist)return progress<.76?'queued':Math.abs(progress-.83)<.12?'perfect':'great';if(progress<.58||progress>1.12)return 'miss';return Math.abs(progress-.83)<.1?'perfect':'great';}
+export function makeResult({quality,combo,park,random=Math.random}){
+ const mega=combo>0&&combo%5===0;
+ // Deliberate low/high alternation keeps ordinary hits varied even with identical timing.
+ const distances=[330,470,380,610,430,550,355,670];
+ const styles=['laser','tower','upperdeck','rainbow'];const style=styles[(Math.max(1,combo)-1)%styles.length];
+ const distance=Math.round(distances[(Math.max(1,combo)-1)%distances.length]+(random()-.5)*30+(quality==='perfect'?30:0)+(mega?240:0)+(park===2?80:0));
+ const flightDuration=3.6+(style==='tower'?.3:style==='rainbow'?.2:0)+(mega?.4:0);
+ const celebrationDuration=mega?2.2:1.6;
+ return {quality,mega,distance,style,flightDuration,celebrationDuration,stars:mega?5:quality==='perfect'?3:2};
+}
+export function applyHit(state,result){return {...state,hr:state.hr+1,stars:state.stars+result.stars,best:Math.max(state.best,result.distance),perfect:state.perfect+(result.quality==='perfect'?1:0)};}
+export function missionFor(index){const goals=[{kind:'hits',need:3,title:'Hit 3 home runs',reward:8},{kind:'distance',need:1500,title:'Send it 1,500 feet',reward:10},{kind:'hits',need:5,title:'Launch a Mega Swing',reward:12},{kind:'stars',need:15,title:'Catch 15 stars',reward:12},{kind:'hits',need:7,title:'Hit a lucky 7',reward:15},{kind:'distance',need:3000,title:'Fly 3,000 feet',reward:18}];const g=goals[index%goals.length];const tier=Math.floor(index/goals.length);return {...g,need:g.need+tier*(g.kind==='distance'?500:g.kind==='stars'?3:1),reward:g.reward+Math.min(20,tier*2),title:tier?`${g.kind==='distance'?'Fly':g.kind==='stars'?'Catch':'Hit'} ${g.need+tier*(g.kind==='distance'?500:g.kind==='stars'?3:1)} ${g.kind==='distance'?'feet':g.kind==='stars'?'stars':'home runs'}`:g.title};}
