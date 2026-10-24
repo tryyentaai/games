@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "app": "Ninja Star Academy",
+  "status": "blocked",
+  "route": "pwa",
+  "tested_at": "2026-10-24",
+  "tested_environment": "Cloud Chrome desktop; 375x812, 393x852 and 430x932 iframe layout fixtures. No physical iPhone or WebKit.",
+  "github_url": "https://github.com/tryyentaai/games/tree/main/ninja-star-academy",
+  "tested_commit": "f8eb6a5f3cd4bca736105a516cffb9ea20d190c6",
+  "install_url": "https://tryyentaai.github.io/games/ninja-star-academy/#missions",
+  "blockers": [
+    "Premium/device release gate remains open: physical iPhone standalone installation and actual network-disabled launch unverified.",
+    "Screen-reader and device performance verification not performed."
+  ],
+  "checks": {
+    "build": {
+      "status": "passed",
+      "observation": "Production static files require no build; all syntax and automated suites pass.",
+      "evidence": [
+        "docs/evidence/syntax.txt",
+        "docs/evidence/tests.txt"
+      ]
+    },
+    "functional": {
+      "status": "passed",
+      "observation": "All three missions completed; target hits, lantern swipe, completion rewards and unlocks exercised.",
+      "evidence": [
+        "docs/evidence/browser-notes.md"
+      ]
+    },
+    "visual": {
+      "status": "passed",
+      "observation": "Desktop home/play/results and three phone-width layouts inspected.",
+      "evidence": [
+        "docs/evidence/phone-layouts.jpg",
+        "docs/evidence/browser-notes.md"
+      ]
+    },
+    "persistence": {
+      "status": "passed",
+      "observation": "24 stars and Ocean scarf survived a real production reload; 37 stars and three stickers survived the safe app update.",
+      "evidence": [
+        "docs/evidence/browser-notes.md"
+      ]
+    },
+    "mobile": {
+      "status": "passed",
+      "observation": "Phone-width iframe layouts have no horizontal overflow; phone-sized results and controls fit. These are not hardware tests.",
+      "evidence": [
+        "docs/evidence/phone-layouts.jpg"
+      ]
+    },
+    "production": {
+      "status": "passed",
+      "observation": "GitHub Pages run 40105610148 succeeded for tested commit. Updated collection wording appeared after closing/reopening; 37 stars and three stickers retained.",
+      "evidence": [
+        "docs/evidence/browser-notes.md"
+      ]
+    },
+    "github": {
+      "status": "passed",
+      "observation": "Source and verification records saved to the existing games repository without altering sibling apps; tested commit verified through GitHub workflow.",
+      "evidence": [
+        "docs/evidence/browser-notes.md"
+      ]
+    },
+    "offline_update": {
+      "status": "passed",
+      "observation": "Production cache readiness and safe update activation observed; Node verifies offline fallback and scoped cache isolation. Actual offline device launch remains unverified.",
+      "evidence": [
+        "docs/evidence/tests.txt",
+        "docs/evidence/browser-notes.md"
+      ]
+    },
+    "accessibility": {
+      "status": "blocked",
+      "observation": "Controls have semantic labels, visible focus rules, reduced-motion support and enlarged settings targets; screen-reader/device accessibility audit not performed.",
+      "evidence": []
+    },
+    "performance": {
+      "status": "blocked",
+      "observation": "Source bounds particles and DPR and timing regressions pass at simulated 2fps; physical device frame times and field metrics not measured.",
+      "evidence": []
+    },
+    "distribution": {
+      "status": "blocked",
+      "observation": "HTTPS app, manifest and scoped worker published; actual iPhone Home Screen installation and standalone offline launch not exercised.",
+      "evidence": []
+    }
+  },
+  "scores": {
+    "visual_identity": {
+      "score": 4,
+      "observation": "Coherent original ninja visual system observed in home, game and results.",
+      "remaining_weakness": "Physical iPhone verification and device profiling remain outside the observed scope.",
+      "evidence": [
+        "docs/evidence/browser-notes.md"
+      ]
+    },
+    "usability": {
+      "score": 4,
+      "observation": "Three single-gesture missions, forgiving recovery, visible pause and readable controls observed.",
+      "remaining_weakness": "Physical iPhone verification and device profiling remain outside the observed scope.",
+      "evidence": [
+        "docs/evidence/browser-notes.md"
+      ]
+    },
+    "interaction": {
+      "score": 4,
+      "observation": "Target hits, lantern swipe, round rewards and wardrobe selection operated.",
+      "remaining_weakness": "Physical iPhone verification and device profiling remain outside the observed scope.",
+      "evidence": [
+        "docs/evidence/browser-notes.md"
+      ]
+    },
+    "reliability": {
+      "score": 4,
+      "observation": "Reload/save retention and safe update preserve progress; core, worker and timing suites pass.",
+      "remaining_weakness": "Physical iPhone verification and device profiling remain outside the observed scope.",
+      "evidence": [
+        "docs/evidence/browser-notes.md"
+      ]
+    },
+    "accessibility": {
+      "score": 3,
+      "observation": "Semantic controls and settings inspected; full assistive technology audit remains outstanding.",
+      "remaining_weakness": "Screen-reader and physical-device testing outstanding.",
+      "evidence": [
+        "docs/evidence/browser-notes.md"
+      ]
+    },
+    "delivery": {
+      "score": 3,
+      "observation": "Source and working HTTPS app verified; physical iPhone installation remains unverified.",
+      "remaining_weakness": "Actual phone installation and offline launch not tested.",
+      "evidence": [
+        "docs/evidence/browser-notes.md"
+      ]
+    }
+  }
+}
