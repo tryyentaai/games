@@ -1,0 +1,8 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> ninja-star-academy@1.0.0 test
+> node tests.mjs && node tests-offline.mjs && node tests-timing.mjs
+
+Core model checks passed.
+Offline checks passed: every cached file exists, offline navigation works, online navigation stays fresh, safe updates preserve sibling caches, and unrelated requests are untouched.
+Timing regression checks passed: 2fps rounds finish on active elapsed time and pauses do not consume play time.

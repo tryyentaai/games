@@ -1,0 +1,4 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> ninja-star-academy@1.0.0 check
+> node --check app.js && node --check game.js && node --check art.js && node --check sw.js

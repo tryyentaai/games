@@ -1,17 +1,29 @@
 # Ninja Star Academy
 
-A child-friendly iPhone web app with Sky Run, Star Throw, and Lantern Pop. Stars unlock scarves and stickers. No ads, purchases, game accounts, analytics, or child data collection. Browser-local progress can be exported and restored.
+A touch-first ninja web app for children around five: Sky Run, Star Throw, and Lantern Pop. Stars unlock scarves and a twelve-sticker collection. No ads, purchases, game accounts, analytics, or collection of child information. Progress stays on the current browser and can be backed up/restored.
 
-## Run
+## Play and install
 
-Serve this directory from an HTTPS static host. No build step, external fonts, CDN, or install needed. ES modules, Canvas 2D, Web Audio, Pointer Events, and a scoped service worker are browser-native. Files resolve relative to this directory, so the app can coexist with sibling games on GitHub Pages. Add the HTTPS app to the iPhone Home Screen from Safari. Clearing browser data removes local progress; different devices and origins have independent saves.
+Open https://tryyentaai.github.io/games/ninja-star-academy/ in Safari. Choose Share → Add to Home Screen and enable Open as Web App if offered. Wait for “Ready for offline adventures” after the first visit. Clearing website data removes local progress; different devices/origins have independent saves.
 
-## Verification status
+The app is a browser-installed PWA, not a native App Store binary. Physical iPhone installation and an actual network-disabled iOS launch have not been tested. This remains a beta with those verification limits.
 
-This is a recovery build reconstructed after the development workspace and browser connection failed. The earlier Phaser-based draft passed six model/worker tests, but this recovery build is a distinct implementation. Its core reward/validation math and JavaScript syntax were checked in the available JavaScript runtime. Browser play-testing, physical iPhone testing, performance measurement, and standalone/offline installation are not certified. Do not describe this version as a fully QA-verified paid-app release.
+## Run and verify
 
-The recovery runtime uses browser-native Canvas instead of an unavailable local Phaser dependency and code-native vector artwork instead of inaccessible generated artwork. Phaser/PixiJS remain candidates for a later verified refinement. No known missing asset references are intentionally left in this version.
+Serve this directory from a static HTTP development server or HTTPS host. No build step or third-party runtime dependency is required. Canvas 2D, Pointer Events, Web Audio, and ES modules supply the game. The scoped service worker caches the app shell and assets and waits for a safe update point. Files resolve relative to the app directory, preserving sibling games.
+
+With Node 22 or later, run `npm test` and `npm run check`. Tests cover progress validation, rewards/unlocks, swipe geometry, every offline cache asset, offline fallback, safe/scope-isolated updates, and runner timing at two frames per second with pause/resume.
+
+## Browser verification — 2026-10-24
+
+All three missions were completed in cloud Chrome. Target hits, lantern pointer swiping, rewards, scarf unlocking, pause/resume, and progress/selected-scarf retention after a real reload were exercised. Desktop home/play/results and three phone-width iframe layouts were visually inspected. Settings switches were operated. Offline cache readiness appeared in the production app; worker fallback/update behavior is also covered by Node tests.
+
+These are browser and responsive-layout checks, not physical iPhone, WebKit, screen-reader, or device frame-time certification. See `docs/evidence/browser-notes.md` and `docs/verification.md` for exact scope.
 
 ## Controls
 
-Sky Run: tap the screen or Jump button to jump; tap twice for a double jump. Bumps spring you upward and never cost lives. Round ends at 15 stars or 40 seconds. Star Throw: tap a wooden target or use Throw; 12 hits finish. Lantern Pop: swipe/tap lanterns or use Pop; 12 finish. Pause preserves the current run; leaving the app pauses it. Completing any round earns stars and a collection sticker. Settings includes gentler difficulty, mute, calmer motion, and backups.
+- Sky Run: tap to jump and tap again while airborne to double jump. Bumps give a gentle spring upward. Finish at fifteen stars or forty active seconds; pauses do not use that time.
+- Star Throw: tap large wooden targets or use Throw. Twelve hits finish; no time pressure or miss penalty.
+- Lantern Pop: swipe/tap lanterns or use Pop. Twelve lanterns finish; no lives to lose.
+
+Settings offers mute, gentler play, calmer motion, and progress backup/restore. All interface/world/character artwork in this shipped version is original vector/code art. No third-party characters or external art assets are used.

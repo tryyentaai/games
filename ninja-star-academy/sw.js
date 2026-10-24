@@ -1,4 +1,4 @@
-const VERSION='ninja-star-recovery-1';
+const VERSION='ninja-star-20261024-verified-2';
 const ROOT=new URL('./',self.location.href),PREFIX='ninja-star-'+encodeURIComponent(ROOT.pathname)+'-',CACHE=PREFIX+VERSION;
 const FILES=['index.html','style.css','app.js','game.js','core.mjs','art.js','manifest.webmanifest','icon.svg','icon-180.png','icon-192.png'].map(p=>new URL(p,ROOT).href);
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES))));

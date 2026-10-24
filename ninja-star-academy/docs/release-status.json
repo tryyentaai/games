@@ -1,13 +1,20 @@
 {
   "status": "blocked",
+  "quality_gate": "premium-device-verification",
+  "delivery": "published-browser-verified-beta",
   "app": "Ninja Star Academy",
   "route": "pwa",
-  "blockers": [
-    "Development workspace and browser connection disconnected; no successful browser play-test.",
-    "Physical iPhone installation, performance, and standalone offline behavior remain unverified."
+  "verified_at": "2026-10-24",
+  "browser_verification": "All three missions completed in cloud Chrome; rewards, pointer swipe, pause/resume, unlocks and reload persistence passed. Three phone-width iframe layouts inspected.",
+  "automated_verification": "Core model, offline worker, two-fps active-time/pause regression, and syntax checks passed.",
+  "remaining_checks": [
+    "Physical iPhone and Safari/WebKit play-through",
+    "Home Screen installation and actual network-disabled browser launch",
+    "Screen-reader and physical-device performance verification"
   ],
-  "verification": {
-    "originalDraft": "Six model/worker tests passed before workspace disconnection; not equivalent to this recovery source.",
-    "recovery": "Syntax and core-model checks in tool JavaScript runtime; see docs/verification.md."
-  }
+  "release_notes": [
+    "Runner now ends after forty active elapsed seconds even when animation frames are slow.",
+    "Phone settings and close controls have at least 44-pixel touch targets.",
+    "Collection wording reflects the finite twelve-sticker album."
+  ]
 }
