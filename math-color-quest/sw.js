@@ -1,5 +1,5 @@
 // Math Color Quest offline cache. Bump VERSION on every change.
-const VERSION = 'mcq-v1.0.0';
+const VERSION = 'mcq-v2.0.0';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

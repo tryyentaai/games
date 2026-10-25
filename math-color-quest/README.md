@@ -3,11 +3,16 @@
 A color-by-number coloring book where every number is a math problem. Ages 5-8.
 
 ## How it plays
-1. Tap a spot on the picture that has a question badge (like `3+2`).
-2. The problem shows big at the top, with dots to count. It is also read aloud.
-3. Tap the paint color with the matching number. The spot fills with paint.
-4. Fill every spot to finish the picture, earn a new sticker, then **Decorate** it.
-5. Finished pictures live in **My Book**.
+Pick a mode on the title screen:
+
+- **Numbers** — classic color by number. Tap a paint pot, then tap every spot with that number. The matching spots glow softly to help.
+- **Math** — each paint pot shows a problem (like `2+3`). Solve it, then tap every spot with the answer. After each spot, the paint gets a new problem with the same answer ("ways to make 5").
+
+Then:
+1. Pinch to zoom, drag to move around, or tap the magnifier for a closer look.
+2. When a color is finished, the next paint is picked for you.
+3. Fill every spot to finish the picture, earn a new sticker, then **Decorate** it.
+4. Finished pictures live in **My Book**.
 
 **Two styles, any kid can pick either:**
 - **Sparkle** — glitter twinkles, glitter brush, shiny stickers.
@@ -34,11 +39,12 @@ The style can be switched per picture while decorating.
 Each finished picture unlocks the next. Replay any picture with **Again** for fresh problems.
 
 ## No-fail help
-- Wrong color: a soft boop, the dots appear and light up one by one so your child can count.
-- Two misses in a row: only the right color stays lit. There are never three misses in a row.
-- Idle 5 seconds: the next spot pulses. 10 seconds: a spoken nudge. The `?` button gives the next hint anytime.
+- Wrong spot: a soft boop. In Math mode the dots appear and light up one by one so your child can count.
+- Two misses in a row: the right spots glow and only those count. There are never three misses in a row.
+- Taps are forgiving: a tap near a small spot of the chosen paint counts.
+- Idle 5 seconds: a matching spot pulses (and the view moves to it when zoomed in). 10 seconds: a spoken nudge. The `?` button gives the next hint anytime.
 - Dots show by default and quietly fade away as your child gets faster (they come back if things get harder).
-- Gold star spots give a bonus sticker. Streaks of 3, 5, 8, 12 and 16 get celebrations.
+- Gold star spots give a bonus sticker. Streaks of 5, 10, 15, 22 and 30 get celebrations.
 
 ## Install on iPhone / iPad
 1. Open the link in **Safari**.
