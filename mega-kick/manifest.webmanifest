@@ -1,0 +1,17 @@
+{
+  "name": "Mega Kick",
+  "short_name": "Mega Kick",
+  "description": "Kick Bouncy the ball as far as it can fly. A no-fail soccer launch game for kids.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1b2a6b",
+  "theme_color": "#1b2a6b",
+  "icons": [
+    { "src": "icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
