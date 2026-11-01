@@ -1,5 +1,5 @@
 // Cuddle Pals offline cache. Bump VERSION on every change.
-const VERSION = '1';
+const VERSION = '2';
 const CACHE = 'cp-' + VERSION;
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './voice.mp3', './icon-180.png', './icon-192.png', './icon-512.png', './icon-512-maskable.png'];
 
