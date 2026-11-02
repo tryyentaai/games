@@ -80,15 +80,18 @@
     },
     "production": {
       "status": "blocked",
-      "observation": "See browser observations for the incomplete check and environment limits.",
+      "observation": "Live race start verified; complete uninterrupted browser race unverified.",
       "evidence": [
-        "browser-observations.md"
+        "delivery.md",
+        "live-race.jpg"
       ]
     },
     "source_saved": {
-      "status": "not_run",
-      "observation": "User explicitly authorized GitHub publication; remote verification pending.",
-      "evidence": []
+      "status": "passed",
+      "observation": "Complete source verified on GitHub main at 814086a24c784e4ec522aa1904762a3063f1a75a.",
+      "evidence": [
+        "delivery.md"
+      ]
     }
   },
   "scores": {
@@ -118,9 +121,9 @@
       "remaining_weakness": "Physical-device and full browser release gates incomplete."
     },
     "delivery": {
-      "score": 2,
-      "observation": "Implemented and partially verified; see browser observations and contract.",
-      "remaining_weakness": "Physical-device and full browser release gates incomplete."
+      "score": 3,
+      "observation": "Source and live GitHub Pages verified.",
+      "remaining_weakness": "Physical phone installation unverified."
     }
   }
 }

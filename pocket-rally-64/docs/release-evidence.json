@@ -5,9 +5,9 @@
   "route": "pwa",
   "tested_at": "2026-11-01T17:11:25.747687+00:00",
   "tested_environment": "Managed cloud Chrome, software 3D renderer; desktop and responsive iframe viewports; not physical iPhone",
-  "github_url": "",
-  "tested_commit": "",
-  "install_url": "",
+  "github_url": "https://github.com/tryyentaai/games/tree/main/pocket-rally-64",
+  "tested_commit": "814086a24c784e4ec522aa1904762a3063f1a75a",
+  "install_url": "https://tryyentaai.github.io/games/pocket-rally-64/dist/",
   "blockers": [
     "Physical iPhone/WebKit/GPU performance and installation unverified; cloud browser disables WebGL.",
     "Uninterrupted browser full-race, actual simultaneous touch, audible sound and disconnected offline/update checks remain unverified."
@@ -68,9 +68,12 @@
       ]
     },
     "production": {
-      "status": "not_run",
-      "observation": "Private publication in progress.",
-      "evidence": []
+      "status": "blocked",
+      "observation": "Successful Pages deployment and live startup/racing verified. Full uninterrupted live race remains unverified.",
+      "evidence": [
+        "docs/delivery.md",
+        "docs/live-race.jpg"
+      ]
     },
     "distribution": {
       "status": "blocked",
@@ -80,9 +83,11 @@
       ]
     },
     "github": {
-      "status": "not_run",
-      "observation": "User explicitly authorized GitHub publication; remote verification pending.",
-      "evidence": []
+      "status": "passed",
+      "observation": "Verified remote commit and empty diff against tested source; complete app source and tests preserved.",
+      "evidence": [
+        "docs/delivery.md"
+      ]
     },
     "offline_update": {
       "status": "blocked",
@@ -134,11 +139,11 @@
       ]
     },
     "delivery": {
-      "score": 2,
-      "observation": "Private PWA deployment prepared with complete source.",
-      "remaining_weakness": "GitHub save blocked; physical installation not verified.",
+      "score": 3,
+      "observation": "GitHub source and live Pages game verified.",
+      "remaining_weakness": "Physical iPhone Home Screen installation not exercised.",
       "evidence": [
-        "docs/browser-observations.md"
+        "docs/delivery.md"
       ]
     }
   }

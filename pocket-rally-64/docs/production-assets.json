@@ -1,0 +1,50 @@
+[
+  {
+    "path": "index.html",
+    "status": 200,
+    "matches_source": true,
+    "bytes": 6520
+  },
+  {
+    "path": "game.js",
+    "status": 200,
+    "matches_source": true,
+    "bytes": 12944
+  },
+  {
+    "path": "world.js",
+    "status": 200,
+    "matches_source": true,
+    "bytes": 18662
+  },
+  {
+    "path": "vendor/three.js",
+    "status": 200,
+    "matches_source": true,
+    "bytes": 753125
+  },
+  {
+    "path": "manifest.webmanifest",
+    "status": 200,
+    "matches_source": true,
+    "bytes": 392
+  },
+  {
+    "path": "sw.js",
+    "status": 200,
+    "matches_source": true,
+    "bytes": 837
+  },
+  {
+    "path": "icon-192.png",
+    "status": 200,
+    "matches_source": true,
+    "bytes": 6308
+  },
+  {
+    "path": "icon-512.png",
+    "status": 200,
+    "matches_source": true,
+    "bytes": 3876
+  }
+]
