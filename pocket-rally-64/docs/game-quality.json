@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "title": "Pocket Rally 64",
+  "status": "blocked",
+  "environment": "Managed cloud Chrome, software 3D renderer; desktop and responsive iframe viewports; not physical iPhone",
+  "blockers": [
+    "Physical iPhone/WebKit/GPU performance and installation unverified; cloud browser disables WebGL.",
+    "Uninterrupted browser full-race, actual simultaneous touch, audible sound and disconnected offline/update checks remain unverified."
+  ],
+  "checks": {
+    "simulation": {
+      "status": "passed",
+      "observation": "15 tests pass, including complete 3-lap races for every course.",
+      "evidence": [
+        "test-results.txt"
+      ]
+    },
+    "full_playthrough": {
+      "status": "blocked",
+      "observation": "See browser observations for the incomplete check and environment limits.",
+      "evidence": [
+        "browser-observations.md"
+      ]
+    },
+    "simultaneous_touch": {
+      "status": "blocked",
+      "observation": "See browser observations for the incomplete check and environment limits.",
+      "evidence": [
+        "browser-observations.md"
+      ]
+    },
+    "pause_resume": {
+      "status": "passed",
+      "observation": "Browser time remained at 8.93s during pause; resumed to 9.05s without jump.",
+      "evidence": [
+        "browser-observations.md"
+      ]
+    },
+    "persistence": {
+      "status": "passed",
+      "observation": "Settings survived browser reload; corrupt records rejected.",
+      "evidence": [
+        "browser-observations.md"
+      ]
+    },
+    "visual_portrait": {
+      "status": "passed",
+      "observation": "375 and 393 portrait fallback rendering inspected; GPU visuals not established.",
+      "evidence": [
+        "browser-observations.md"
+      ]
+    },
+    "visual_landscape": {
+      "status": "blocked",
+      "observation": "See browser observations for the incomplete check and environment limits.",
+      "evidence": [
+        "browser-observations.md"
+      ]
+    },
+    "audio": {
+      "status": "blocked",
+      "observation": "See browser observations for the incomplete check and environment limits.",
+      "evidence": [
+        "browser-observations.md"
+      ]
+    },
+    "performance": {
+      "status": "blocked",
+      "observation": "See browser observations for the incomplete check and environment limits.",
+      "evidence": [
+        "browser-observations.md"
+      ]
+    },
+    "offline": {
+      "status": "blocked",
+      "observation": "See browser observations for the incomplete check and environment limits.",
+      "evidence": [
+        "browser-observations.md"
+      ]
+    },
+    "production": {
+      "status": "blocked",
+      "observation": "See browser observations for the incomplete check and environment limits.",
+      "evidence": [
+        "browser-observations.md"
+      ]
+    },
+    "source_saved": {
+      "status": "not_run",
+      "observation": "User explicitly authorized GitHub publication; remote verification pending.",
+      "evidence": []
+    }
+  },
+  "scores": {
+    "game_feel": {
+      "score": 3,
+      "observation": "Implemented and partially verified; see browser observations and contract.",
+      "remaining_weakness": "Physical-device and full browser release gates incomplete."
+    },
+    "art_direction": {
+      "score": 3,
+      "observation": "Implemented and partially verified; see browser observations and contract.",
+      "remaining_weakness": "Physical-device and full browser release gates incomplete."
+    },
+    "child_usability": {
+      "score": 3,
+      "observation": "Implemented and partially verified; see browser observations and contract.",
+      "remaining_weakness": "Physical-device and full browser release gates incomplete."
+    },
+    "reliability": {
+      "score": 3,
+      "observation": "Implemented and partially verified; see browser observations and contract.",
+      "remaining_weakness": "Physical-device and full browser release gates incomplete."
+    },
+    "replayability": {
+      "score": 3,
+      "observation": "Implemented and partially verified; see browser observations and contract.",
+      "remaining_weakness": "Physical-device and full browser release gates incomplete."
+    },
+    "delivery": {
+      "score": 2,
+      "observation": "Implemented and partially verified; see browser observations and contract.",
+      "remaining_weakness": "Physical-device and full browser release gates incomplete."
+    }
+  }
+}

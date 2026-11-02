@@ -1,0 +1,9 @@
+export class Sound{
+ constructor(){this.enabled=true;this.ctx=null;this.nextBeat=0;this.beat=0;this.music=true;}
+ start(){if(!this.enabled)return;try{if(!this.ctx){this.ctx=new (window.AudioContext||window.webkitAudioContext)();this.master=this.ctx.createGain();this.master.gain.value=.12;this.master.connect(this.ctx.destination);}this.ctx.resume();}catch{this.enabled=false;}}
+ tone(freq,duration=.12,type='sine',volume=.3,delay=0){if(!this.enabled||!this.ctx||this.ctx.state!=='running')return;const now=this.ctx.currentTime+delay,o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type=type;o.frequency.setValueAtTime(freq,now);g.gain.setValueAtTime(0,now);g.gain.linearRampToValueAtTime(volume,now+.015);g.gain.exponentialRampToValueAtTime(.001,now+duration);o.connect(g);g.connect(this.master);o.start(now);o.stop(now+duration+.02);}
+ fx(name){if(name==='pickup'){this.tone(660,.1,'triangle',.6);this.tone(990,.2,'triangle',.6,.09);}else if(name==='go'){[523,659,784,1046].forEach((f,i)=>this.tone(f,.22,'triangle',.6,i*.07));}else if(name==='hit'){this.tone(100,.25,'sawtooth',.25);this.tone(60,.25,'triangle',.3,.08);}else if(name==='finish'){[523,659,784,1046,784,1046].forEach((f,i)=>this.tone(f,.3,'triangle',.65,i*.16));}else if(name==='drift'||name==='item'){this.tone(330,.1,'square',.18);this.tone(660,.25,'triangle',.5,.1);}else this.tone(440,.09,'sine',.4);}
+ tick(dt,active){if(!this.enabled||!this.ctx||!active)return;this.nextBeat-=dt;if(this.nextBeat>0)return;this.nextBeat=.24;const melody=[659,0,784,880,784,659,523,0,587,0,659,784,659,587,523,0,659,784,1046,0,880,784,659,0,587,659,784,587,523,0,0,0];const n=melody[this.beat%melody.length];if(n)this.tone(n,.18,'triangle',.17);if(this.beat%2===0)this.tone([131,165,175,147][Math.floor(this.beat/8)%4],.2,'sine',.38);this.beat++;}
+ mute(v){this.enabled=!v;if(this.master)this.master.gain.value=v?0:.12;if(!v)this.start();}
+ suspend(){this.ctx?.suspend();}
+}

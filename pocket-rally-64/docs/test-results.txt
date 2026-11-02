@@ -1,0 +1,28 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> pocket-rally-64@1.0.0 test
+> node --test tests/*.test.js
+
+✔ all courses complete three laps with finite state and one finish (77.159826ms)
+✔ finish ranking prioritizes finish time over overshoot (0.752661ms)
+✔ pause freezes all simulation and countdown (0.192539ms)
+✔ drift needs speed and steering, awards boost only on release (0.892732ms)
+✔ duplicate pickup rejected and every item consumed once (0.236856ms)
+✔ projectile hits target once and shield absorbs (0.504678ms)
+✔ expired hazards removed and lane bounded under long steer (4.492613ms)
+✔ 30/60/120 Hz motion agrees within one percent (2.239497ms)
+✔ large frame deltas clamped (0.216215ms)
+✔ storage rejects corrupt, malformed records and invalid settings (0.644809ms)
+✔ expired projectile cannot apply a hit (0.131788ms)
+✔ particles stay within the hard cap across large bursts (5.897986ms)
+✔ replacing racers releases owned geometry (9.703046ms)
+✔ positive lane is screen-right for a forward chase camera (0.315785ms)
+✔ all track seams are continuous and finite at boundaries (7.089409ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 184.515828

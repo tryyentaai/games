@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "app": "Pocket Rally 64",
+  "status": "blocked",
+  "route": "pwa",
+  "tested_at": "2026-11-01T17:11:25.747687+00:00",
+  "tested_environment": "Managed cloud Chrome, software 3D renderer; desktop and responsive iframe viewports; not physical iPhone",
+  "github_url": "",
+  "tested_commit": "",
+  "install_url": "",
+  "blockers": [
+    "Physical iPhone/WebKit/GPU performance and installation unverified; cloud browser disables WebGL.",
+    "Uninterrupted browser full-race, actual simultaneous touch, audible sound and disconnected offline/update checks remain unverified."
+  ],
+  "checks": {
+    "build": {
+      "status": "passed",
+      "observation": "Production vendor bundling and node syntax checks succeeded.",
+      "evidence": [
+        "docs/build-results.txt"
+      ]
+    },
+    "functional": {
+      "status": "blocked",
+      "observation": "15 domain/resource/geometry tests passed. Partial browser race and navigation exercised; full browser finish journey outstanding.",
+      "evidence": [
+        "docs/test-results.txt",
+        "docs/browser-observations.md"
+      ]
+    },
+    "visual": {
+      "status": "blocked",
+      "observation": "Portrait/landscape inspected using CPU fallback. Actual WebGL visual QA blocked.",
+      "evidence": [
+        "docs/menu-393.jpg",
+        "docs/race-393.jpg",
+        "docs/menu-375.jpg",
+        "docs/night-375.jpg"
+      ]
+    },
+    "persistence": {
+      "status": "passed",
+      "observation": "Sound off and Normal difficulty survived browser reload; malformed saves rejected by tests.",
+      "evidence": [
+        "docs/browser-observations.md",
+        "docs/test-results.txt"
+      ]
+    },
+    "accessibility": {
+      "status": "blocked",
+      "observation": "Semantic menus, focus-visible, focus trapping, inert backgrounds, reduced motion and larger touch targets implemented. Complete assistive-tech and contrast audit not performed.",
+      "evidence": [
+        "docs/browser-observations.md"
+      ]
+    },
+    "performance": {
+      "status": "blocked",
+      "observation": "Cloud CPU fallback missed target; iPhone GPU/thermal performance unavailable.",
+      "evidence": [
+        "docs/browser-observations.md"
+      ]
+    },
+    "mobile": {
+      "status": "blocked",
+      "observation": "Responsive viewport inspection and pointer/keyboard operation completed; physical multitouch/safe-area/standalone testing outstanding.",
+      "evidence": [
+        "docs/browser-observations.md"
+      ]
+    },
+    "production": {
+      "status": "not_run",
+      "observation": "Private publication in progress.",
+      "evidence": []
+    },
+    "distribution": {
+      "status": "blocked",
+      "observation": "Relative manifest, PNG icons and scoped worker implemented; physical Home Screen installation not verified.",
+      "evidence": [
+        "docs/implementation.md"
+      ]
+    },
+    "github": {
+      "status": "not_run",
+      "observation": "User explicitly authorized GitHub publication; remote verification pending.",
+      "evidence": []
+    },
+    "offline_update": {
+      "status": "blocked",
+      "observation": "Essential assets cached; content-hashed worker waits for prior clients. Disconnected launch/upgrade not tested.",
+      "evidence": [
+        "docs/implementation.md"
+      ]
+    }
+  },
+  "scores": {
+    "visual_identity": {
+      "score": 3,
+      "observation": "Original cohesive cream/orange UI, original low-poly characters and three scene palettes.",
+      "remaining_weakness": "WebGL visuals unverified.",
+      "evidence": [
+        "docs/browser-observations.md"
+      ]
+    },
+    "usability": {
+      "score": 3,
+      "observation": "Auto-throttle, steering assist, pause and large controls are implemented.",
+      "remaining_weakness": "Physical touch journey not verified.",
+      "evidence": [
+        "docs/browser-observations.md"
+      ]
+    },
+    "interaction": {
+      "score": 3,
+      "observation": "Drift/item/race systems pass simulation tests and partial browser operation.",
+      "remaining_weakness": "Full rendered race and audio feel not verified.",
+      "evidence": [
+        "docs/browser-observations.md"
+      ]
+    },
+    "reliability": {
+      "score": 3,
+      "observation": "15 focused tests passed; review findings fixed.",
+      "remaining_weakness": "Offline and physical lifecycle checks incomplete.",
+      "evidence": [
+        "docs/browser-observations.md"
+      ]
+    },
+    "accessibility": {
+      "score": 3,
+      "observation": "Semantic menus, focus control and motion/audio options.",
+      "remaining_weakness": "Gameplay is visual; assistive-tech and full contrast review incomplete.",
+      "evidence": [
+        "docs/browser-observations.md"
+      ]
+    },
+    "delivery": {
+      "score": 2,
+      "observation": "Private PWA deployment prepared with complete source.",
+      "remaining_weakness": "GitHub save blocked; physical installation not verified.",
+      "evidence": [
+        "docs/browser-observations.md"
+      ]
+    }
+  }
+}
