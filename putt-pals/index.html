@@ -434,6 +434,9 @@ function drawGolfer(c,x,y,s,look,pose,t,face){
  c.save(); c.translate(cx2,cy2); c.rotate(Math.atan2(cy2-hy,cx2-hx)); c.fillStyle='#c7ccd9'; c.strokeStyle=INK; c.lineWidth=1.6; rr(c,-3,-2,11,7,3); c.fill(); c.stroke(); c.restore();
  c.fillStyle=L.shirt; c.strokeStyle=INK; c.lineWidth=2; rr(c,-15,-53,30,30,11); c.fill(); c.stroke();
  c.fillStyle='#fff'; c.beginPath(); c.moveTo(-7,-53); c.lineTo(0,-46); c.lineTo(7,-53); c.closePath(); c.fill();
+ c.fillStyle='#6b4423'; c.strokeStyle=INK; c.lineWidth=1.6; rr(c,-15.5,-28,31,6,2.5); c.fill(); c.stroke();
+ for(const bx of [-11,-5.5,0,5.5,11]){ c.fillStyle='#fff'; c.strokeStyle='#8a8fa3'; c.lineWidth=1; circ(c,bx,-25,2.9); c.fill(); c.stroke();
+  c.fillStyle='#c7ccd9'; circ(c,bx-0.9,-25.6,0.55); c.fill(); circ(c,bx+0.9,-24.4,0.55); c.fill(); circ(c,bx+0.8,-25.9,0.5); c.fill(); }
  c.lineCap='round'; c.strokeStyle=L.skin; c.lineWidth=7;
  c.beginPath(); c.moveTo(11,-47); c.lineTo(hx,hy); c.stroke(); c.beginPath(); c.moveTo(-11,-47); c.lineTo(arm2x,arm2y); c.lineTo(pose==='cheer'?arm2x:hx-2,pose==='cheer'?arm2y:hy+1); c.stroke();
  c.fillStyle=L.skin; circ(c,hx,hy,4.5); c.fill(); if(pose==='cheer'){circ(c,arm2x,arm2y,4.5); c.fill();}
@@ -459,10 +462,10 @@ function drawPal(c,id,x,y,s,t,mood){
  const hp=mood==='cheer'; c.strokeStyle=INK; c.lineWidth=2; c.lineJoin='round'; c.lineCap='round';
  if(id===0){ // Pip penguin with orange scarf
   c.fillStyle='#ff9f1c'; ell(c,-7,-2,6,3); c.fill(); ell(c,7,-2,6,3); c.fill();
-  c.fillStyle='#2b2f45'; ell(c,-16,-20,5,11,0.3); c.fill(); ell(c,16,-20,5,11,-0.3); c.fill();
-  ell(c,0,-23,17,22); c.fill(); c.stroke(); c.fillStyle='#fff'; ell(c,0,-19,11.5,15); c.fill();
+  c.fillStyle='#f2b705'; ell(c,-16,-20,5,11,0.3); c.fill(); c.stroke(); ell(c,16,-20,5,11,-0.3); c.fill(); c.stroke();
+  c.fillStyle='#ffd23f'; ell(c,0,-23,17,22); c.fill(); c.stroke(); c.fillStyle='#fff7d9'; ell(c,0,-19,11.5,15); c.fill();
   eyes(c,-6,6,-31,4.3,hp,0.4); c.fillStyle='#ff9f1c'; c.beginPath(); c.moveTo(-4,-26); c.lineTo(4,-26); c.lineTo(0,-21); c.closePath(); c.fill();
-  c.fillStyle='#ff6b35'; rr(c,-14,-16.5,28,5.5,2.5); c.fill(); rr(c,6,-14,5,12,2); c.fill();
+  c.fillStyle='#3a9bf0'; rr(c,-14,-16.5,28,5.5,2.5); c.fill(); rr(c,6,-14,5,12,2); c.fill();
  } else if(id===1){ // Mo sheep
   c.fillStyle='#4a4455'; rr(c,-9,-9,5,9,2); c.fill(); rr(c,4,-9,5,9,2); c.fill();
   c.fillStyle='#fdfdfd'; c.strokeStyle='#cfc8d8'; for(let i=0;i<9;i++){const a=i/9*TAU; circ(c,Math.cos(a)*13,-24+Math.sin(a)*12,8.5); c.fill(); c.stroke();} circ(c,0,-24,13); c.fill();
