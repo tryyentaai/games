@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HuntList</title>
+<style>
+:root{
+  --paper:#FFF6DC; --paper-raised:#FFFEF7; --ink:#14342F; --ink-soft:#3E5C57;
+  --teal:#0E6B5E; --teal-tint:#CDEAE2; --marigold:#FFBE2E; --marigold-deep:#8A4B00;
+  --marigold-tint:#FFE28A; --coral:#FF6B4A; --coral-tint:#FFC8B8; --coral-deep:#B4230A;
+  --sky-tint:#CDE8F2; --stone-tint:#E8E0C8;
+  --shadow:0 4px 0 rgba(20,52,47,.14);
+  --font:ui-rounded,-apple-system,"Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--font);min-height:100vh}
+button{font-family:var(--font);cursor:pointer;color:var(--ink)}
+input{font-family:var(--font)}
+.view{display:none;max-width:560px;margin:0 auto;padding:20px 20px 48px}
+.view.on{display:block}
+.view.wide{max-width:640px}
+h1.app-title{font-size:34px;font-weight:800;margin:6px 0 2px;letter-spacing:.2px}
+.sub{font-size:17px;font-weight:600;color:var(--ink-soft);margin:0 0 18px}
+.sec-head{font-size:20px;font-weight:700;margin:22px 0 10px}
+.meta{font-size:13px;font-weight:500;color:var(--ink-soft)}
+.hidden{display:none !important}
+
+/* ---------- cards & buttons (parent density) ---------- */
+.card{background:var(--paper-raised);border:2px solid var(--ink);border-radius:16px;box-shadow:var(--shadow);padding:16px;margin:0 0 12px}
+.tpl-card{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--paper-raised);border:2px solid var(--ink);border-radius:16px;box-shadow:var(--shadow);padding:14px 16px;margin:0 0 12px;min-height:76px}
+.tpl-card .tpl-ic{flex:0 0 auto;width:52px;height:52px}
+.tpl-name{font-size:20px;font-weight:800}
+.tpl-sub{font-size:14px;font-weight:600;color:var(--ink-soft)}
+.hunt-card{background:var(--paper-raised);border:2px solid var(--ink);border-radius:16px;box-shadow:var(--shadow);padding:16px;margin:0 0 12px}
+.hunt-card .hc-name{font-size:19px;font-weight:800}
+.chip{display:inline-block;font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px;border:2px solid var(--ink);vertical-align:middle}
+.chip.prog{background:var(--marigold-tint)}
+.chip.done{background:var(--teal-tint)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:2px solid var(--ink);border-radius:16px;background:var(--paper-raised);box-shadow:var(--shadow);font-size:17px;font-weight:700;padding:12px 20px;min-height:52px;text-decoration:none}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(20,52,47,.14)}
+.btn.teal{background:var(--teal);color:#FFFEF7}
+.btn.marigold{background:var(--marigold)}
+.btn.coral{background:var(--coral)}
+.btn.block{display:flex;width:100%}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btn .ic{width:22px;height:22px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1}
+.mt{margin-top:14px}.mb{margin-bottom:14px}
+.grownups-wrap{max-width:560px;margin:0 auto;padding:0 20px 26px;text-align:right}
+/* Focus visibility — designed ink outline on kid + parent controls */
+:focus-visible{outline:3px solid var(--ink);outline-offset:3px;border-radius:6px}
+button:focus-visible,a:focus-visible,input:focus-visible,.pick-chip:focus-visible,.pool-chip:focus-visible,.icon-pick:focus-visible,.math-opt:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
+.btn.teal:focus-visible,.giant.teal:focus-visible,.found-btn:focus-visible,#btn-look:focus-visible{outline-color:var(--ink);box-shadow:0 0 0 6px var(--marigold)}
+.kid-wrap :focus-visible,.item-card:focus-visible,.cam-btn:focus-visible,.spot-btn:focus-visible,.skip-btn:focus-visible,.finish-link:focus-visible{outline:4px solid var(--ink);outline-offset:4px}
+
+#grownups-link{background:none;border:none;font-size:14px;font-weight:600;color:var(--ink-soft);text-decoration:underline;padding:12px 4px;min-height:44px}
+
+/* setup list */
+.item-row{display:flex;align-items:center;gap:12px;background:var(--paper-raised);border:2px solid var(--ink);border-radius:16px;padding:10px 12px;margin:0 0 10px;min-height:64px}
+.item-row .ir-ic{width:44px;height:44px;flex:0 0 auto}
+.item-row .ir-name{font-size:18px;font-weight:700;flex:1}
+.icon-btn{background:var(--paper);border:2px solid var(--ink);border-radius:999px;width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;box-shadow:var(--shadow);flex:0 0 auto}
+.icon-btn .ic{width:20px;height:20px}
+.chip-row{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 4px}
+.pick-chip{border:2px solid var(--ink);border-radius:999px;background:var(--paper-raised);font-size:16px;font-weight:700;padding:10px 18px;min-height:48px;box-shadow:var(--shadow)}
+.pick-chip.sel{background:var(--teal-tint)}
+.pool-chip{border:2px dashed var(--ink);border-radius:999px;background:var(--paper);font-size:15px;font-weight:700;padding:9px 14px;min-height:44px}
+.note-box{background:var(--teal-tint);border:2px solid var(--ink);border-radius:16px;padding:14px 16px;font-size:15px;font-weight:600;line-height:1.45;margin:0 0 14px}
+.warn-box{background:var(--coral-tint);border:2px solid var(--ink);border-radius:16px;padding:14px 16px;font-size:15px;font-weight:600;line-height:1.45;margin:0 0 14px}
+.sticky-cta{position:sticky;bottom:14px;margin-top:18px}
+.giant{width:100%;min-height:84px;border-radius:999px;font-size:26px;font-weight:800;border:3px solid var(--ink);box-shadow:var(--shadow)}
+.giant.teal{background:var(--teal);color:#FFFEF7}
+.giant.marigold{background:var(--marigold)}
+input[type=text]{width:100%;border:2px solid var(--ink);border-radius:16px;background:var(--paper-raised);font-size:17px;font-weight:600;padding:13px 14px;min-height:52px;color:var(--ink)}
+label.flabel{display:block;font-size:15px;font-weight:700;margin:14px 0 6px}
+.icon-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:10px 0}
+.icon-pick{background:var(--paper-raised);border:2px solid var(--ink);border-radius:16px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;padding:8px}
+.icon-pick.sel{background:var(--marigold-tint)}
+.icon-pick svg{width:100%;height:100%}
+.big-err{font-size:17px;font-weight:600;line-height:1.5}
+
+/* ---------- kid mode ---------- */
+.kid-wrap{max-width:560px;margin:0 auto;padding:24px 24px 40px}
+#v-review,#v-parked,#v-celeb,#v-rules,#v-spotstage{padding:24px 24px 48px}
+.starpath-band{height:72px;display:flex;align-items:center;justify-content:center}
+@keyframes starpulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+.star-cur{transform-origin:center;transform-box:fill-box;animation:starpulse 1.6s ease-in-out infinite}
+.turn-banner{border:3px solid var(--ink);border-radius:999px;text-align:center;font-size:22px;font-weight:800;padding:10px 14px;margin:6px 0 10px;box-shadow:var(--shadow)}
+.turn-banner.t1{background:var(--teal-tint)}
+.turn-banner.t2{background:var(--marigold-tint)}
+.helper{font-size:22px;line-height:28px;font-weight:700;text-align:center;margin:8px 0 4px}
+.item-card{background:var(--paper-raised);border:3px solid var(--ink);border-radius:28px;box-shadow:var(--shadow);padding:22px 16px 18px;text-align:center;margin:8px 0 14px;position:relative;width:100%}
+.item-card .big-ic{width:132px;height:132px;margin:0 auto}
+.item-word{font-size:64px;line-height:60px;font-weight:800;margin-top:10px;overflow-wrap:break-word}
+.item-word.long{font-size:52px;line-height:50px}
+.speak-hint{font-size:15px;font-weight:700;color:var(--marigold-deep);margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px}
+.speak-hint .ic{width:20px;height:20px}
+.chip-examples{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:10px;flex-wrap:wrap}
+.chip-examples .ex-label{font-size:16px;font-weight:800;color:var(--marigold-deep)}
+.chip-examples .ex-ic{width:34px;height:34px;display:inline-flex}.chip-examples .ex-ic svg{width:100%;height:100%}
+.chip-examples.small{justify-content:flex-start;margin-top:5px}.chip-examples.small .ex-label{font-size:13px}.chip-examples.small .ex-ic{width:22px;height:22px}
+.ir-main{flex:1;display:flex;flex-direction:column;align-items:flex-start}
+.ir-main .ir-name{flex:none}
+.cam-btn{width:104px;height:104px;border-radius:999px;background:var(--marigold);border:3px solid var(--ink);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;margin:6px auto 4px;padding:14px}
+.cam-btn:active{transform:translateY(2px)}
+.cam-btn svg{width:100%;height:100%}
+.spot-btn{width:100%;min-height:104px;border-radius:999px;background:var(--marigold);border:3px solid var(--ink);box-shadow:var(--shadow);font-size:34px;font-weight:800;margin:6px 0 4px}
+.reminder{text-align:center;font-size:17px;font-weight:700;margin:10px 0 4px}
+.skip-btn{width:100%;min-height:72px;border-radius:999px;background:var(--paper-raised);border:3px solid var(--ink);box-shadow:var(--shadow);font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px}
+.skip-btn .ic{width:26px;height:26px}
+.finish-link{width:100%;min-height:72px;border-radius:999px;background:var(--marigold-tint);border:3px solid var(--ink);color:var(--ink);font-size:20px;font-weight:800;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:var(--shadow);padding:10px 18px}
+.finish-link .ic{width:26px;height:26px;flex:0 0 auto}
+#btn-finish2{display:flex;align-items:center;justify-content:center;gap:10px}
+#btn-finish2 .ic{width:26px;height:26px}
+.help-corner{position:fixed;right:14px;bottom:14px;z-index:30;background:var(--paper-raised);border:2px solid var(--ink);border-radius:999px;box-shadow:var(--shadow);font-size:15px;font-weight:800;padding:10px 16px;min-height:48px;display:none;align-items:center;gap:6px}
+.help-corner.on{display:inline-flex}
+.help-corner .ic{width:20px;height:20px}
+.kid-note{text-align:center;font-size:16px;font-weight:700;color:var(--marigold-deep);margin-top:12px}
+
+/* camera */
+#v-camera{max-width:none;padding:0;background:#14342F;min-height:100vh;position:relative}
+#cam-video{width:100%;height:100vh;object-fit:cover;display:block;background:#14342F}
+.cam-ui{position:absolute;left:0;right:0;bottom:0;padding:18px 20px 30px;text-align:center}
+#btn-shutter{width:104px;height:104px;border-radius:999px;background:var(--marigold);border:4px solid var(--paper-raised);box-shadow:var(--shadow);font-size:0;padding:16px}
+#btn-shutter svg{width:100%;height:100%}
+#btn-cam-close{position:absolute;top:16px;right:16px;width:52px;height:52px;border-radius:999px;background:var(--paper-raised);border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;z-index:5}
+#btn-cam-close .ic{width:24px;height:24px}
+.cam-reminder{color:#FFFEF7;font-size:17px;font-weight:700;margin-top:12px;text-shadow:0 2px 0 rgba(20,52,47,.5)}
+.cam-err{position:absolute;inset:auto 20px 150px 20px;background:var(--paper-raised);border:2px solid var(--ink);border-radius:16px;padding:16px;font-size:16px;font-weight:600;line-height:1.45}
+
+/* review */
+.photo-frame{background:var(--paper-raised);border:3px solid var(--ink);border-radius:28px;box-shadow:var(--shadow);padding:12px;position:relative;margin:10px 0 18px}
+.photo-frame img{width:100%;display:block;border-radius:18px}
+.photo-frame .illus-big{display:flex;align-items:center;justify-content:center;padding:26px}
+.photo-frame .illus-big svg{width:180px;height:180px}
+.seal{position:absolute;right:8px;bottom:8px;width:156px;height:156px;transform:rotate(-8deg);pointer-events:none}
+@keyframes stampin{0%{transform:scale(2.4) rotate(-18deg);opacity:0}12%{opacity:1}55%{transform:scale(.92) rotate(-8deg);opacity:1}78%{transform:scale(1.04) rotate(-8deg)}100%{transform:scale(1) rotate(-8deg);opacity:1}}
+.seal.stamping{animation:stampin 420ms ease-out forwards}
+.review-btns{display:flex;flex-direction:column;gap:14px}
+.found-btn{min-height:96px;border-radius:999px;background:var(--teal);color:#FFFEF7;border:3px solid var(--ink);box-shadow:var(--shadow);font-size:28px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:12px}
+.found-btn .ic{width:34px;height:34px}
+.retake-btn{min-height:80px;border-radius:999px;background:var(--paper-raised);border:3px solid var(--ink);box-shadow:var(--shadow);font-size:24px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:12px}
+.retake-btn .ic{width:30px;height:30px}
+
+/* celebration */
+#v-celeb{text-align:center;overflow:hidden}
+.celeb-stage{position:relative;height:230px;display:flex;align-items:center;justify-content:center;margin-top:8px}
+@keyframes spinrays{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.rays{position:absolute;width:230px;height:230px;animation:spinrays 14s linear infinite}
+.celeb-seal{width:180px;height:180px;position:relative;z-index:2}
+.celeb-title{font-size:52px;font-weight:800;margin:8px 0 4px}
+.celeb-sub{font-size:20px;font-weight:600;margin:0 0 22px}
+.burst-shape{position:absolute;border:2px solid var(--ink);z-index:3;pointer-events:none}
+@keyframes burstfall{0%{transform:translateY(-10px) rotate(0deg);opacity:1}100%{transform:translateY(190px) rotate(160deg);opacity:0}}
+.burst-shape{animation:burstfall 1.2s ease-in forwards}
+.btn-album-big{min-height:76px;width:100%;border-radius:999px;background:var(--teal);color:#FFFEF7;border:3px solid var(--ink);box-shadow:var(--shadow);font-size:26px;font-weight:800}
+.btn-again{min-height:64px;width:100%;border-radius:999px;background:none;border:3px solid var(--ink);font-size:22px;font-weight:800;margin-top:12px}
+.btn-share-big{min-height:64px;width:100%;border-radius:999px;background:var(--marigold);border:3px solid var(--ink);box-shadow:var(--shadow);font-size:22px;font-weight:800;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:10px}
+.btn-share-big .ic{width:24px;height:24px}
+
+/* album */
+.album-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.tile{background:var(--paper-raised);border:2px solid var(--ink);border-radius:16px;box-shadow:var(--shadow);padding:8px;position:relative;text-align:left;width:100%}
+.tile img{width:100%;height:130px;object-fit:cover;border-radius:10px;display:block}
+.tile .tile-illus{height:130px;display:flex;align-items:center;justify-content:center}
+.tile .tile-illus svg{width:96px;height:96px}
+.tile .tile-label{font-size:16px;font-weight:800;padding:8px 4px 4px}
+.mini-seal{position:absolute;right:12px;bottom:44px;width:44px;height:44px;pointer-events:none}
+.tile .mini-seal{bottom:auto;top:96px}
+#large-img{width:100%;border-radius:18px;display:block}
+#large-illus{display:flex;align-items:center;justify-content:center;padding:30px}
+#large-illus svg{width:200px;height:200px}
+
+/* share */
+.share-row{display:flex;gap:12px;align-items:center;background:var(--paper-raised);border:2px solid var(--ink);border-radius:16px;padding:10px;margin:0 0 10px}
+.share-row img{width:76px;height:76px;object-fit:cover;border-radius:10px;flex:0 0 auto}
+.share-row .sr-illus{width:76px;height:76px;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+.share-row .sr-illus svg{width:60px;height:60px}
+.share-row .sr-name{flex:1;font-size:17px;font-weight:800}
+.toggle{min-width:104px;min-height:52px;border-radius:999px;border:2px solid var(--ink);font-size:15px;font-weight:800;background:var(--teal-tint);box-shadow:var(--shadow)}
+.toggle.off{background:var(--paper);color:var(--ink-soft)}
+
+/* gate + parent */
+.hold-btn{position:relative;overflow:hidden;width:100%;height:64px;border-radius:16px;border:2px solid var(--ink);background:var(--paper-raised);font-size:19px;font-weight:800;box-shadow:var(--shadow)}
+.hold-fill{position:absolute;inset:0;background:var(--marigold);transform:scaleX(0);transform-origin:left center;z-index:0}
+.hold-btn span.lbl{position:relative;z-index:1;display:inline-flex;gap:8px;align-items:center}
+.hold-btn span.lbl .ic{width:24px;height:24px}
+.hold-btn.holding .hold-fill{transition:transform 1200ms linear;transform:scaleX(1)}
+#btn-hold-delete.holding .hold-fill{transition:transform 3000ms linear;transform:scaleX(1)}
+.parent-item{display:flex;gap:10px;align-items:center;background:var(--paper-raised);border:2px solid var(--ink);border-radius:16px;padding:10px;margin:0 0 10px}
+.parent-item img{width:56px;height:56px;object-fit:cover;border-radius:10px;flex:0 0 auto}
+.parent-item .pi-illus{width:56px;height:56px;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+.parent-item .pi-illus svg{width:44px;height:44px}
+.parent-item .pi-name{flex:1;font-size:16px;font-weight:800}
+.thumb-strip{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.thumb-strip img{width:64px;height:64px;object-fit:cover;border-radius:10px;border:2px solid var(--ink)}
+.thumb-strip .ts-illus{width:64px;height:64px;border:2px solid var(--ink);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--paper)}
+.thumb-strip .ts-illus svg{width:44px;height:44px}
+
+/* overlays */
+.overlay{position:fixed;inset:0;background:rgba(20,52,47,.55);display:none;z-index:60;align-items:flex-end;justify-content:center}
+.overlay.on{display:flex}
+.sheet{background:var(--paper);border:3px solid var(--ink);border-radius:28px 28px 0 0;width:100%;max-width:560px;max-height:88vh;overflow:auto;padding:22px 20px 30px}
+.sheet h2{font-size:26px;font-weight:800;margin:4px 0 8px}
+.sheet p{font-size:17px;font-weight:600;line-height:1.45}
+.math-opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.math-opt{min-height:76px;border-radius:16px;border:3px solid var(--ink);background:var(--paper-raised);font-size:30px;font-weight:800;box-shadow:var(--shadow)}
+.math-q{font-size:34px;font-weight:800;text-align:center;margin:10px 0 2px}
+#toast{position:fixed;left:16px;right:16px;bottom:16px;z-index:80;background:var(--ink);color:#FFFEF7;border-radius:16px;padding:14px 16px;font-size:16px;font-weight:700;display:none;align-items:center;gap:12px}
+#toast.on{display:flex}
+#toast button{margin-left:auto;background:var(--marigold);border:2px solid var(--paper-raised);color:var(--ink);border-radius:999px;font-weight:800;padding:8px 16px;min-height:44px}
+.rules-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rules-card{background:var(--paper-raised);border:3px solid var(--ink);border-radius:28px;box-shadow:var(--shadow);padding:14px;text-align:center}
+.rules-card svg{width:84px;height:84px}
+.rules-card .pk-name{font-size:18px;font-weight:800;margin-top:6px}
+.rules-card .pk-star{font-size:14px;font-weight:700;color:var(--marigold-deep)}
+.rules-btns{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+.rules-btns button{min-height:76px;border-radius:999px;font-size:23px;font-weight:800;border:3px solid var(--ink);box-shadow:var(--shadow)}
+#btn-look{background:var(--teal);color:#FFFEF7}
+#btn-finish2{background:var(--paper-raised)}
+.rules-title{font-size:34px;font-weight:800;text-align:center}
+.rules-sub{font-size:19px;font-weight:700;text-align:center;margin:6px 0 16px}
+.rules-note{text-align:center;font-size:15px;font-weight:700;color:var(--marigold-deep);margin-top:12px}
+.rules-note .ic{width:18px;height:18px;vertical-align:-3px}
+.rules-star-legend{text-align:center;font-size:15px;font-weight:700;margin-top:10px}
+.rules-star-legend svg{width:20px;height:20px;vertical-align:-4px}
+.center{text-align:center}
+.big-lead{font-size:24px;font-weight:800;line-height:1.35;text-align:center}
+.rules-wrap{position:relative}
+.seal-on-card{position:absolute;right:2px;bottom:2px;width:110px;height:110px;transform:rotate(-8deg);pointer-events:none;z-index:5}
+.seal-on-card.stamping{animation:stampin 420ms ease-out forwards}
+
+@media (prefers-reduced-motion: reduce){
+  .star-cur{animation:none}
+  .rays{animation:none}
+  .burst-shape{display:none}
+  .seal.stamping,.seal-on-card.stamping{animation:sealfade .2s ease-out forwards}
+  @keyframes sealfade{from{opacity:0}to{opacity:1}}
+  .btn:active,.cam-btn:active{transform:none}
+}
+</style>
+</head>
+<body>
+<!-- Icon sprite: one stroke system, 64 viewBox, ink stroke 4.5, round caps -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<symbol id="i-leaf" viewBox="0 0 64 64"><path d="M32 5C49 13 56 28 52 43C48 55 38 60 26 57C14 54 8 44 10 29C12 17 20 9 32 5Z" fill="#CDEAE2" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><path d="M15 50C23 39 36 27 48 17" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/></symbol>
+<symbol id="i-leaf-holes" viewBox="0 0 64 64"><path d="M32 5C49 13 56 28 52 43C48 55 38 60 26 57C14 54 8 44 10 29C12 17 20 9 32 5Z" fill="#CDEAE2" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><path d="M15 50C23 39 36 27 48 17" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/><circle cx="26" cy="26" r="3" fill="currentColor"/><circle cx="38" cy="36" r="3.4" fill="currentColor"/><circle cx="30" cy="44" r="2.6" fill="currentColor"/></symbol>
+<symbol id="i-leaf-brown" viewBox="0 0 64 64"><path d="M32 5C49 13 56 28 52 43C48 55 38 60 26 57C14 54 8 44 10 29C12 17 20 9 32 5Z" fill="#FFE28A" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><path d="M15 50C23 39 36 27 48 17" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/></symbol>
+<symbol id="i-stick" viewBox="0 0 64 64"><path d="M13 51L45 19" stroke="currentColor" stroke-width="7" stroke-linecap="round"/><path d="M30 35L46 33M38 27L47 15" stroke="currentColor" stroke-width="5" stroke-linecap="round" fill="none"/><circle cx="13" cy="51" r="4" fill="#E8E0C8" stroke="currentColor" stroke-width="3.5"/></symbol>
+<symbol id="i-pinecone" viewBox="0 0 64 64"><path d="M32 5C44 11 49 23 47 36C45 49 39 58 32 58C25 58 19 49 17 36C15 23 20 11 32 5Z" fill="#FFC8B8" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><path d="M19 25Q32 33 45 25M18 37Q32 45 46 37M22 48Q32 54 42 48" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></symbol>
+<symbol id="i-rock" viewBox="0 0 64 64"><path d="M9 47L15 27L29 15L47 21L55 47Q32 55 9 47Z" fill="#E8E0C8" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><path d="M22 30Q30 24 40 27" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></symbol>
+<symbol id="i-fence" viewBox="0 0 64 64"><path d="M16 13V53M32 11V53M48 13V53" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="M7 26H57M7 41H57" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></symbol>
+<symbol id="i-flower" viewBox="0 0 64 64"><circle cx="32" cy="14" r="7" fill="#FFC8B8" stroke="currentColor" stroke-width="4"/><circle cx="46" cy="24" r="7" fill="#FFC8B8" stroke="currentColor" stroke-width="4"/><circle cx="42" cy="39" r="7" fill="#FFC8B8" stroke="currentColor" stroke-width="4"/><circle cx="22" cy="39" r="7" fill="#FFC8B8" stroke="currentColor" stroke-width="4"/><circle cx="18" cy="24" r="7" fill="#FFC8B8" stroke="currentColor" stroke-width="4"/><circle cx="32" cy="27" r="6" fill="#FFBE2E" stroke="currentColor" stroke-width="4"/><path d="M32 34V58M32 46C26 44 22 40 21 35M32 50C38 48 42 44 43 39" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/></symbol>
+<symbol id="i-ball" viewBox="0 0 64 64"><circle cx="32" cy="32" r="25" fill="#CDE8F2" stroke="currentColor" stroke-width="4.5"/><path d="M10 22Q28 34 54 24M14 48Q32 34 52 44" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></symbol>
+<symbol id="i-ladybug" viewBox="0 0 64 64"><path d="M32 14C46 14 54 26 54 38C54 51 44 58 32 58C20 58 10 51 10 38C10 26 18 14 32 14Z" fill="#FFC8B8" stroke="currentColor" stroke-width="4.5"/><path d="M32 16V56" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M14 30Q32 22 50 30" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><circle cx="23" cy="40" r="3" fill="currentColor"/><circle cx="41" cy="42" r="3" fill="currentColor"/><circle cx="32" cy="8" r="5" fill="currentColor"/></symbol>
+<symbol id="i-spoon" viewBox="0 0 64 64"><ellipse cx="32" cy="17" rx="11" ry="12" fill="#CDE8F2" stroke="currentColor" stroke-width="4.5"/><path d="M32 29V57" stroke="currentColor" stroke-width="6" stroke-linecap="round"/></symbol>
+<symbol id="i-sock" viewBox="0 0 64 64"><path d="M24 6H42V26L52 38C57 44 54 52 47 54L29 58C21 59 16 51 21 44L24 40Z" fill="#FFE28A" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><path d="M24 16H42" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></symbol>
+<symbol id="i-book" viewBox="0 0 64 64"><path d="M32 14C26 9 16 8 10 10V50C16 48 26 49 32 54C38 49 48 48 54 50V10C48 8 38 9 32 14Z" fill="#CDEAE2" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><path d="M32 14V54" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></symbol>
+<symbol id="i-cup" viewBox="0 0 64 64"><path d="M12 16H46V42C46 50 40 55 33 55H25C18 55 12 50 12 42Z" fill="#CDE8F2" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><path d="M46 22C54 22 57 27 57 32C57 38 53 42 46 42" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/></symbol>
+<symbol id="i-toy-car" viewBox="0 0 64 64"><path d="M8 42V32L20 30L27 18H43L50 30L56 32V42H48M16 42H8M24 42H40" fill="#CDEAE2" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><circle cx="20" cy="44" r="6" fill="#FFFEF7" stroke="currentColor" stroke-width="4"/><circle cx="44" cy="44" r="6" fill="#FFFEF7" stroke="currentColor" stroke-width="4"/></symbol>
+<symbol id="i-car-red" viewBox="0 0 64 64"><path d="M8 42V32L20 30L27 18H43L50 30L56 32V42H48M16 42H8M24 42H40" fill="#FF6B4A" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><circle cx="20" cy="44" r="6" fill="#FFFEF7" stroke="currentColor" stroke-width="4"/><circle cx="44" cy="44" r="6" fill="#FFFEF7" stroke="currentColor" stroke-width="4"/></symbol>
+<symbol id="i-box" viewBox="0 0 64 64"><path d="M10 26L32 15L54 26V48L32 58L10 48Z" fill="#E8E0C8" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><path d="M10 26L32 37L54 26M32 37V58" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/></symbol>
+<symbol id="i-teddy" viewBox="0 0 64 64"><circle cx="18" cy="13" r="6" fill="#FFE28A" stroke="currentColor" stroke-width="4"/><circle cx="46" cy="13" r="6" fill="#FFE28A" stroke="currentColor" stroke-width="4"/><circle cx="32" cy="20" r="12" fill="#FFE28A" stroke="currentColor" stroke-width="4.5"/><ellipse cx="32" cy="44" rx="14" ry="13" fill="#FFE28A" stroke="currentColor" stroke-width="4.5"/><circle cx="28" cy="19" r="1.8" fill="currentColor"/><circle cx="36" cy="19" r="1.8" fill="currentColor"/><ellipse cx="32" cy="25" rx="4" ry="3" fill="#FFFEF7" stroke="currentColor" stroke-width="3"/></symbol>
+<symbol id="i-shoe" viewBox="0 0 64 64"><path d="M8 44L22 42V20L34 20C38 30 44 34 54 38V48H8Z" fill="#CDEAE2" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><path d="M24 28L32 28M24 35L32 35" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></symbol>
+<symbol id="i-pillow" viewBox="0 0 64 64"><rect x="10" y="18" width="44" height="30" rx="12" fill="#CDE8F2" stroke="currentColor" stroke-width="4.5"/><rect x="19" y="26" width="26" height="14" rx="7" fill="none" stroke="currentColor" stroke-width="3.5"/></symbol>
+<symbol id="i-tree" viewBox="0 0 64 64"><circle cx="24" cy="24" r="11" fill="#CDEAE2" stroke="currentColor" stroke-width="4.5"/><circle cx="41" cy="20" r="12" fill="#CDEAE2" stroke="currentColor" stroke-width="4.5"/><circle cx="42" cy="33" r="10" fill="#CDEAE2" stroke="currentColor" stroke-width="4.5"/><circle cx="25" cy="34" r="9" fill="#CDEAE2" stroke="currentColor" stroke-width="4.5"/><path d="M32 38V57" stroke="currentColor" stroke-width="7" stroke-linecap="round"/></symbol>
+<symbol id="i-bench" viewBox="0 0 64 64"><path d="M8 24H56M8 33H56" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="M10 43H54" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="M14 43V55M50 43V55M14 24V33M50 24V33" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/></symbol>
+<symbol id="i-slide" viewBox="0 0 64 64"><path d="M16 10V54M28 10V30" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M10 18H34M10 28H28" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M28 22C38 34 46 42 57 46L54 55C42 51 32 40 24 28Z" fill="#FFC8B8" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/></symbol>
+<symbol id="i-trash" viewBox="0 0 64 64"><path d="M16 22H48L45 55H19Z" fill="#E8E0C8" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><path d="M10 22H54M25 14H39" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M26 30V46M38 30V46" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></symbol>
+<symbol id="i-log" viewBox="0 0 64 64"><rect x="6" y="24" width="44" height="20" rx="10" fill="#FFE28A" stroke="currentColor" stroke-width="4.5"/><circle cx="50" cy="34" r="10" fill="#FFFEF7" stroke="currentColor" stroke-width="4.5"/><circle cx="50" cy="34" r="4" fill="none" stroke="currentColor" stroke-width="3"/><path d="M14 30H38M14 39H34" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></symbol>
+<symbol id="i-picnic" viewBox="0 0 64 64"><path d="M8 24H56L50 33H14Z" fill="#FFC8B8" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><path d="M18 33L12 52M46 33L52 52M24 33V44M40 33V44" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/><path d="M8 46H56" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></symbol>
+<symbol id="i-puddle" viewBox="0 0 64 64"><path d="M10 40C6 30 16 22 26 24C32 14 50 16 54 26C62 30 58 44 48 45L18 47C12 46 11 44 10 40Z" fill="#CDE8F2" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><path d="M22 36Q30 31 38 36" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></symbol>
+<symbol id="i-cloud" viewBox="0 0 64 64"><path d="M16 48C8 48 6 38 12 33C13 23 22 17 30 20C35 11 49 12 53 21C60 24 60 36 54 41C50 45 46 48 40 48Z" fill="#CDE8F2" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/></symbol>
+<symbol id="i-truck" viewBox="0 0 64 64"><path d="M6 20H38V44H6Z" fill="#CDE8F2" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><path d="M38 28H48L56 36V44H38Z" fill="#FFE28A" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><circle cx="16" cy="47" r="6" fill="#FFFEF7" stroke="currentColor" stroke-width="4"/><circle cx="32" cy="47" r="6" fill="#FFFEF7" stroke="currentColor" stroke-width="4"/><circle cx="48" cy="47" r="6" fill="#FFFEF7" stroke="currentColor" stroke-width="4"/></symbol>
+<symbol id="i-bridge" viewBox="0 0 64 64"><path d="M6 30Q32 8 58 30" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/><path d="M4 42H60" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="M14 38V26M32 42V20M50 38V26M14 42V54M50 42V54" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/><rect x="4" y="42" width="56" height="5" fill="#E8E0C8"/></symbol>
+<symbol id="i-motorcycle" viewBox="0 0 64 64"><circle cx="15" cy="46" r="8" fill="#FFFEF7" stroke="currentColor" stroke-width="4.5"/><circle cx="49" cy="46" r="8" fill="#FFFEF7" stroke="currentColor" stroke-width="4.5"/><path d="M15 46L26 28H36L45 40M26 28L22 18H32M36 28L49 46M23 46H38" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-traffic-light" viewBox="0 0 64 64"><rect x="22" y="6" width="20" height="44" rx="9" fill="#E8E0C8" stroke="currentColor" stroke-width="4.5"/><circle cx="32" cy="16" r="4.5" fill="#FF6B4A" stroke="currentColor" stroke-width="3"/><circle cx="32" cy="28" r="4.5" fill="#FFBE2E" stroke="currentColor" stroke-width="3"/><circle cx="32" cy="40" r="4.5" fill="#0E6B5E" stroke="currentColor" stroke-width="3"/><path d="M32 50V58" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></symbol>
+<symbol id="i-flag" viewBox="0 0 64 64"><path d="M16 6V58" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M16 8H46L38 17L46 26H16Z" fill="#FFBE2E" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/></symbol>
+<symbol id="i-barn" viewBox="0 0 64 64"><path d="M12 58V28L32 12L52 28V58Z" fill="#FFC8B8" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><path d="M8 30L32 11L56 30" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 58V40H40V58M24 40L40 58M40 40L24 58" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"/></symbol>
+<symbol id="i-train" viewBox="0 0 64 64"><rect x="14" y="8" width="36" height="36" rx="8" fill="#CDEAE2" stroke="currentColor" stroke-width="4.5"/><rect x="21" y="15" width="22" height="12" rx="4" fill="#FFFEF7" stroke="currentColor" stroke-width="3.5"/><circle cx="24" cy="36" r="3.4" fill="#FFBE2E" stroke="currentColor" stroke-width="2.5"/><circle cx="40" cy="36" r="3.4" fill="#FFBE2E" stroke="currentColor" stroke-width="2.5"/><path d="M20 44L12 56M44 44L52 56M18 56H46" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/></symbol>
+<symbol id="i-bus" viewBox="0 0 64 64"><rect x="10" y="10" width="44" height="36" rx="8" fill="#FFE28A" stroke="currentColor" stroke-width="4.5"/><path d="M10 26H54M20 10V26M32 10V26M44 10V26" stroke="currentColor" stroke-width="3.5"/><circle cx="20" cy="49" r="5" fill="#FFFEF7" stroke="currentColor" stroke-width="4"/><circle cx="44" cy="49" r="5" fill="#FFFEF7" stroke="currentColor" stroke-width="4"/></symbol>
+<symbol id="i-water-tower" viewBox="0 0 64 64"><ellipse cx="32" cy="16" rx="18" ry="10" fill="#CDE8F2" stroke="currentColor" stroke-width="4.5"/><path d="M18 22L24 56M46 22L40 56M24 38H40M21 47H43" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/></symbol>
+<symbol id="i-chip-yellow" viewBox="0 0 64 64"><rect x="10" y="10" width="44" height="44" rx="14" fill="#FFBE2E" stroke="currentColor" stroke-width="4.5"/></symbol>
+<symbol id="i-chip-red" viewBox="0 0 64 64"><rect x="10" y="10" width="44" height="44" rx="14" fill="#FF6B4A" stroke="#B4230A" stroke-width="4.5"/></symbol>
+<symbol id="i-chip-round" viewBox="0 0 64 64"><rect x="10" y="10" width="44" height="44" rx="14" fill="#FFFEF7" stroke="currentColor" stroke-width="4.5"/><circle cx="32" cy="32" r="13" fill="#FFE28A" stroke="currentColor" stroke-width="4"/></symbol>
+<symbol id="i-chip-square" viewBox="0 0 64 64"><rect x="10" y="10" width="44" height="44" rx="14" fill="#FFFEF7" stroke="currentColor" stroke-width="4.5"/><rect x="20" y="20" width="24" height="24" fill="#CDEAE2" stroke="currentColor" stroke-width="4"/></symbol>
+<symbol id="i-rule-person" viewBox="0 0 64 64"><circle cx="32" cy="15" r="7" fill="none" stroke="currentColor" stroke-width="4.5"/><path d="M32 22V40M20 29H44M32 40L24 55M32 40L40 55" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 8L53 56" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></symbol>
+<symbol id="i-rule-toilet" viewBox="0 0 64 64"><rect x="42" y="7" width="13" height="21" rx="4" fill="#CDE8F2" stroke="currentColor" stroke-width="4.5"/><path d="M10 33H43C43 43 37 49 27 49H22L18 57M42 33V49" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 33C10 39 13 44 18 47" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/></symbol>
+<symbol id="i-rule-eye" viewBox="0 0 64 64"><path d="M6 32Q32 11 58 32Q32 53 6 32Z" fill="#CDE8F2" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><circle cx="32" cy="32" r="9" fill="#FFFEF7" stroke="currentColor" stroke-width="4.5"/><circle cx="32" cy="32" r="3.5" fill="currentColor"/></symbol>
+<symbol id="i-rule-belt" viewBox="0 0 64 64"><path d="M17 7L47 57" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/><rect x="25" y="25" width="15" height="15" rx="4" fill="#FFBE2E" stroke="currentColor" stroke-width="4.5" transform="rotate(45 32 32)"/><circle cx="32" cy="32" r="2.6" fill="currentColor"/></symbol>
+<symbol id="i-camera" viewBox="0 0 64 64"><rect x="6" y="18" width="52" height="36" rx="10" fill="#FFBE2E" stroke="currentColor" stroke-width="4.5"/><path d="M22 18L26 10H38L42 18" fill="#FFBE2E" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><circle cx="32" cy="36" r="11" fill="#FFFEF7" stroke="currentColor" stroke-width="4.5"/><circle cx="32" cy="36" r="6" fill="#CDE8F2" stroke="currentColor" stroke-width="3.5"/><circle cx="32" cy="36" r="2.4" fill="currentColor"/></symbol>
+<symbol id="i-star" viewBox="0 0 64 64"><path d="M32 5L39.5 23.5L59 24.5L43.8 36.8L48.5 55.8L32 45.2L15.5 55.8L20.2 36.8L5 24.5L24.5 23.5Z" fill="#FFBE2E" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/></symbol>
+<symbol id="i-check" viewBox="0 0 64 64"><path d="M13 34L26 47L51 17" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-retake" viewBox="0 0 64 64"><path d="M49 25A19 19 0 1 0 51 41" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="M51 10V26H35" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-skip" viewBox="0 0 64 64"><path d="M14 15L35 32L14 49Z" fill="currentColor"/><path d="M44 14V50" stroke="currentColor" stroke-width="7" stroke-linecap="round"/></symbol>
+<symbol id="i-back" viewBox="0 0 64 64"><path d="M39 11L20 32L39 53" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-lock" viewBox="0 0 64 64"><rect x="13" y="28" width="38" height="28" rx="7" fill="#FFE28A" stroke="currentColor" stroke-width="4.5"/><path d="M21 28V19A11 11 0 0 1 43 19V28" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><circle cx="32" cy="42" r="4" fill="currentColor"/></symbol>
+<symbol id="i-share" viewBox="0 0 64 64"><path d="M32 6V38M19 19L32 6L45 19" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 34V52A5 5 0 0 0 18 57H46A5 5 0 0 0 51 52V34" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></symbol>
+<symbol id="i-plus" viewBox="0 0 64 64"><path d="M32 13V51M13 32H51" stroke="currentColor" stroke-width="7" stroke-linecap="round"/></symbol>
+<symbol id="i-play" viewBox="0 0 64 64"><path d="M20 12L52 32L20 52Z" fill="currentColor" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/></symbol>
+<symbol id="i-speaker" viewBox="0 0 64 64"><path d="M10 26H20L36 12V52L20 38H10Z" fill="#CDEAE2" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><path d="M44 23Q51 32 44 41M50 17Q60 32 50 47" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/></symbol>
+<symbol id="i-help" viewBox="0 0 64 64"><path d="M23 20C23 13 41 12 41 21C41 29 32 30 32 39" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><circle cx="32" cy="50" r="4.5" fill="currentColor"/></symbol>
+<symbol id="i-close" viewBox="0 0 64 64"><path d="M16 16L48 48M48 16L16 48" stroke="currentColor" stroke-width="7" stroke-linecap="round"/></symbol>
+<symbol id="i-home" viewBox="0 0 64 64"><path d="M8 30L32 9L56 30" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 27V54H49V27" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><path d="M27 54V40H37V54" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/></symbol>
+</defs>
+</svg>
+
+<!-- ============ HOME ============ -->
+<main class="view on" id="v-home">
+  <h1 class="app-title">HuntList</h1>
+  <p class="sub">Pick a hunt, hand over the phone, and let them find things.</p>
+  <div id="home-hunts"></div>
+  <h2 class="sec-head">Ready-made hunts</h2>
+  <div id="home-templates"></div>
+  <button class="btn block mt" id="btn-make-own"><svg class="ic"><use href="#i-plus"/></svg> Make your own hunt</button>
+  <p class="meta mt">Making your own takes a few minutes. Starting from a ready-made hunt and changing it is the quick way.</p>
+</main>
+<div class="grownups-wrap" id="grownups-wrap"><button id="grownups-link">Grown-ups</button></div>
+
+<!-- ============ SETUP / LIST ============ -->
+<main class="view" id="v-setup">
+  <button class="btn mb" id="btn-setup-back"><svg class="ic"><use href="#i-back"/></svg> Back</button>
+  <h1 class="app-title" id="setup-title">Backyard Hunt</h1>
+  <p class="sub" id="setup-sub">Here is what they will look for. Change it if you like — or just start.</p>
+  <div class="note-box hidden" id="setup-road-note">Kids stay buckled. Spotting is eyes and a tap — no reaching, no windows. Never ask the driver to slow down or look. Photos only when parked, and a grown-up decides when it is safe to get out.</div>
+  <div id="setup-list"></div>
+  <h3 class="sec-head" style="font-size:17px">Add one back</h3>
+  <div class="chip-row" id="setup-pool"></div>
+  <h3 class="sec-head" style="font-size:17px">Who is playing?</h3>
+  <div class="chip-row" id="setup-players">
+    <button class="pick-chip sel" data-pmode="both">Both together</button>
+    <button class="pick-chip" data-pmode="one">Just one</button>
+  </div>
+  <p class="meta">With both, turns take turns — one name per item. Names live in the Grown-ups area.</p>
+  <div class="sticky-cta"><button class="giant teal" id="btn-start-hunt">Start Hunt</button></div>
+  <button class="btn block mt" id="btn-setup-custom">Start from this hunt and change it</button>
+</main>
+
+<!-- ============ CUSTOM BUILDER ============ -->
+<main class="view" id="v-builder">
+  <button class="btn mb" id="btn-builder-back"><svg class="ic"><use href="#i-back"/></svg> Back</button>
+  <h1 class="app-title" id="builder-name">My Hunt</h1>
+  <p class="sub">Add up to 8 things to find. Eight is the most little hunters can hold in their heads — and the most stars that fit on their star path.</p>
+  <div id="builder-list"></div>
+  <p class="meta" id="builder-count"></p>
+  <h3 class="sec-head" style="font-size:17px">Add a thing to find</h3>
+  <input type="text" id="builder-word" placeholder="Type a word, like: A Red Door" maxlength="30">
+  <p class="meta" style="margin-top:10px">Now pick its picture:</p>
+  <div class="icon-grid" id="builder-icons"></div>
+  <button class="btn block" id="btn-builder-add"><svg class="ic"><use href="#i-plus"/></svg> Add this item</button>
+  <div id="builder-pool-wrap" class="hidden">
+    <h3 class="sec-head" style="font-size:17px">Or add from the spare list</h3>
+    <div class="chip-row" id="builder-pool"></div>
+  </div>
+  <h3 class="sec-head" style="font-size:17px">Who is playing?</h3>
+  <div class="chip-row" id="builder-players">
+    <button class="pick-chip sel" data-pmode="both">Both together</button>
+    <button class="pick-chip" data-pmode="one">Just one</button>
+  </div>
+  <div class="sticky-cta"><button class="giant teal" id="btn-builder-start">Start Hunt</button></div>
+</main>
+
+<!-- ============ CAMERA CHECK ============ -->
+<main class="view" id="v-check">
+  <h1 class="app-title">One quick camera check</h1>
+  <p class="big-err">HuntList uses the camera inside this app, so the pictures your kids take are born here — they never land in your Photos app, and nothing is sent anywhere.</p>
+  <p class="big-err mt">Take one test snap now, while the phone is in grown-up hands. The test snap is thrown away, never saved. After this, the camera just works during hunts.</p>
+  <div class="warn-box hidden" id="check-error"></div>
+  <div class="sticky-cta"><button class="giant marigold" id="btn-check-camera">Check the camera</button></div>
+  <button class="btn block mt hidden" id="btn-check-import-route">Continue without the camera</button>
+  <button class="btn block mt" id="btn-check-back">Back</button>
+</main>
+
+<!-- ============ HANDOFF ============ -->
+<main class="view" id="v-handoff">
+  <div style="padding-top:12vh;text-align:center">
+    <p class="big-lead" id="handoff-text">Ready! Hand the phone over.</p>
+    <p class="sub center mt">The hunt starts when they tap the big button.</p>
+    <button class="giant marigold mt" id="btn-letsgo" style="min-height:110px;font-size:34px">Let&rsquo;s Go!</button>
+  </div>
+</main>
+
+<!-- ============ KID RULES ============ -->
+<main class="view" id="v-rules">
+  <h1 class="app-title center">Three quick rules</h1>
+  <div id="rules-list" class="mt"></div>
+  <div class="sticky-cta"><button class="giant teal" id="btn-gotit">Got it!</button></div>
+</main>
+
+<!-- ============ KID MODE ============ -->
+<main class="view" id="v-kid" style="max-width:none;padding:0">
+ <div class="kid-wrap">
+  <div class="starpath-band" id="kid-starpath"></div>
+  <div class="turn-banner hidden" id="kid-turn"></div>
+  <p class="helper" id="kid-helper">Find a…</p>
+  <div class="parks-wrap">
+    <button class="item-card" id="kid-card">
+      <span class="big-ic" id="kid-icon" style="display:block"></span>
+      <span class="item-word" id="kid-word" style="display:block">Leaf</span>
+      <span class="speak-hint"><svg class="ic"><use href="#i-speaker"/></svg> Tap to hear it</span>
+      <span id="kid-examples"></span>
+    </button>
+    <div class="seal hidden" id="kid-stamp" style="right:2px;bottom:2px"></div>
+  </div>
+  <div id="kid-photo-zone">
+    <button class="cam-btn" id="btn-kid-camera" aria-label="Take a photo"><svg><use href="#i-camera"/></svg></button>
+    <button class="spot-btn hidden" id="btn-kid-spot">I SPOT IT!</button>
+    <p class="reminder" id="kid-reminder">Snap things, not people.</p>
+  </div>
+  <button class="skip-btn" id="btn-kid-skip"><svg class="ic"><use href="#i-skip"/></svg> Skip for now</button>
+  <button class="finish-link hidden" id="btn-kid-finish"><svg class="ic"><use href="#i-star"/></svg> Finish my album</button>
+  <p class="kid-note hidden" id="kid-storage-line">Ask a grown-up to help save your pictures.</p>
+ </div>
+</main>
+<button class="help-corner" id="btn-help"><svg class="ic"><use href="#i-help"/></svg> Help</button>
+
+<!-- ============ CAMERA ============ -->
+<main class="view" id="v-camera">
+  <video id="cam-video" autoplay playsinline muted></video>
+  <button id="btn-cam-close" aria-label="Close camera"><svg class="ic"><use href="#i-close"/></svg></button>
+  <div class="cam-err hidden" id="cam-error"></div>
+  <div class="cam-ui">
+    <button id="btn-shutter" aria-label="Take the photo"><svg><use href="#i-camera"/></svg></button>
+    <p class="cam-reminder">Snap things, not people.</p>
+  </div>
+</main>
+
+<!-- ============ REVIEW ============ -->
+<main class="view" id="v-review">
+  <p class="helper" id="review-helper">Look what you found!</p>
+  <div class="photo-frame">
+    <img id="review-img" alt="Your photo of the thing you found">
+    <div class="illus-big hidden" id="review-illus"></div>
+    <div class="seal hidden" id="review-seal"></div>
+  </div>
+  <div class="review-btns">
+    <button class="found-btn" id="btn-found"><svg class="ic"><use href="#i-check"/></svg> I found it!</button>
+    <button class="retake-btn" id="btn-retake"><svg class="ic"><use href="#i-retake"/></svg> Take another</button>
+  </div>
+</main>
+
+<!-- ============ SPOT STAGE (large, review-style) ============ -->
+<main class="view" id="v-spotstage">
+  <p class="helper">You spotted it!</p>
+  <div class="photo-frame">
+    <div class="illus-big" id="spot-illus"></div>
+    <div class="item-word center" id="spot-word" style="text-align:center"></div>
+    <div class="seal hidden" id="spot-seal"></div>
+  </div>
+</main>
+
+<!-- ============ PARKED RE-OFFER ============ -->
+<main class="view" id="v-parked">
+  <h1 class="parks-title" id="parked-title">You still have 2 to find!</h1>
+  <p class="parks-sub">These are waiting for next time — or right now, if you want.</p>
+  <div class="parks-grid" id="parked-list"></div>
+  <p class="parks-note"><svg class="ic"><use href="#i-star"/></svg> Parked stars are saved for next time — never lost.</p>
+  <div class="parks-btns">
+    <button id="btn-look">Look for these</button>
+    <button id="btn-finish2"><svg class="ic"><use href="#i-star"/></svg> Finish my album</button>
+  </div>
+</main>
+
+<!-- ============ CELEBRATION ============ -->
+<main class="view" id="v-celeb">
+  <div class="celeb-stage" id="celeb-stage">
+    <div class="rays" id="celeb-rays"></div>
+    <div class="celeb-seal" id="celeb-seal"></div>
+    <div id="celeb-burst" style="position:absolute;inset:0;pointer-events:none"></div>
+  </div>
+  <h1 class="celeb-title">You did it!</h1>
+  <p class="celeb-sub" id="celeb-sub">You found every one.</p>
+  <button class="btn-album-big" id="btn-celeb-album">See my album</button>
+  <button class="btn-share-big" id="btn-celeb-share"><svg class="ic"><use href="#i-share"/></svg> Share Album</button>
+  <button class="btn-again" id="btn-celeb-again">Play again</button>
+</main>
+
+<!-- ============ ALBUM ============ -->
+<main class="view wide" id="v-album">
+  <h1 class="app-title" id="album-title">My Album</h1>
+  <p class="sub" id="album-sub"></p>
+  <div class="album-grid" id="album-grid"></div>
+  <p class="sub hidden" id="album-empty">No finds yet — the album fills up as things are found.</p>
+  <div class="sticky-cta">
+    <button class="btn-share-big" id="btn-album-share" style="margin-top:0"><svg class="ic"><use href="#i-share"/></svg> Share Album</button>
+    <button class="btn block mt" id="btn-album-save">Save photos</button>
+    <button class="btn block mt" id="btn-album-home"><svg class="ic"><use href="#i-home"/></svg> Home</button>
+  </div>
+</main>
+
+<!-- ============ LARGE VIEW ============ -->
+<main class="view" id="v-large">
+  <button class="btn mb" id="btn-large-back"><svg class="ic"><use href="#i-back"/></svg> Back to album</button>
+  <div class="photo-frame">
+    <img id="large-img" alt="A found thing, shown big">
+    <div class="illus-big hidden" id="large-illus"></div>
+    <div class="mini-seal" id="large-seal"></div>
+  </div>
+  <h1 class="app-title center" id="large-label">A Leaf</h1>
+</main>
+
+<!-- ============ SHARE REVIEW ============ -->
+<main class="view wide" id="v-share">
+  <button class="btn mb" id="btn-share-back"><svg class="ic"><use href="#i-back"/></svg> Back</button>
+  <h1 class="app-title">Share this album</h1>
+  <p class="sub">Look at every photo first. Tap a photo to leave it out of what you share.</p>
+  <div id="share-list"></div>
+  <div class="note-box" id="share-copy">You are sharing 0 photos. Shared copies can&rsquo;t be taken back or deleted by this app.</div>
+  <div class="sticky-cta">
+    <button class="giant teal" id="btn-share-do"><svg class="ic" style="width:26px;height:26px"><use href="#i-share"/></svg> Share</button>
+    <button class="btn block mt" id="btn-share-save">Save the photos instead</button>
+  </div>
+</main>
+
+<!-- ============ GATE (hold) ============ -->
+<main class="view" id="v-gate">
+  <button class="btn mb" id="btn-gate-back"><svg class="ic"><use href="#i-back"/></svg> Back</button>
+  <h1 class="app-title">Grown-ups area</h1>
+  <p class="big-err">This part is for grown-ups — settings, saving, and tidying up hunts. Press and hold the button below. It is just a pause to stop little fingers opening it by accident.</p>
+  <div class="sticky-cta">
+    <button class="hold-btn" id="btn-hold"><span class="hold-fill"></span><span class="lbl"><svg class="ic"><use href="#i-lock"/></svg> Hold for Grown-ups</span></button>
+  </div>
+</main>
+
+<!-- ============ PARENT HOME ============ -->
+<main class="view wide" id="v-parent">
+  <button class="btn mb" id="btn-parent-home"><svg class="ic"><use href="#i-home"/></svg> Back to hunts</button>
+  <h1 class="app-title">Grown-ups</h1>
+  <div class="warn-box hidden" id="parent-banner"></div>
+  <h2 class="sec-head">All hunts</h2>
+  <div id="parent-hunts"></div>
+  <h2 class="sec-head">Who is playing</h2>
+  <div class="card">
+    <label class="flabel" for="name-1">First player&rsquo;s name</label>
+    <input type="text" id="name-1" maxlength="20" autocomplete="off">
+    <label class="flabel" for="name-2">Second player&rsquo;s name</label>
+    <input type="text" id="name-2" maxlength="20" autocomplete="off">
+    <button class="btn teal block mt" id="btn-save-names">Save names</button>
+    <p class="meta mt">Names live only in this app on this phone. They are never sent anywhere.</p>
+  </div>
+  <h2 class="sec-head">Storage on this phone</h2>
+  <div class="card">
+    <p id="parent-storage" style="font-size:16px;font-weight:600;line-height:1.5;margin:4px 0">Counting photos…</p>
+    <p style="font-size:15px;font-weight:600;line-height:1.5">Photos live only on this phone — share or save albums you want to keep. Nothing is backed up anywhere else.</p>
+    <p class="meta">HuntList is made for your household. If you share this link with other families, or HuntList ever gains accounts, sync, or sharing between phones, its privacy review needs redoing first.</p>
+    <button class="btn block mt" id="btn-open-bin"><svg class="ic"><use href="#i-trash"/></svg> Recently deleted</button>
+  </div>
+</main>
+
+<!-- ============ HUNT DETAIL ============ -->
+<main class="view wide" id="v-detail">
+  <button class="btn mb" id="btn-detail-back"><svg class="ic"><use href="#i-back"/></svg> Back to Grown-ups</button>
+  <h1 class="app-title" id="detail-title">Hunt</h1>
+  <p class="sub" id="detail-sub"></p>
+  <div id="detail-items"></div>
+  <div class="card">
+    <h3 class="sec-head" style="margin-top:4px">Import a photo</h3>
+    <p style="font-size:15px;font-weight:600;line-height:1.45">Import a photo for an item that is not found yet — use the Import photo button on that item above.</p>
+    <p class="meta">Imported photos may also exist in the Photos app and its backups. That copy is outside this app.</p>
+    <input type="file" id="detail-file" accept="image/*" class="hidden">
+  </div>
+  <p class="meta" id="detail-report"></p>
+  <button class="btn coral block mt" id="btn-del-hunt"><svg class="ic"><use href="#i-trash"/></svg> Delete this hunt</button>
+</main>
+
+<!-- ============ RECENTLY DELETED ============ -->
+<main class="view wide" id="v-bin">
+  <button class="btn mb" id="btn-bin-back"><svg class="ic"><use href="#i-back"/></svg> Back to Grown-ups</button>
+  <h1 class="app-title">Recently deleted</h1>
+  <p class="sub">Deleted hunts wait here for 30 days, then they are gone for good. Restoring brings back only the copies inside this app.</p>
+  <div id="bin-list"></div>
+</main>
+
+<!-- ============ HELP OVERLAY ============ -->
+<div class="overlay" id="ov-help"><div class="sheet">
+  <h2>A grown-up helper</h2>
+  <p id="help-progress">Progress so far.</p>
+  <button class="btn block mt" id="btn-help-swap">Swap this item</button>
+  <p class="meta" id="help-swap-note">Swapping pulls a fresh item from this hunt&rsquo;s spare list.</p>
+  <button class="btn block mt" id="btn-help-add">Add a photo for them</button>
+  <p class="meta">This opens the camera inside HuntList. The photo is born in this app and does not go to your Photos app.</p>
+  <button class="giant teal mt" id="btn-help-back">Back to the hunt</button>
+</div></div>
+
+<!-- ============ MATH OVERLAY ============ -->
+<div class="overlay" id="ov-math"><div class="sheet">
+  <h2 class="center">Quick grown-up check</h2>
+  <p class="center">Tap the right answer. This just keeps deleting and tidying in grown-up hands.</p>
+  <p class="math-q" id="math-q">7 × 8 = ?</p>
+  <p class="center hidden" id="math-msg" style="color:var(--coral-deep);font-weight:800">Try again, grown-up.</p>
+  <div class="math-opts" id="math-opts"></div>
+  <button class="btn block mt" id="btn-math-cancel">Cancel</button>
+</div></div>
+
+<!-- ============ DELETE CONFIRM OVERLAY ============ -->
+<div class="overlay" id="ov-del"><div class="sheet">
+  <h2 id="del-title">Delete this hunt?</h2>
+  <div class="thumb-strip" id="del-thumbs"></div>
+  <p id="del-copy"></p>
+  <p>This removes the photos from HuntList on this phone. It does not delete copies in the Photos app or its cloud backup, photos you have already shared, downloads, or device backups.</p>
+  <button class="hold-btn" id="btn-hold-delete" style="background:var(--coral)"><span class="hold-fill" style="background:var(--marigold)"></span><span class="lbl">Hold 3 seconds — Delete from this app on this device</span></button>
+  <button class="btn block mt" id="btn-del-cancel">Keep this hunt</button>
+</div></div>
+
+<div id="toast"><span id="toast-text"></span><button id="toast-btn" class="hidden">Undo</button></div>
+
+<script>
+"use strict";
+/* ================= DATA ================= */
+var $=function(id){return document.getElementById(id)};
+function iconUse(name,cls){return '<svg class="'+(cls||'')+'" aria-hidden="true"><use href="#i-'+name+'"/></svg>'}
+var ALL_ICONS=["leaf","leaf-holes","leaf-brown","stick","pinecone","rock","fence","flower","ball","ladybug","spoon","sock","book","cup","toy-car","car-red","box","teddy","shoe","pillow","tree","bench","slide","trash","log","picnic","puddle","cloud","truck","bridge","motorcycle","traffic-light","flag","barn","train","bus","water-tower","chip-yellow","chip-red","chip-round","chip-square"];
+var TEMPLATES=[
+ {id:"backyard",name:"Backyard",mode:"photo",icon:"leaf",
+  items:[["A Leaf","leaf"],["Something Yellow","chip-yellow"],["A Stick","stick"],["A Pinecone","pinecone"],["A Big Rock","rock"],["A Fence","fence"],["A Leaf With Holes","leaf-holes"],["Something Round","chip-round"]],
+  spares:[["A Flower","flower"],["A Ball","ball"],["A Bug","ladybug"]]},
+ {id:"house",name:"Rainy-Day House",mode:"photo",icon:"teddy",
+  items:[["A Spoon","spoon"],["A Sock","sock"],["Something Red","chip-red"],["A Book","book"],["A Cup","cup"],["A Toy Car","toy-car"],["A Box","box"],["A Stuffed Animal","teddy"]],
+  spares:[["A Shoe","shoe"],["A Pillow","pillow"],["Something Square","chip-square"]]},
+ {id:"park",name:"Park",mode:"photo",icon:"tree",
+  items:[["A Big Tree","tree"],["A Bench","bench"],["A Pinecone","pinecone"],["A Brown Leaf","leaf-brown"],["A Slide","slide"],["A Trash Can","trash"],["A Fallen Log","log"],["A Picnic Table","picnic"]],
+  spares:[["A Flower","flower"],["A Puddle","puddle"],["A Rock","rock"]]},
+ {id:"roadtrip",name:"Road Trip",mode:"spot",icon:"car-red",
+  items:[["A Cloud","cloud"],["Something Yellow","chip-yellow"],["A Big Truck","truck"],["A Bridge","bridge"],["A Red Car","car-red"],["A Motorcycle","motorcycle"],["A Traffic Light","traffic-light"],["A Flag","flag"]],
+  spares:[["A Barn","barn"],["A Train","train"],["A Bus","bus"],["A Water Tower","water-tower"]]}
+];
+function tplById(id){for(var i=0;i<TEMPLATES.length;i++)if(TEMPLATES[i].id===id)return TEMPLATES[i];return null}
+function uid(){return "h"+Date.now().toString(36)+Math.floor(Math.random()*1e6).toString(36)}
+function fmtDate(ts){var d=new Date(ts);return d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"})}
+function autoName(base,ts){return base+" — "+fmtDate(ts)}
+function starPoints(cx,cy,rO,rI,n){var pts=[];for(var i=0;i<n*2;i++){var r=(i%2===0)?rO:rI;var a=(Math.PI*i/n)-(Math.PI/2);pts.push((cx+r*Math.cos(a)).toFixed(1)+","+(cy+r*Math.sin(a)).toFixed(1))}return pts.join(" ")}
+function sealSVG(size){var cx=78,cy=78;var burst=starPoints(cx,cy,76,63,12);return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 156 156" aria-hidden="true"><circle cx="78" cy="78" r="77" fill="#FFFEF7"/><polygon points="'+burst+'" fill="#FF6B4A" stroke="#14342F" stroke-width="4" stroke-linejoin="round"/><circle cx="78" cy="78" r="50" fill="#FFFEF7" stroke="#14342F" stroke-width="3.5"/><text x="78" y="78" text-anchor="middle" font-family="ui-rounded,-apple-system,system-ui,sans-serif" font-size="36" font-weight="800" fill="#14342F" letter-spacing="1">FOUND</text><polygon points="'+starPoints(78,106,12,5,5)+'" fill="#FFBE2E" stroke="#14342F" stroke-width="2.5" stroke-linejoin="round"/></svg>'}
+function miniSealSVG(){return '<svg width="44" height="44" viewBox="0 0 64 64" aria-hidden="true"><polygon points="'+starPoints(32,32,29,12.5,5)+'" fill="#FFBE2E" stroke="#14342F" stroke-width="3.5" stroke-linejoin="round"/></svg>'}
+</script>
+<script>
+"use strict";
+/* ================= STORAGE (IndexedDB, write-through) ================= */
+var DBNAME="huntlist-db",db=null,memMode=false;
+var mem={hunts:{},photos:{},settings:{}};
+function idbOpen(){return new Promise(function(res,rej){
+  if(!("indexedDB" in window)){rej(new Error("no idb"));return}
+  var req=indexedDB.open(DBNAME,1);
+  req.onupgradeneeded=function(){var d=req.result;
+    if(!d.objectStoreNames.contains("hunts"))d.createObjectStore("hunts",{keyPath:"id"});
+    if(!d.objectStoreNames.contains("photos")){var ps=d.createObjectStore("photos",{keyPath:"id"});ps.createIndex("huntId","huntId",{unique:false})}
+    if(!d.objectStoreNames.contains("settings"))d.createObjectStore("settings",{keyPath:"key"});
+  };
+  req.onsuccess=function(){res(req.result)};req.onerror=function(){rej(req.error)};
+})}
+function tx1(store,mode,fn){return new Promise(function(res,rej){
+  if(memMode){try{res(fn(mem[store]))}catch(e){rej(e)}return}
+  var t=db.transaction(store,mode),s=t.objectStore(store),out;
+  var r=fn(s); if(r&&r.addEventListener){r.onsuccess=function(){out=r.result}}
+  t.oncomplete=function(){res(out)};t.onerror=function(){rej(t.error)};t.onabort=function(){rej(t.error)};
+})}
+function reqP(r){return new Promise(function(res,rej){r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}})}
+function dbPut(store,obj){
+  if(memMode){mem[store][obj.id||obj.key]=obj;return Promise.resolve()}
+  return tx1(store,"readwrite",function(s){s.put(obj)});
+}
+function dbGet(store,key){
+  if(memMode){return Promise.resolve(mem[store][key]||null)}
+  return tx1(store,"readonly",function(s){return s.get(key)});
+}
+function dbAll(store){
+  if(memMode){return Promise.resolve(Object.keys(mem[store]).map(function(k){return mem[store][k]}))}
+  return new Promise(function(res,rej){var t=db.transaction(store,"readonly");var r=t.objectStore(store).getAll();r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}});
+}
+function dbDelete(store,key){
+  if(memMode){delete mem[store][key];return Promise.resolve()}
+  return tx1(store,"readwrite",function(s){s.delete(key)});
+}
+function dbPhotosOf(huntId){
+  if(memMode){return Promise.resolve(Object.keys(mem.photos).map(function(k){return mem.photos[k]}).filter(function(p){return p.huntId===huntId}))}
+  return new Promise(function(res,rej){var t=db.transaction("photos","readonly");var r=t.objectStore("photos").index("huntId").getAll(huntId);r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}});
+}
+/* Hard delete: hunt record AND its photo records in ONE transaction. Returns photos-before count. */
+function dbDeleteHuntForever(huntId){
+  if(memMode){var n=0;Object.keys(mem.photos).forEach(function(k){if(mem.photos[k].huntId===huntId){delete mem.photos[k];n++}});delete mem.hunts[huntId];return Promise.resolve(n)}
+  return dbPhotosOf(huntId).then(function(ph){
+    return new Promise(function(res,rej){
+      var t=db.transaction(["hunts","photos"],"readwrite");
+      t.objectStore("hunts").delete(huntId);
+      var ps=t.objectStore("photos"); ph.forEach(function(p){ps.delete(p.id)});
+      t.oncomplete=function(){res(ph.length)};t.onerror=function(){rej(t.error)};t.onabort=function(){rej(t.error)};
+    });
+  });
+}
+/* Delete one photo + update its hunt item in ONE transaction. */
+function dbDeletePhotoAndItem(hunt,photoId){
+  var nh=JSON.parse(JSON.stringify(hunt));
+  nh.items.forEach(function(it){if(it.photoId===photoId){it.photoId=null;if(it.status==="found"&&!it.spotted)it.status="pending"}});
+  if(memMode){delete mem.photos[photoId];mem.hunts[nh.id]=nh;return Promise.resolve(nh)}
+  return new Promise(function(res,rej){
+    var t=db.transaction(["hunts","photos"],"readwrite");
+    t.objectStore("photos").delete(photoId);t.objectStore("hunts").put(nh);
+    t.oncomplete=function(){res(nh)};t.onerror=function(){rej(t.error)};t.onabort=function(){rej(t.error)};
+  });
+}
+/* ================= STATE ================= */
+var S={hunts:[],settings:{},curHuntId:null,setupTpl:null,setupItems:[],setupPool:[],setupPlayers:"both",
+ builderItems:[],builderPool:[],builderSrc:null,builderPlayers:"both",builderIcon:null,
+ camMode:"kid",stream:null,tempBlob:null,tempURL:null,reviewItemId:null,
+ shareHuntId:null,shareIncluded:{},detailId:null,mathCb:null,delTarget:null,delHoldTimer:null,holdTimer:null,busy:{},mathWrong:0,mathLockUntil:0,importItemId:null,
+ objURLs:[],pendingStart:null,helpReturn:null};
+function setting(key,def){var v=S.settings[key];return (v===undefined||v===null)?def:v}
+function saveSetting(key,val){S.settings[key]=val;return dbPut("settings",{key:key,value:val})}
+function playerNames(){return [setting("player1","Player 1"),setting("player2","Player 2")]}
+function huntById(id){for(var i=0;i<S.hunts.length;i++)if(S.hunts[i].id===id)return S.hunts[i];return null}
+function saveHunt(h){var i=S.hunts.findIndex(function(x){return x.id===h.id});if(i>=0)S.hunts[i]=h;else S.hunts.push(h);return dbPut("hunts",h)}
+function foundCount(h){return h.items.filter(function(it){return it.status==="found"}).length}
+function parkedCount(h){return h.items.filter(function(it){return it.status==="parked"}).length}
+function trackURL(u){S.objURLs.push(u);return u}
+function revokeURLs(){S.objURLs.forEach(function(u){try{URL.revokeObjectURL(u)}catch(e){}});S.objURLs=[]}
+/* ================= VIEW SWITCHING ================= */
+var VIEWS=["v-home","v-setup","v-builder","v-check","v-handoff","v-rules","v-kid","v-camera","v-review","v-spotstage","v-parked","v-celeb","v-album","v-large","v-share","v-gate","v-parent","v-detail","v-bin"];
+function show(id){revokeURLs();VIEWS.forEach(function(v){$(v).classList.toggle("on",v===id)});
+  $("btn-help").classList.toggle("on",id==="v-kid");
+  $("grownups-wrap").style.display=(id==="v-home")?"":"none";
+  window.scrollTo(0,0);
+  if(id!=="v-kid"&&id!=="v-camera")stopCamera();
+}
+function toast(msg,undoCb){$("toast-text").textContent=msg;var b=$("toast-btn");
+  if(undoCb){b.classList.remove("hidden");b.onclick=function(){$("toast").classList.remove("on");undoCb()}}
+  else{b.classList.add("hidden");b.onclick=null}
+  $("toast").classList.add("on");setTimeout(function(){$("toast").classList.remove("on")},10000)}
+/* ================= HOME ================= */
+function statusChip(h){if(h.finishedAt)return '<span class="chip done">Finished</span>';return '<span class="chip prog">In progress</span>'}
+function renderHome(){
+  var tpl=$("home-templates");tpl.innerHTML="";
+  TEMPLATES.forEach(function(t){
+    var b=document.createElement("button");b.className="tpl-card";
+    b.innerHTML='<span class="tpl-ic">'+iconUse(t.icon)+'</span><span><span class="tpl-name">'+t.name+'</span><br><span class="tpl-sub">'+t.items.length+' things to find'+(t.mode==="spot"?" · spot it and tap":"")+'</span></span>';
+    b.querySelector("svg").setAttribute("width","52");b.querySelector("svg").setAttribute("height","52");
+    b.onclick=function(){openSetup(t.id)};tpl.appendChild(b);
+  });
+  var wrap=$("home-hunts");wrap.innerHTML="";
+  var live=S.hunts.filter(function(h){return !h.deletedAt});
+  var prog=live.filter(function(h){return !h.finishedAt}).sort(function(a,b){return b.createdAt-a.createdAt});
+  var done=live.filter(function(h){return h.finishedAt}).sort(function(a,b){return b.createdAt-a.createdAt});
+  function card(h){
+    var d=document.createElement("div");d.className="hunt-card";
+    var act=h.finishedAt?'<button class="btn teal" data-a="album">See the album</button>':'<button class="btn teal" data-a="go">Keep hunting</button>';
+    d.innerHTML='<span class="hc-name">'+esc(h.name)+'</span> '+statusChip(h)+'<p class="meta" style="font-size:15px;margin:8px 0 12px">'+foundCount(h)+' of '+h.items.length+' found</p>'+act;
+    d.querySelector("[data-a]").onclick=function(){if(h.finishedAt){openAlbum(h.id)}else{resumeHunt(h.id)}};
+    wrap.appendChild(d);
+  }
+  if(prog.length){var hh=document.createElement("h2");hh.className="sec-head";hh.textContent="Hunts in progress";wrap.appendChild(hh);prog.forEach(card)}
+  if(done.length){var hd=document.createElement("h2");hd.className="sec-head";hd.textContent="Finished hunts";wrap.appendChild(hd);done.forEach(card)}
+}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+var CHIP_EXAMPLES={"chip-round":[["ball","a ball"],["rock","a rock"],["cup","a cup"]],"chip-yellow":[["flower","a flower"],["ball","a ball"],["star","a star"]],"chip-red":[["car-red","a red car"],["flower","a flower"],["flag","a flag"]],"chip-square":[["box","a box"],["book","a book"],["picnic","a picnic table"]]};
+function isChipIcon(name){return !!CHIP_EXAMPLES[name]}
+function chipExamplesHTML(icon,small){var ex=CHIP_EXAMPLES[icon];if(!ex)return "";var h='<span class="chip-examples'+(small?" small":"")+'"><span class="ex-label">like these:</span>';ex.forEach(function(e){h+='<span class="ex-ic" title="'+e[1]+'">'+iconUse(e[0])+'</span>'});return h+"</span>"}
+function guardStart(key,els){if(S.busy[key])return false;S.busy[key]=true;(els||[]).forEach(function(el){if(el){el.disabled=true;el.setAttribute("disabled","")}});return true}
+function guardEnd(key,els){delete S.busy[key];(els||[]).forEach(function(el){if(el){el.disabled=false;el.removeAttribute("disabled")}})}
+function clearKidLocks(){["kidAdvance","finish","look","found","retake","attach"].forEach(function(k){delete S.busy[k]});["btn-kid-skip","btn-kid-spot","btn-kid-finish","btn-finish2","btn-look","btn-found","btn-retake"].forEach(function(id){var el=$(id);if(el){el.disabled=false;el.removeAttribute("disabled")}}) }
+/* ================= SETUP ================= */
+function openSetup(tplId){
+  var t=tplById(tplId);S.setupTpl=t;S.setupPlayers="both";
+  S.setupItems=t.items.map(function(p,i){return {id:"it"+i,label:p[0],icon:p[1],status:"pending",photoId:null,spotted:false}});
+  S.setupPool=t.spares.map(function(p){return {label:p[0],icon:p[1]}});
+  $("setup-title").textContent=t.name+" Hunt";
+  $("setup-road-note").classList.toggle("hidden",t.id!=="roadtrip");
+  markChips($("setup-players"),"both");renderSetup();show("v-setup");
+}
+function renderSetup(){
+  var list=$("setup-list");list.innerHTML="";
+  S.setupItems.forEach(function(it){
+    var d=document.createElement("div");d.className="item-row";
+    d.innerHTML='<span class="ir-ic">'+iconUse(it.icon)+'</span><span class="ir-main"><span class="ir-name">'+esc(it.label)+'</span>'+chipExamplesHTML(it.icon,true)+'</span>';
+    var x=document.createElement("button");x.className="icon-btn";x.setAttribute("aria-label","Take "+it.label+" off the list");x.innerHTML='<svg class="ic"><use href="#i-close"/></svg>';
+    x.onclick=function(){S.setupItems=S.setupItems.filter(function(y){return y.id!==it.id});S.setupPool.push({label:it.label,icon:it.icon});renderSetup()};
+    d.appendChild(x);list.appendChild(d);
+  });
+  var pool=$("setup-pool");pool.innerHTML="";
+  if(!S.setupPool.length)pool.innerHTML='<span class="meta">Nothing spare right now.</span>';
+  S.setupPool.forEach(function(p){
+    var b=document.createElement("button");b.className="pool-chip";b.textContent="+ "+p.label;
+    b.onclick=function(){if(S.setupItems.length>=8){toast("Eight is the most for one hunt — the star path only fits eight stars.");return}
+      S.setupItems.push({id:uid(),label:p.label,icon:p.icon,status:"pending",photoId:null,spotted:false});
+      S.setupPool=S.setupPool.filter(function(y){return y!==p});renderSetup()};
+    pool.appendChild(b);
+  });
+  $("btn-start-hunt").toggleAttribute("disabled",S.setupItems.length<3);
+}
+function markChips(container,mode){container.querySelectorAll(".pick-chip").forEach(function(c){c.classList.toggle("sel",c.getAttribute("data-pmode")===mode)})}
+function wireChips(container,cb){container.querySelectorAll(".pick-chip").forEach(function(c){c.onclick=function(){markChips(container,c.getAttribute("data-pmode"));cb(c.getAttribute("data-pmode"))}})}
+/* ================= BUILDER ================= */
+function openBuilder(srcTpl){
+  S.builderSrc=srcTpl||null;S.builderPlayers="both";S.builderIcon=null;
+  var now=Date.now();
+  if(srcTpl){S.builderItems=srcTpl.items.map(function(p,i){return {id:"it"+i,label:p[0],icon:p[1],status:"pending",photoId:null,spotted:false}});
+    S.builderPool=srcTpl.spares.map(function(p){return {label:p[0],icon:p[1]}});
+    $("builder-name").textContent=autoName(srcTpl.name+" Hunt",now);}
+  else{S.builderItems=[];S.builderPool=[];$("builder-name").textContent=autoName("My Hunt",now)}
+  $("builder-word").value="";markChips($("builder-players"),"both");renderBuilder();show("v-builder");
+}
+function renderBuilder(){
+  var list=$("builder-list");list.innerHTML="";
+  S.builderItems.forEach(function(it){
+    var d=document.createElement("div");d.className="item-row";
+    d.innerHTML='<span class="ir-ic">'+iconUse(it.icon)+'</span><span class="ir-main"><span class="ir-name">'+esc(it.label)+'</span>'+chipExamplesHTML(it.icon,true)+'</span>';
+    var x=document.createElement("button");x.className="icon-btn";x.setAttribute("aria-label","Take "+it.label+" off the list");x.innerHTML='<svg class="ic"><use href="#i-close"/></svg>';
+    x.onclick=function(){S.builderItems=S.builderItems.filter(function(y){return y.id!==it.id});renderBuilder()};
+    d.appendChild(x);list.appendChild(d);
+  });
+  $("builder-count").textContent=S.builderItems.length+" of 8 items. A hunt needs at least 3.";
+  var grid=$("builder-icons");grid.innerHTML="";
+  ALL_ICONS.forEach(function(name){
+    var b=document.createElement("button");b.className="icon-pick"+(S.builderIcon===name?" sel":"");b.setAttribute("aria-label","Picture: "+name);b.innerHTML=iconUse(name);
+    b.onclick=function(){S.builderIcon=name;renderBuilder()};grid.appendChild(b);
+  });
+  var pw=$("builder-pool-wrap");pw.classList.toggle("hidden",!S.builderPool.length);
+  var pool=$("builder-pool");pool.innerHTML="";
+  S.builderPool.forEach(function(p){var b=document.createElement("button");b.className="pool-chip";b.textContent="+ "+p.label;
+    b.onclick=function(){if(S.builderItems.length>=8){toast("Eight is the most for one hunt — the star path only fits eight stars.");return}
+      S.builderItems.push({id:uid(),label:p.label,icon:p.icon,status:"pending",photoId:null,spotted:false});S.builderPool=S.builderPool.filter(function(y){return y!==p});renderBuilder()};
+    pool.appendChild(b)});
+  $("btn-builder-start").toggleAttribute("disabled",S.builderItems.length<3||S.builderItems.length>8);
+}
+</script>
+<script>
+"use strict";
+/* ================= START FLOW ================= */
+function makeHunt(name,templateId,mode,items,pool,playersMode){
+  var names=playerNames();
+  var h={id:uid(),name:name,templateId:templateId,mode:mode,
+    items:items.map(function(it,i){return {id:it.id||("it"+i),label:it.label,icon:it.icon,status:"pending",photoId:null,spotted:false}}),
+    sparePool:pool.map(function(p){return {label:p.label,icon:p.icon}}),
+    currentIndex:0,players:{mode:playersMode,names:names},createdAt:Date.now(),finishedAt:null,deletedAt:null};
+  return h;
+}
+function beginStart(h){
+  S.pendingStart=h;
+  if(!setting("cameraChecked",false)&&h.mode==="photo"){show("v-check")}
+  else{doHandoff()}
+}
+function doHandoff(){show("v-handoff")}
+function rulesFor(h){
+  var rules=[["rule-person","Snap things, not people."],["rule-toilet","No bathrooms."],["rule-eye","Stay where a grown-up can see you."]];
+  if(h.mode==="spot")rules.push(["rule-belt","Stay buckled."]);
+  var w=$("rules-list");w.innerHTML="";
+  rules.forEach(function(r){var d=document.createElement("div");d.className="item-row";
+    d.innerHTML='<span class="ir-ic">'+iconUse(r[0])+'</span><span class="ir-name">'+r[1]+'</span>';w.appendChild(d)});
+}
+function enterKid(h){S.curHuntId=h.id;rulesFor(h);show("v-rules")}
+function resumeHunt(id){var h=huntById(id);if(!h)return;S.curHuntId=id;
+  if(h.finishedAt){openAlbum(id);return}
+  if(currentItem(h)){renderKid();show("v-kid")}else{endOfItems(h)}}
+/* ================= KID MODE ================= */
+function curHunt(){return huntById(S.curHuntId)}
+function currentItem(h){if(h.currentIndex<h.items.length&&h.items[h.currentIndex].status==="pending")return h.items[h.currentIndex];
+  for(var i=0;i<h.items.length;i++)if(h.items[i].status==="pending"){h.currentIndex=i;return h.items[i]}return null}
+function starPathSVG(h){
+  var n=h.items.length,W=344,H=64,cx=[],cy=[],i;
+  for(i=0;i<n;i++){cx.push(24+(W-48)*(n===1?0.5:i/(n-1)));cy.push(32+((i%2===0)?-11:11))}
+  var d="M"+cx[0]+" "+cy[0];for(i=1;i<n;i++){var mx=(cx[i-1]+cx[i])/2;d+=" Q"+mx+" "+(i%2===0?52:12)+" "+cx[i]+" "+cy[i]}
+  var s='<svg width="100%" height="64" viewBox="0 0 344 64" aria-hidden="true"><path d="'+d+'" fill="none" stroke="#14342F" stroke-opacity=".35" stroke-width="3" stroke-dasharray="1 8" stroke-linecap="round"/>';
+  h.items.forEach(function(it,i){
+    var cur=(i===h.currentIndex&&it.status==="pending"&&!h.finishedAt);
+    var r=it.status==="found"?15:(cur?18:13);
+    var fill=it.status==="found"?"#FFBE2E":(cur?"#FFFEF7":"none");
+    var op=it.status==="parked"?.4:1;var so=it.status==="found"||cur?1:.45;
+    s+='<g opacity="'+op+'"'+(cur?' class="star-cur"':'')+'><polygon points="'+starPoints(cx[i],cy[i],r,r*0.45,5)+'" fill="'+fill+'" stroke="#14342F" stroke-opacity="'+so+'" stroke-width="'+(cur?4.5:3.5)+'" stroke-linejoin="round"/></g>';
+  });
+  return s+"</svg>";
+}
+function renderKid(){
+  clearKidLocks();
+  var h=curHunt();if(!h)return;var it=currentItem(h);
+  if(!it){endOfItems(h);return}
+  $("kid-starpath").innerHTML=starPathSVG(h);
+  var banner=$("kid-turn");
+  if(h.players.mode==="both"){
+    var idx=h.items.indexOf(it);var who=idx%2;var names=h.players.names&&h.players.names.length?h.players.names:playerNames();
+    banner.textContent=names[who]+"'s turn";banner.className="turn-banner "+(who===0?"t1":"t2");
+  }else banner.classList.add("hidden");
+  $("kid-helper").textContent=h.mode==="spot"?"Look for…":"Find a…";
+  $("kid-icon").innerHTML=iconUse(it.icon);
+  $("kid-icon").querySelector("svg").setAttribute("width","132");$("kid-icon").querySelector("svg").setAttribute("height","132");
+  var w=$("kid-word");w.textContent=it.label.replace(/^A /,"").replace(/^An /,"");
+  w.className="item-word"+(w.textContent.length>8?" long":"");
+  $("btn-kid-camera").classList.toggle("hidden",h.mode==="spot");
+  $("btn-kid-spot").classList.toggle("hidden",h.mode!=="spot");
+  $("kid-reminder").textContent=h.mode==="spot"?"Stay buckled — just look and tap!":"Snap things, not people.";
+  $("kid-examples").innerHTML=chipExamplesHTML(it.icon,false);
+  $("btn-kid-finish").classList.toggle("hidden",foundCount(h)<4);
+  $("kid-storage-line").classList.toggle("hidden",!memMode);
+  $("kid-stamp").classList.add("hidden");
+}
+var _voice=null,_voiceWarmed=false;
+function refreshVoice(){try{if(!("speechSynthesis" in window))return null;var voices=speechSynthesis.getVoices().filter(function(v){return v.localService});if(!voices.length){_voice=null;return null}var en=voices.filter(function(v){return v.lang&&v.lang.toLowerCase().indexOf("en")===0});_voice=en.length?en[0]:voices[0];return _voice}catch(e){return null}}
+if("speechSynthesis" in window){try{speechSynthesis.getVoices();refreshVoice();if(speechSynthesis.addEventListener)speechSynthesis.addEventListener("voiceschanged",refreshVoice);else speechSynthesis.onvoiceschanged=refreshVoice}catch(e){}}
+document.addEventListener("pointerdown",function(){if(_voiceWarmed)return;_voiceWarmed=true;try{if("speechSynthesis" in window){speechSynthesis.getVoices();refreshVoice()}}catch(e){}},false);
+function speak(text){
+  try{
+    if(!("speechSynthesis" in window))return;
+    var voice=_voice||refreshVoice();
+    if(!voice)return;
+    var u=new SpeechSynthesisUtterance(text);u.voice=voice;
+    speechSynthesis.cancel();speechSynthesis.speak(u);
+  }catch(e){/* audio is a bonus; picture and word carry the meaning */}
+}
+function endOfItems(h){
+  clearKidLocks();
+  if(parkedCount(h)>0){renderParked(h);show("v-parked")}
+  else finishHunt(h);
+}
+function finishHunt(h){
+  if(S.busy.finish)return;S.busy.finish=true;["btn-kid-finish","btn-finish2"].forEach(function(id){var el=$(id);if(el){el.disabled=true;el.setAttribute("disabled","")}});
+  h.finishedAt=h.finishedAt||Date.now();
+  saveHunt(h).then(function(){delete S.busy.finish;renderCelebration(h);show("v-celeb")}).catch(function(){guardEnd("finish",[$("btn-kid-finish"),$("btn-finish2")])});
+}
+function advance(h){
+  /* move pointer to the next pending item in order */
+  for(var i=h.currentIndex+1;i<h.items.length;i++){if(h.items[i].status==="pending"){h.currentIndex=i;saveHunt(h).then(function(){renderKid();show("v-kid")});return}}
+  for(var j=0;j<h.items.length;j++){if(h.items[j].status==="pending"){h.currentIndex=j;saveHunt(h).then(function(){renderKid();show("v-kid")});return}}
+  saveHunt(h).then(function(){endOfItems(h)});
+}
+/* ================= PARKED ================= */
+function renderParked(h){
+  $("parked-title").textContent="You still have "+parkedCount(h)+" to find!";
+  var g=$("parked-list");g.innerHTML="";
+  h.items.filter(function(it){return it.status==="parked"}).forEach(function(it){
+    var d=document.createElement("div");d.className="parks-card";
+    d.innerHTML=iconUse(it.icon)+'<div class="pk-name">'+esc(it.label)+'</div><div class="pk-star">For next time</div>';
+    d.querySelector("svg").setAttribute("width","84");d.querySelector("svg").setAttribute("height","84");
+    g.appendChild(d);
+  });
+}
+/* ================= CELEBRATION ================= */
+function renderCelebration(h){
+  var rays=$("celeb-rays");var cols=["#0E6B5E","#FF6B4A","#FFBE2E"];var html="";
+  for(var i=0;i<12;i++){var a=i*30;html+='<div style="position:absolute;left:50%;top:50%;width:10px;height:26px;margin-left:-5px;border-radius:6px;background:'+cols[i%3]+';border:2px solid #14342F;transform:rotate('+a+'deg) translateY(-102px)"></div>'}
+  rays.innerHTML=html;
+  $("celeb-seal").innerHTML='<svg width="180" height="180" viewBox="0 0 64 64"><polygon points="'+starPoints(32,32,30,13,5)+'" fill="#FFBE2E" stroke="#14342F" stroke-width="2.5" stroke-linejoin="round"/></svg>';
+  $("celeb-sub").textContent=parkedCount(h)>0?"Your album is ready — the rest are saved for next time.":"You found every one.";
+  var burst=$("celeb-burst");burst.innerHTML="";
+  var shapes=["border-radius:6px","border-radius:50%","border-radius:3px"];
+  for(var k=0;k<18;k++){
+    var d=document.createElement("div");d.className="burst-shape";
+    var sz=10+(k%3)*5;
+    d.style.cssText="left:"+(6+k*5.2)+"%;top:-16px;width:"+sz+"px;height:"+sz+"px;background:"+cols[k%3]+";"+shapes[k%3]+";animation-delay:"+(k*30)+"ms;animation-duration:"+(620+(k%5)*45)+"ms";
+    burst.appendChild(d);
+  }
+}
+/* ================= CAMERA ================= */
+function stopCamera(){if(S.stream){S.stream.getTracks().forEach(function(t){t.stop()});S.stream=null}var v=$("cam-video");if(v)v.srcObject=null}
+function openCamera(mode){
+  S.camMode=mode;$("cam-error").classList.add("hidden");show("v-camera");
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){camFail(mode);return}
+  navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:false}).then(function(stream){
+    S.stream=stream;$("cam-video").srcObject=stream;
+  }).catch(function(){camFail(mode)});
+}
+function camFail(mode){
+  stopCamera();
+  if(mode==="check"){show("v-check");var e=$("check-error");e.classList.remove("hidden");
+    e.innerHTML="<strong>The camera did not open.</strong><br>What happened: HuntList could not use the camera — it may be turned off for this site, or this phone may not share it.<br>What it means: kids cannot take photos inside the hunt yet.<br>What to do next: check the browser&rsquo;s site settings for camera permission, or carry on — a grown-up can import a photo later from the Grown-ups area, on the hunt&rsquo;s detail page.";
+    $("btn-check-import-route").classList.remove("hidden");return}
+  var ce=$("cam-error");ce.classList.remove("hidden");
+  ce.innerHTML="<strong>The camera did not open.</strong> Ask a grown-up to help — they can import a photo from the Grown-ups area, or add one with the in-app camera from Help.";
+}
+function shutter(){
+  var v=$("cam-video");
+  if(!S.stream||!v.videoWidth){camFail(S.camMode);return}
+  var c=document.createElement("canvas");c.width=v.videoWidth;c.height=v.videoHeight;
+  c.getContext("2d").drawImage(v,0,0);
+  c.toBlob(function(blob){
+    if(!blob){camFail(S.camMode);return}
+    if(S.camMode==="check"){stopCamera();saveSetting("cameraChecked",true).then(function(){toast("Camera works. That test snap was thrown away.");doHandoff()});return}
+    if(S.camMode==="help"){stopCamera();attachPhotoToCurrent(blob,true);return}
+    S.tempBlob=blob;if(S.tempURL)URL.revokeObjectURL(S.tempURL);S.tempURL=URL.createObjectURL(blob);
+    stopCamera();openReview();
+  },"image/jpeg",0.92);
+}
+function downscale(blob,maxEdge){return new Promise(function(res){
+  var url=URL.createObjectURL(blob);var img=new Image();
+  img.onload=function(){var w=img.width,hh=img.height;var scale=Math.min(1,maxEdge/Math.max(w,hh));
+    var c=document.createElement("canvas");c.width=Math.round(w*scale);c.height=Math.round(hh*scale);
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);
+    c.toBlob(function(b){res(b||blob)},"image/jpeg",0.82)};
+  img.onerror=function(){URL.revokeObjectURL(url);res(blob)};
+  img.src=url;
+})}
+/* ================= REVIEW + FOUND ================= */
+function openReview(){
+  guardEnd("retake",[$("btn-retake")]);delete S.busy.found;var fb=$("btn-found");if(fb){fb.disabled=false;fb.removeAttribute("disabled")}
+  var h=curHunt();var it=currentItem(h);if(!it)return;S.reviewItemId=it.id;
+  $("review-img").src=S.tempURL;$("review-img").classList.remove("hidden");$("review-illus").classList.add("hidden");
+  var seal=$("review-seal");seal.classList.add("hidden");seal.classList.remove("stamping");seal.innerHTML=sealSVG(156);
+  show("v-review");
+}
+function confirmFound(){
+  if(S.busy.found)return;
+  var h=curHunt();var it=h.items.filter(function(x){return x.id===S.reviewItemId})[0];if(!it||!S.tempBlob)return;
+  S.busy.found=true;
+  var btn=$("btn-found");btn.disabled=true;btn.setAttribute("disabled","");var rb=$("btn-retake");if(rb){rb.disabled=true;rb.setAttribute("disabled","")}
+  downscale(S.tempBlob,1200).then(function(small){
+    var photo={id:uid(),huntId:h.id,itemId:it.id,blob:small,createdAt:Date.now()};
+    return dbPut("photos",photo).then(function(){
+      if(it.photoId)return dbDelete("photos",it.photoId).then(function(){return photo});
+      return photo;
+    });
+  }).then(function(photo){
+    it.photoId=photo.id;it.status="found";it.spotted=false;
+    return saveHunt(h);
+  }).then(function(){
+    btn.disabled=false;btn.removeAttribute("disabled");
+    var seal=$("review-seal");seal.classList.remove("hidden");seal.classList.add("stamping");
+    $("kid-starpath").innerHTML=starPathSVG(h);
+    setTimeout(function(){S.tempBlob=null;if(S.tempURL){URL.revokeObjectURL(S.tempURL);S.tempURL=null}advance(h)},1150);
+  }).catch(function(){delete S.busy.found;btn.disabled=false;btn.removeAttribute("disabled");var rb2=$("btn-retake");if(rb2){rb2.disabled=false;rb2.removeAttribute("disabled")}toast("That photo could not be saved. Ask a grown-up to help.")});
+}
+function spotFound(){
+  if(!guardStart("kidAdvance",[$("btn-kid-spot"),$("btn-kid-skip")]))return;
+  var h=curHunt();var it=currentItem(h);if(!it){guardEnd("kidAdvance",[$("btn-kid-spot"),$("btn-kid-skip")]);return}
+  it.status="found";it.spotted=true;
+  saveHunt(h).then(function(){
+    $("spot-illus").innerHTML=iconUse(it.icon);var si=$("spot-illus").querySelector("svg");if(si){si.setAttribute("width","180");si.setAttribute("height","180")}
+    $("spot-word").textContent=it.label;
+    var seal=$("spot-seal");seal.innerHTML=sealSVG(156);seal.classList.remove("hidden");seal.classList.remove("stamping");void seal.offsetWidth;seal.classList.add("stamping");
+    show("v-spotstage");
+    setTimeout(function(){seal.classList.add("hidden");seal.classList.remove("stamping");advance(h)},1150);
+  }).catch(function(){guardEnd("kidAdvance",[$("btn-kid-spot"),$("btn-kid-skip")])});
+}
+function attachPhotoToCurrent(blob,fromCamera){
+  if(S.busy.attach)return;S.busy.attach=true;
+  var h=curHunt();var it=currentItem(h);if(!h||!it){delete S.busy.attach;return}
+  downscale(blob,1200).then(function(small){
+    var photo={id:uid(),huntId:h.id,itemId:it.id,blob:small,createdAt:Date.now()};
+    return dbPut("photos",photo).then(function(){
+      if(it.photoId)return dbDelete("photos",it.photoId).then(function(){return photo});return photo;
+    });
+  }).then(function(photo){
+    it.photoId=photo.id;it.status="found";it.spotted=false;
+    return saveHunt(h);
+  }).then(function(){
+    $("ov-help").classList.remove("on");toast("Photo added — that one is found.");
+    setTimeout(function(){delete S.busy.attach;advance(h)},400);
+  }).catch(function(){delete S.busy.attach});
+}
+function attachImportedPhoto(blob){
+  if(S.busy.attach)return;S.busy.attach=true;
+  var h=huntById(S.detailId);var it=h?h.items.filter(function(x){return x.id===S.importItemId})[0]:null;
+  if(!h||!it){delete S.busy.attach;return}
+  downscale(blob,1200).then(function(small){
+    var photo={id:uid(),huntId:h.id,itemId:it.id,blob:small,createdAt:Date.now()};
+    return dbPut("photos",photo).then(function(){
+      if(it.photoId)return dbDelete("photos",it.photoId).then(function(){return photo});return photo;
+    });
+  }).then(function(photo){
+    it.photoId=photo.id;it.status="found";it.spotted=false;return saveHunt(h);
+  }).then(function(){delete S.busy.attach;S.importItemId=null;openDetail(h.id);toast("Photo imported — that one is found.")}).catch(function(){delete S.busy.attach;toast("That photo could not be imported.")});
+}
+</script>
+<script>
+"use strict";
+/* ================= ALBUM ================= */
+var albumHuntId=null;
+function openAlbum(id){albumHuntId=id;renderAlbum();show("v-album")}
+function renderAlbum(){
+  var h=huntById(albumHuntId);if(!h)return;
+  $("album-title").textContent=h.name;
+  $("album-sub").textContent="Found on "+fmtDate(h.createdAt)+" · "+foundCount(h)+" of "+h.items.length+" found";
+  var g=$("album-grid");g.innerHTML="";
+  var found=h.items.filter(function(it){return it.status==="found"});
+  $("album-empty").classList.toggle("hidden",found.length>0);
+  var jobs=found.map(function(it){
+    if(it.spotted||!it.photoId){
+      var b=document.createElement("button");b.className="tile";
+      b.innerHTML='<span class="tile-illus">'+iconUse(it.icon)+'</span><span class="mini-seal">'+miniSealSVG()+'</span><span class="tile-label" style="display:block">'+esc(it.label)+'</span>';
+      b.onclick=function(){openLarge(h,it,null)};g.appendChild(b);return null;
+    }
+    return dbGet("photos",it.photoId).then(function(p){
+      var b=document.createElement("button");b.className="tile";
+      var url=p?trackURL(URL.createObjectURL(p.blob)):"";
+      b.innerHTML=(p?'<img src="'+url+'" alt="Photo of '+esc(it.label)+'">':'<span class="tile-illus">'+iconUse(it.icon)+'</span>')+'<span class="mini-seal">'+miniSealSVG()+'</span><span class="tile-label" style="display:block">'+esc(it.label)+'</span>';
+      b.onclick=function(){openLarge(h,it,p)};g.appendChild(b);
+    });
+  });
+  return Promise.all(jobs);
+}
+function openLarge(h,it,photo){
+  $("large-label").textContent=it.label;
+  $("large-seal").innerHTML=miniSealSVG();
+  if(photo){$("large-img").src=trackURL(URL.createObjectURL(photo.blob));$("large-img").classList.remove("hidden");$("large-illus").classList.add("hidden")}
+  else{$("large-img").classList.add("hidden");var li=$("large-illus");li.classList.remove("hidden");li.innerHTML=iconUse(it.icon);
+    li.querySelector("svg").setAttribute("width","200");li.querySelector("svg").setAttribute("height","200")}
+  show("v-large");
+}
+/* ================= SHARE REVIEW ================= */
+var shareHuntId=null;
+function openShare(id){shareHuntId=id;S.shareIncluded={};
+  var h=huntById(id);h.items.forEach(function(it){if(it.status==="found")S.shareIncluded[it.id]=true});
+  renderShare();show("v-share")}
+function shareItems(){var h=huntById(shareHuntId);return h?h.items.filter(function(it){return it.status==="found"}):[]}
+function renderShare(){
+  var h=huntById(shareHuntId);if(!h)return;
+  var list=$("share-list");list.innerHTML="";
+  var jobs=shareItems().map(function(it){
+    var inc=!!S.shareIncluded[it.id];
+    function row(inner){
+      var d=document.createElement("div");d.className="share-row";d.innerHTML=inner+'<span class="sr-name">'+esc(it.label)+'</span>';
+      var t=document.createElement("button");t.className="toggle"+(inc?"":" off");t.textContent=inc?"Sharing":"Left out";
+      t.onclick=function(){S.shareIncluded[it.id]=!S.shareIncluded[it.id];renderShare()};
+      d.appendChild(t);list.appendChild(d);
+    }
+    if(it.spotted||!it.photoId){row('<span class="sr-illus">'+iconUse(it.icon)+'</span>');return null}
+    return dbGet("photos",it.photoId).then(function(p){row(p?'<img src="'+trackURL(URL.createObjectURL(p.blob))+'" alt="">':'<span class="sr-illus">'+iconUse(it.icon)+'</span>')});
+  });
+  Promise.all(jobs).then(updateShareCopy);
+  updateShareCopy();
+}
+function shareCount(){return shareItems().filter(function(it){return S.shareIncluded[it.id]}).length}
+function updateShareCopy(){$("share-copy").textContent="You\u2019re sharing "+shareCount()+" photos. Shared copies can\u2019t be taken back or deleted by this app."}
+function buildCollage(h,included){
+  var cols=2,cell=520,labelH=64,headH=150;
+  var rows=Math.ceil(included.length/cols)||1;
+  var c=document.createElement("canvas");c.width=cols*cell+40;c.height=headH+rows*(cell+labelH)+30;
+  var x=c.getContext("2d");x.fillStyle="#FFF6DC";x.fillRect(0,0,c.width,c.height);
+  x.fillStyle="#14342F";x.font="800 54px ui-rounded,system-ui,sans-serif";x.fillText(h.name,30,70);
+  x.font="600 34px ui-rounded,system-ui,sans-serif";x.fillText(fmtDate(h.createdAt),30,120);
+  var jobs=included.map(function(it,idx){
+    var px=20+(idx%cols)*cell,py=headH+Math.floor(idx/cols)*(cell+labelH);
+    function label(){x.fillStyle="#14342F";x.font="800 36px ui-rounded,system-ui,sans-serif";x.fillText(it.label,px+8,py+cell+44);
+      x.fillStyle="#FFBE2E";x.beginPath();x.arc(px+cell-42,py+cell-30,22,0,7);x.fill();x.strokeStyle="#14342F";x.lineWidth=3;x.stroke()}
+    if(it.spotted||!it.photoId){x.fillStyle="#FFFEF7";x.fillRect(px,py,cell-16,cell-16);x.strokeStyle="#14342F";x.lineWidth=4;x.strokeRect(px,py,cell-16,cell-16);
+      x.fillStyle="#14342F";x.font="800 44px ui-rounded,system-ui,sans-serif";x.fillText("Spotted!",px+24,py+cell/2);label();return Promise.resolve()}
+    return dbGet("photos",it.photoId).then(function(p){
+      if(!p)return;var url=URL.createObjectURL(p.blob);
+      return new Promise(function(res){var img=new Image();img.onload=function(){
+        var s=Math.max((cell-16)/img.width,(cell-16)/img.height);var w=img.width*s,hh=img.height*s;
+        x.save();x.beginPath();x.rect(px,py,cell-16,cell-16);x.clip();
+        x.drawImage(img,px+(cell-16-w)/2,py+(cell-16-hh)/2,w,hh);x.restore();
+        x.strokeStyle="#14342F";x.lineWidth=4;x.strokeRect(px,py,cell-16,cell-16);
+        URL.revokeObjectURL(url);label();res()};img.onerror=function(){URL.revokeObjectURL(url);res()};img.src=url});
+    });
+  });
+  return Promise.all(jobs).then(function(){return new Promise(function(res){c.toBlob(res,"image/jpeg",0.85)})});
+}
+function downloadBlob(blob,name){var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url)},4000)}
+function doShare(){
+  var h=huntById(shareHuntId);var included=shareItems().filter(function(it){return S.shareIncluded[it.id]});
+  if(!included.length){toast("Pick at least one photo to share.");return}
+  buildCollage(h,included).then(function(blob){
+    if(!blob){toast("The album picture could not be made. Try Save the photos instead.");return}
+    var file=null;try{file=new File([blob],"huntlist-album.jpg",{type:"image/jpeg"})}catch(e){}
+    if(file&&navigator.canShare&&navigator.canShare({files:[file]})&&navigator.share){
+      navigator.share({files:[file]}).catch(function(){});
+    }else{downloadBlob(blob,"huntlist-album.jpg");toast("Album picture saved to your downloads.")}
+  });
+}
+function doSaveIndividuals(h,items){
+  var photoItems=items.filter(function(it){return !it.spotted&&it.photoId});
+  if(!photoItems.length){toast("There are no photos to save — spotted finds live in the album.");return}
+  var blobs=photoItems.map(function(it){return dbGet("photos",it.photoId)});
+  Promise.all(blobs).then(function(ps){
+    var files=[],ok=[];
+    ps.forEach(function(p,i){if(p){ok.push(p);try{files.push(new File([p.blob],"huntlist-"+pad2(i+1)+".jpg",{type:"image/jpeg"}))}catch(e){}}});
+    if(files.length&&navigator.canShare&&navigator.canShare({files:files})&&navigator.share){navigator.share({files:files}).catch(function(){})}
+    else{ok.forEach(function(p,i){downloadBlob(p.blob,"huntlist-"+pad2(i+1)+".jpg")});toast("Photos saved to your downloads.")}
+  });
+}
+function pad2(n){return (n<10?"0":"")+n}
+/* ================= MATH CHECK ================= */
+function mathCheck(cb){
+  if(Date.now()<(S.mathLockUntil||0)){toast("That\u2019s a lot of tries — ask a grown-up to open this with you.");return}
+  S.mathCb=cb;$("math-msg").classList.add("hidden");genMath();$("ov-math").classList.add("on");
+}
+function genMath(){
+  var a=6+Math.floor(Math.random()*4),b=6+Math.floor(Math.random()*4),ans=a*b;
+  $("math-q").textContent=a+" × "+b+" = ?";
+  var opts=[ans];while(opts.length<4){var o=ans+(Math.floor(Math.random()*17)-8);if(o>0&&opts.indexOf(o)<0)opts.push(o)}
+  opts.sort(function(){return Math.random()-0.5});
+  var w=$("math-opts");w.innerHTML="";
+  opts.forEach(function(o){var btn=document.createElement("button");btn.className="math-opt";btn.textContent=o;
+    btn.onclick=function(){if(o===ans){S.mathWrong=0;$("ov-math").classList.remove("on");var cb=S.mathCb;S.mathCb=null;if(cb)cb()}
+      else{S.mathWrong=(S.mathWrong||0)+1;if(S.mathWrong>=3){S.mathWrong=0;S.mathLockUntil=Date.now()+30000;S.mathCb=null;$("ov-math").classList.remove("on");toast("That\u2019s a lot of tries — ask a grown-up to open this with you.");return}$("math-msg").classList.remove("hidden");genMath()}};
+    w.appendChild(btn)});
+}
+/* ================= PARENT AREA ================= */
+function renderParent(){
+  $("parent-banner").classList.toggle("hidden",!memMode);
+  if(memMode)$("parent-banner").innerHTML="<strong>Saving is not working on this phone right now.</strong><br>What happened: this browser would not open HuntList&rsquo;s photo store.<br>What it means: hunts and photos last only while this page stays open.<br>What to do next: share or save any album you want to keep before closing, and try a different browser if it keeps happening.";
+  var names=playerNames();$("name-1").value=names[0];$("name-2").value=names[1];
+  var w=$("parent-hunts");w.innerHTML="";
+  var live=S.hunts.filter(function(h){return !h.deletedAt}).sort(function(a,b){return b.createdAt-a.createdAt});
+  if(!live.length)w.innerHTML='<p class="meta">No hunts yet.</p>';
+  live.forEach(function(h){
+    var d=document.createElement("div");d.className="parent-item";
+    d.innerHTML='<span class="pi-name">'+esc(h.name)+'<br><span class="meta">'+fmtDate(h.createdAt)+' · '+foundCount(h)+' of '+h.items.length+' found'+(h.finishedAt?" · Finished":" · In progress")+'</span></span>';
+    var b=document.createElement("button");b.className="btn";b.textContent="Open";
+    b.onclick=function(){openDetail(h.id)};d.appendChild(b);w.appendChild(d);
+  });
+  storageReport($("parent-storage"));
+}
+function storageReport(el){
+  dbAll("photos").then(function(photos){
+    var line="Photos in this app: "+photos.length+".";
+    if(navigator.storage&&navigator.storage.estimate){return navigator.storage.estimate().then(function(e){
+      var mb=e&&e.usage?(e.usage/1048576):0;line+=" Space used on this phone: about "+(mb<1?mb.toFixed(2):mb.toFixed(1))+" MB.";el.textContent=line})}
+    el.textContent=line;
+  }).catch(function(){el.textContent="The storage count could not be read just now."});
+}
+function openDetail(id){
+  S.detailId=id;var h=huntById(id);if(!h)return;
+  $("detail-title").textContent=h.name;$("detail-sub").textContent=fmtDate(h.createdAt)+" · "+foundCount(h)+" of "+h.items.length+" found";
+  $("detail-report").textContent="";
+  var w=$("detail-items");w.innerHTML="";
+  var jobs=h.items.map(function(it){
+    function row(inner,photo){
+      var d=document.createElement("div");d.className="parent-item";d.innerHTML=inner+'<span class="pi-name">'+esc(it.label)+'<br><span class="meta">'+(it.status==="found"?"Found":it.status==="parked"?"Saved for next time":"Not found yet")+'</span></span>';
+      if(it.status!=="found"){var ib=document.createElement("button");ib.className="btn";ib.textContent="Import photo";
+        ib.onclick=function(){S.importItemId=it.id;$("detail-file").click()};d.appendChild(ib)}
+      if(h.sparePool&&h.sparePool.length&&it.status!=="found"){var sb=document.createElement("button");sb.className="btn";sb.textContent="Swap item";
+        sb.onclick=function(){if(S.busy.swapDetail)return;mathCheck(function(){swapItemDetail(h,it)})};d.appendChild(sb)}
+      if(photo){var db2=document.createElement("button");db2.className="btn";db2.innerHTML='<svg class="ic"><use href="#i-trash"/></svg> Delete photo';
+        db2.onclick=function(){mathCheck(function(){
+          if(!window.confirm("Delete this one photo? The item goes back to Not found yet."))return;
+          dbDeletePhotoAndItem(h,photo.id).then(function(nh){
+            var i=S.hunts.findIndex(function(x){return x.id===nh.id});S.hunts[i]=nh;
+            openDetail(nh.id);toast("Photo deleted.");
+          });
+        })};
+        d.appendChild(db2)}
+      w.appendChild(d);
+    }
+    if(it.photoId)return dbGet("photos",it.photoId).then(function(p){row(p?'<img src="'+trackURL(URL.createObjectURL(p.blob))+'" alt="">':'<span class="pi-illus">'+iconUse(it.icon)+'</span>',p)});
+    row('<span class="pi-illus">'+iconUse(it.icon)+'</span>',null);return null;
+  });
+  Promise.all(jobs);show("v-detail");
+}
+function swapItemDetail(h,it){
+  if(S.busy.swapDetail)return;S.busy.swapDetail=true;
+  var spare=h.sparePool.shift();if(!spare){delete S.busy.swapDetail;return}
+  h.sparePool.push({label:it.label,icon:it.icon});
+  it.label=spare.label;it.icon=spare.icon;it.status="pending";it.photoId=null;it.spotted=false;
+  saveHunt(h).then(function(){delete S.busy.swapDetail;openDetail(h.id);toast("Item swapped for "+spare.label+".")}).catch(function(){delete S.busy.swapDetail});
+}
+/* ---- delete hunt flow ---- */
+function openDeleteHunt(h){
+  S.delTarget=h;$("del-title").textContent="Delete "+h.name+"?";
+  var cnt=foundCount(h);
+  $("del-copy").innerHTML="Delete <strong>"+esc(h.name)+"</strong> from "+fmtDate(h.createdAt)+", with its "+cnt+" photo"+(cnt===1?"":"s")+"? It waits in Recently deleted for 30 days, where you can bring it back.";
+  var strip=$("del-thumbs");strip.innerHTML="";
+  var jobs=h.items.filter(function(it){return it.photoId}).map(function(it){
+    return dbGet("photos",it.photoId).then(function(p){if(p){var im=document.createElement("img");im.src=trackURL(URL.createObjectURL(p.blob));im.alt="";strip.appendChild(im)}});
+  });
+  h.items.filter(function(it){return it.spotted}).forEach(function(it){var d=document.createElement("span");d.className="ts-illus";d.innerHTML=iconUse(it.icon);strip.appendChild(d)});
+  Promise.all(jobs);$("ov-del").classList.add("on");
+}
+function doSoftDelete(){
+  var h=S.delTarget;$("ov-del").classList.remove("on");if(!h)return;
+  h.deletedAt=Date.now();S.delTarget=null;
+  saveHunt(h).then(function(){
+    renderParent();
+    toast(h.name+" moved to Recently deleted.",function(){
+      h.deletedAt=null;saveHunt(h).then(function(){renderParent()});
+    });
+    show("v-parent");
+  });
+}
+function renderBin(){
+  var w=$("bin-list");w.innerHTML="";
+  var bin=S.hunts.filter(function(h){return h.deletedAt}).sort(function(a,b){return b.deletedAt-a.deletedAt});
+  if(!bin.length)w.innerHTML='<p class="meta">Nothing here. Deleted hunts wait 30 days before they are gone for good.</p>';
+  bin.forEach(function(h){
+    var days=Math.max(0,30-Math.floor((Date.now()-h.deletedAt)/86400000));
+    var d=document.createElement("div");d.className="parent-item";
+    d.innerHTML='<span class="pi-name">'+esc(h.name)+'<br><span class="meta">'+fmtDate(h.createdAt)+' · '+foundCount(h)+' photos · '+days+' days left to bring it back</span></span>';
+    var rb=document.createElement("button");rb.className="btn teal";rb.textContent="Restore";
+    rb.onclick=function(){h.deletedAt=null;saveHunt(h).then(function(){renderBin();toast("Hunt restored.")})};
+    var fb=document.createElement("button");fb.className="btn";fb.style.color="var(--coral-deep)";fb.textContent="Delete forever";
+    fb.onclick=function(){mathCheck(function(){
+      if(window.confirm("Delete "+h.name+" forever? Its photo records inside this app are removed for good. Copies already shared or saved elsewhere are not touched.")){
+        dbDeleteHuntForever(h.id).then(function(){
+          S.hunts=S.hunts.filter(function(x){return x.id!==h.id});
+          return dbPhotosOf(h.id);
+        }).then(function(left){
+          renderBin();
+          toast("Deleted forever. Storage check: "+left.length+" photo records for that hunt remain in this app.");
+        });
+      }})};
+    d.appendChild(rb);d.appendChild(fb);w.appendChild(d);
+  });
+}
+/* ================= HELP ================= */
+function openHelp(){
+  var h=curHunt();if(!h)return;var it=currentItem(h);
+  $("help-progress").textContent=foundCount(h)+" of "+h.items.length+" found so far."+(it?" They are looking for "+it.label+".":"");
+  $("help-swap-note").textContent=(h.sparePool&&h.sparePool.length)?"Swapping pulls a fresh item from this hunt\u2019s spare list.":"This hunt has no spare items left to swap in.";
+  $("btn-help-swap").toggleAttribute("disabled",!(h.sparePool&&h.sparePool.length));
+  $("ov-help").classList.add("on");
+}
+function helpSwap(){
+  if(!guardStart("swapHelp",[$("btn-help-swap")]))return;
+  var h=curHunt();var it=currentItem(h);if(!h||!it||!h.sparePool.length){guardEnd("swapHelp",[$("btn-help-swap")]);return}
+  var spare=h.sparePool.shift();h.sparePool.push({label:it.label,icon:it.icon});
+  it.label=spare.label;it.icon=spare.icon;
+  saveHunt(h).then(function(){guardEnd("swapHelp",[$("btn-help-swap")]);$("ov-help").classList.remove("on");renderKid();toast("Swapped — now find "+spare.label+".")}).catch(function(){guardEnd("swapHelp",[$("btn-help-swap")])});
+}
+</script>
+<script>
+"use strict";
+/* ================= HOLD BUTTONS ================= */
+function wireHold(el,ms,cb){
+  var timer=null;
+  function start(e){e.preventDefault();el.classList.add("holding");
+    timer=setTimeout(function(){el.classList.remove("holding");cb()},ms)}
+  function cancel(){el.classList.remove("holding");if(timer)clearTimeout(timer);timer=null}
+  el.addEventListener("pointerdown",start);el.addEventListener("pointerup",cancel);
+  el.addEventListener("pointerleave",cancel);el.addEventListener("pointercancel",cancel);
+}
+/* ================= WIRING ================= */
+function wire(){
+  wireChips($("setup-players"),function(m){S.setupPlayers=m});
+  wireChips($("builder-players"),function(m){S.builderPlayers=m});
+  $("btn-make-own").onclick=function(){openBuilder(null)};
+  $("btn-setup-back").onclick=function(){renderHome();show("v-home")};
+  $("btn-setup-custom").onclick=function(){openBuilder(S.setupTpl)};
+  $("btn-builder-back").onclick=function(){renderHome();show("v-home")};
+  $("btn-builder-add").onclick=function(){
+    var word=$("builder-word").value.trim();
+    if(!word){toast("Type a word for the thing first.");return}
+    if(!S.builderIcon){toast("Pick a picture for it from the grid.");return}
+    if(S.builderItems.length>=8){toast("Eight is the most for one hunt — the star path only fits eight stars.");return}
+    S.builderItems.push({id:uid(),label:word,icon:S.builderIcon,status:"pending",photoId:null,spotted:false});
+    $("builder-word").value="";S.builderIcon=null;renderBuilder();
+  };
+  $("btn-start-hunt").onclick=function(){
+    if(S.setupItems.length<3)return;
+    var h=makeHunt(autoName(S.setupTpl.name+" Hunt",Date.now()),S.setupTpl.id,S.setupTpl.mode,S.setupItems,S.setupPool,S.setupPlayers);
+    saveHunt(h).then(function(){beginStart(h)});
+  };
+  $("btn-builder-start").onclick=function(){
+    if(S.builderItems.length<3)return;
+    var src=S.builderSrc;
+    var h=makeHunt($("builder-name").textContent,src?src.id:"custom",src?src.mode:"photo",S.builderItems,S.builderPool,S.builderPlayers);
+    saveHunt(h).then(function(){beginStart(h)});
+  };
+  $("btn-check-camera").onclick=function(){openCamera("check")};
+  $("btn-check-back").onclick=function(){renderHome();show("v-home")};
+  $("btn-check-import-route").onclick=function(){saveSetting("cameraChecked",true).then(function(){doHandoff()})};
+  $("btn-letsgo").onclick=function(){var h=S.pendingStart;if(h){S.pendingStart=null;enterKid(h)}};
+  $("btn-gotit").onclick=function(){renderKid();show("v-kid")};
+  $("kid-card").onclick=function(){var h=curHunt();var it=h?currentItem(h):null;if(it)speak(it.label)};
+  $("btn-kid-camera").onclick=function(){openCamera("kid")};
+  $("btn-kid-spot").onclick=function(){spotFound()};
+  $("btn-kid-skip").onclick=function(){if(!guardStart("kidAdvance",[$("btn-kid-skip"),$("btn-kid-spot")]))return;var h=curHunt();var it=h?currentItem(h):null;if(!it){guardEnd("kidAdvance",[$("btn-kid-skip"),$("btn-kid-spot")]);return}
+    it.status="parked";saveHunt(h).then(function(){advance(h)}).catch(function(){guardEnd("kidAdvance",[$("btn-kid-skip"),$("btn-kid-spot")])})};
+  $("btn-kid-finish").onclick=function(){var h=curHunt();if(h)finishHunt(h)};
+  $("btn-shutter").onclick=shutter;
+  $("btn-cam-close").onclick=function(){stopCamera();
+    if(S.camMode==="check"){show("v-check")}else if(S.camMode==="help"){show("v-kid");$("ov-help").classList.add("on")}else{renderKid();show("v-kid")}};
+  $("btn-found").onclick=confirmFound;
+  $("btn-retake").onclick=function(){if(S.busy.found)return;if(!guardStart("retake",[$("btn-retake"),$("btn-found")]))return;S.tempBlob=null;if(S.tempURL){URL.revokeObjectURL(S.tempURL);S.tempURL=null}openCamera("kid")};
+  $("btn-look").onclick=function(){if(!guardStart("look",[$("btn-look"),$("btn-finish2")]))return;var h=curHunt();if(!h){guardEnd("look",[$("btn-look"),$("btn-finish2")]);return}
+    h.items.forEach(function(it){if(it.status==="parked")it.status="pending"});
+    h.currentIndex=h.items.findIndex(function(it){return it.status==="pending"});
+    saveHunt(h).then(function(){guardEnd("look",[$("btn-look"),$("btn-finish2")]);renderKid();show("v-kid")}).catch(function(){guardEnd("look",[$("btn-look"),$("btn-finish2")])})};
+  $("btn-finish2").onclick=function(){var h=curHunt();if(h)finishHunt(h)};
+  $("btn-celeb-album").onclick=function(){if(S.curHuntId)openAlbum(S.curHuntId)};
+  $("btn-celeb-share").onclick=function(){if(S.curHuntId)openShare(S.curHuntId)};
+  $("btn-celeb-again").onclick=function(){renderHome();show("v-home")};
+  $("btn-album-share").onclick=function(){if(albumHuntId)openShare(albumHuntId)};
+  $("btn-album-save").onclick=function(){var h=huntById(albumHuntId);if(h)doSaveIndividuals(h,h.items.filter(function(it){return it.status==="found"}))};
+  $("btn-album-home").onclick=function(){renderHome();show("v-home")};
+  $("btn-large-back").onclick=function(){renderAlbum();show("v-album")};
+  $("btn-share-back").onclick=function(){if(shareHuntId)openAlbum(shareHuntId)};
+  $("btn-share-do").onclick=doShare;
+  $("btn-share-save").onclick=function(){var h=huntById(shareHuntId);if(h)doSaveIndividuals(h,shareItems().filter(function(it){return S.shareIncluded[it.id]}))};
+  /* gate + parent */
+  $("grownups-link").onclick=function(){
+    if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
+    show("v-gate")};
+  $("btn-gate-back").onclick=function(){renderHome();show("v-home")};
+  wireHold($("btn-hold"),1250,function(){renderParent();show("v-parent")});
+  $("btn-parent-home").onclick=function(){renderHome();show("v-home")};
+  $("btn-save-names").onclick=function(){
+    var n1=$("name-1").value.trim()||"Player 1",n2=$("name-2").value.trim()||"Player 2";
+    saveSetting("player1",n1).then(function(){return saveSetting("player2",n2)}).then(function(){toast("Names saved — only on this phone.")});
+  };
+  $("btn-open-bin").onclick=function(){mathCheck(function(){renderBin();show("v-bin")})};
+  $("btn-bin-back").onclick=function(){renderParent();show("v-parent")};
+  $("btn-detail-back").onclick=function(){renderParent();show("v-parent")};
+  $("btn-del-hunt").onclick=function(){var h=huntById(S.detailId);if(h)mathCheck(function(){openDeleteHunt(h)})};
+  $("btn-del-cancel").onclick=function(){$("ov-del").classList.remove("on")};
+  wireHold($("btn-hold-delete"),3050,doSoftDelete);
+  /* math */
+  $("btn-math-cancel").onclick=function(){$("ov-math").classList.remove("on");S.mathCb=null};
+  /* help */
+  $("btn-help").onclick=openHelp;
+  $("btn-help-back").onclick=function(){$("ov-help").classList.remove("on");var h=curHunt();if(h){renderKid();show("v-kid")}};
+  $("btn-help-swap").onclick=helpSwap;
+  $("btn-help-add").onclick=function(){$("ov-help").classList.remove("on");openCamera("help")};
+  $("detail-file").addEventListener("change",function(){
+    var f=$("detail-file").files[0];$("detail-file").value="";
+    if(f)attachImportedPhoto(f);
+  });
+}
+/* ================= INIT ================= */
+function purgeOldBin(){
+  var cutoff=Date.now()-30*86400000;
+  var old=S.hunts.filter(function(h){return h.deletedAt&&h.deletedAt<cutoff});
+  return Promise.all(old.map(function(h){return dbDeleteHuntForever(h.id)})).then(function(){
+    if(old.length)S.hunts=S.hunts.filter(function(h){return !(h.deletedAt&&h.deletedAt<cutoff)});
+  });
+}
+function init(){
+  wire();
+  idbOpen().then(function(d){db=d}).catch(function(){memMode=true}).then(function(){
+    return Promise.all([dbAll("hunts"),dbAll("settings")]);
+  }).then(function(res){
+    S.hunts=res[0]||[];
+    (res[1]||[]).forEach(function(s){S.settings[s.key]=s.value});
+    return purgeOldBin();
+  }).then(function(){renderHome();show("v-home")}).catch(function(){
+    memMode=true;renderHome();show("v-home");
+  });
+  if("speechSynthesis" in window){try{speechSynthesis.getVoices()}catch(e){}}
+}
+document.addEventListener("DOMContentLoaded",init);
+</script>
+</body>
+</html>
