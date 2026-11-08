@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "app": "Wordgrove",
+  "status": "verification_pending",
+  "route": "pwa",
+  "tested_at": "2026-11-07",
+  "tested_environment": "Recovered source on macOS. Node module, interaction, scanner, storage, asset-integrity tests passed. Camp home screen inspected in local browser preview. Physical iPhone and standalone installation not tested.",
+  "github_url": "https://github.com/tryyentaai/games/tree/main/wordgrove",
+  "tested_commit": "",
+  "install_url": "https://tryyentaai.github.io/games/wordgrove/",
+  "blockers": [
+    "Hosted release and physical iPhone verification remain pending at this pre-publication checkpoint."
+  ],
+  "checks": {
+    "build": {
+      "status": "passed",
+      "observation": "Buildless ES-module production files. Every first-party *.js passed node --check. There is no framework compiler or type-checker.",
+      "evidence": [
+        "docs/qa-log.txt"
+      ]
+    },
+    "functional": {
+      "status": "passed",
+      "observation": "A synthetic worksheet was recognized, the scan journey reached the games, and all eleven game entry points were exercised in the managed browser. Independent tests exercised retries, completion, generated puzzle integrity, memory progression and scan parsing.",
+      "evidence": [
+        "docs/qa-log.txt",
+        "tests/scan-ocr.mjs",
+        "tests/puzzles.mjs",
+        "tests/arcade.mjs",
+        "tests/practice.test.mjs"
+      ]
+    },
+    "visual": {
+      "status": "partial",
+      "observation": "Local camp home screen inspected at a narrow browser viewport. Complete multi-screen visual QA remains pending.",
+      "evidence": []
+    },
+    "persistence": {
+      "status": "passed",
+      "observation": "Node tests passed storage round trip, normalization, malformed-state fallback, scheduling and storage quota failure. Browser save/relaunch/restore is not yet verified.",
+      "evidence": []
+    },
+    "accessibility": {
+      "status": "not_run",
+      "observation": "Visual word clues, labelled controls and reduced-motion handling exist. A screen reader, focus and contrast audit was not performed in this checkpoint.",
+      "evidence": []
+    },
+    "performance": {
+      "status": "not_run",
+      "observation": "Static assets total about 7.2 MiB, including the on-demand OCR runtime. No phone timing or memory profile was captured.",
+      "evidence": [
+        "docs/qa-log.txt"
+      ]
+    },
+    "mobile": {
+      "status": "not_run",
+      "observation": "The camera file chooser, on-screen keyboard, real touch and Safari safe areas require additional device verification.",
+      "evidence": []
+    },
+    "production": {
+      "status": "blocked",
+      "observation": "The managed preview was available. Production deployment verification is pending at this checkpoint.",
+      "evidence": []
+    },
+    "distribution": {
+      "status": "blocked",
+      "observation": "Initial manifest and app icons exist. A deployed standalone launch is pending.",
+      "evidence": []
+    },
+    "github": {
+      "status": "prepared",
+      "observation": "Complete source recovered. Scanner engine and English model uploaded to GitHub and verified against local blob SHA-1 identifiers. Final publication commit and Pages reachability are pending.",
+      "evidence": []
+    },
+    "offline_update": {
+      "status": "not_run",
+      "observation": "Service worker installation, offline relaunch and upgrade behavior have not been recorded in this checkpoint.",
+      "evidence": []
+    }
+  },
+  "scores": {
+    "visual_identity": {
+      "score": 3,
+      "observation": "A consistent woodland theme is visible in original game artwork and the camp interface.",
+      "remaining_weakness": "No attached multi-viewport visual evidence at this checkpoint.",
+      "evidence": [
+        "style.css",
+        "art/search.svg"
+      ]
+    },
+    "usability": {
+      "score": 4,
+      "observation": "The managed-browser photo journey reached the game collection. Manual word entry and visual word clues are available.",
+      "remaining_weakness": "Navigation has not been observed with a first grader.",
+      "evidence": [
+        "docs/qa-log.txt",
+        "scan.js"
+      ]
+    },
+    "interaction": {
+      "score": 4,
+      "observation": "Interactive tests exercised tactile letter choices, retry, memory progression and cleanup. Randomized tests exercised the three puzzle engines.",
+      "remaining_weakness": "Gameplay pacing was not measured with a child.",
+      "evidence": [
+        "docs/qa-log.txt"
+      ]
+    },
+    "reliability": {
+      "score": 3,
+      "observation": "The bundled OCR model recognized the printed fixture, and the game logic passed targeted interaction and randomized tests.",
+      "remaining_weakness": "Physical-device camera input and offline update remain unverified.",
+      "evidence": [
+        "docs/qa-log.txt"
+      ]
+    },
+    "accessibility": {
+      "score": 3,
+      "observation": "Game controls use labels and text fallbacks; the layout honors reduced-motion preferences.",
+      "remaining_weakness": "No physical-device VoiceOver audit or formal contrast scan.",
+      "evidence": [
+        "practice.js",
+        "practice.css"
+      ]
+    },
+    "delivery": {
+      "score": 2,
+      "observation": "Static app shell and local assets are prepared.",
+      "remaining_weakness": "Remote commit, production reachability and physical standalone installation are pending at this checkpoint.",
+      "evidence": [
+        "index.html",
+        "manifest.webmanifest"
+      ]
+    }
+  }
+}

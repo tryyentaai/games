@@ -1,0 +1,1 @@
+{"name":"wordgrove-spelling-camp","version":"1.0.0","type":"module","private":true,"scripts":{"test":"node tests/puzzles.mjs && node --test tests/practice.test.mjs && node tests/scan-ocr.mjs && node tests/arcade.mjs && node tests/data.mjs"}}

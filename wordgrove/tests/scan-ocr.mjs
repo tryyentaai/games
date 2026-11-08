@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+import vm from 'node:vm';
+import { gunzipSync } from 'node:zlib';
+
+const root = new URL('../', import.meta.url);
+const bundledCore = new URL('vendor/ocr/tesseract-core-lstm.wasm.js', root);
+const source = fs.readFileSync(bundledCore, 'utf8');
+const shim = {exports: {}};
+// Upstream ships this as classic UMD consumed by importScripts inside a worker.
+const load = vm.runInThisContext('(function(require,module,exports,__filename,__dirname){'+source+'\n})');
+load(createRequire(import.meta.url),shim,shim.exports,fileURLToPath(bundledCore),fileURLToPath(new URL('.',bundledCore)));
+const engine=await shim.exports();
+const model=gunzipSync(fs.readFileSync(new URL('vendor/ocr/eng.traineddata.gz',root)));
+engine.FS.writeFile('/eng.traineddata',model);
+const api=new engine.TessBaseAPI();
+assert.equal(api.Init(null,'eng',1),0);
+api.SetVariable('tessedit_pageseg_mode','11');
+engine.FS.writeFile('/input',fs.readFileSync(new URL('fixtures/spelling-list.png',import.meta.url)));
+assert.equal(api.SetImageFile(1,0),0);
+api.Recognize(null);
+const text=api.GetUTF8Text();
+const {readWordCandidates}=await import(new URL('scan.js',root));
+assert.deepEqual(readWordCandidates(text,true),['cat','ship','green','frog','rain']);
+assert.deepEqual(readWordCandidates('Week 1\nSpelling List\n1. moon\n2. sky\nmoon',true),['moon','sky']);
+assert.deepEqual(readWordCandidates('week, green, WEEK, blue'),['week','green','blue']);
+api.End();
+engine.destroy(api);
+console.log('OCR PASS: bundled WebAssembly and English model correctly read all five words from the synthetic numbered list.');

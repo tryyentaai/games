@@ -1,0 +1,52 @@
+.ga {
+  --ga-ink:#203b37; --ga-deep:#205248; --ga-leaf:#bde6bf; --ga-cream:#fffaf0;
+  color:var(--ga-ink); width:100%; max-width:670px; margin:0 auto; container-type:inline-size;
+}
+.ga *, .ga *::after, .ga *::before {box-sizing:border-box}
+.ga button {font:inherit; line-height:1.1; color:var(--ga-ink); cursor:pointer; -webkit-tap-highlight-color:transparent; touch-action:manipulation}
+.ga button:focus-visible {outline:3px solid #306dd4; outline-offset:4px}
+.ga button:active:not(:disabled) {filter:brightness(.94); translate:0 2px}
+.ga-head {display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 0 12px}
+.ga-cue {font-weight:750; font-size:clamp(15px,4.5cqw,21px); line-height:1.24}
+.ga-hear,.ga-peek {display:inline-flex; align-items:center; justify-content:center; gap:5px; min-height:44px; padding:6px 10px; border:1px solid #b7c8b8; border-radius:14px; background:var(--ga-cream); font-weight:700!important; font-size:14px!important; white-space:nowrap}
+.ga-hear svg {width:19px;height:19px}
+.ga-board {position:relative; overflow:hidden; padding:clamp(12px,5cqw,25px); border:1px solid #b2c5b3; border-radius:24px; background:#edf3dc; isolation:isolate}
+.ga-status {min-height:44px; padding:11px 4px 3px; text-align:center; font-size:15px; line-height:1.4; font-weight:650}
+.ga-progress {display:flex; align-items:center; flex-wrap:wrap; justify-content:center; gap:4px; max-width:100%; margin:0 auto 18px}
+.ga-letter,.ga-piece,.ga-wagon {display:grid; place-items:center; background:var(--ga-cream); border:1px solid #bfbc9e; border-bottom-width:3px; border-radius:8px; font-size:clamp(19px,7cqw,36px); font-weight:800; line-height:1.1; min-width:1.28em; min-height:1.48em; padding:0 .1em}
+.ga-letter.ga-current,.ga-letter.ga-hole {color:#3f3418; background:#ffda73; border-color:#ad8131}
+.ga .ga-filled {background:var(--ga-leaf); color:#164835; border-color:#709a71}
+.ga-choices {display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:clamp(7px,2.2cqw,14px)}
+.ga-catch .ga-board {background:linear-gradient(169deg,transparent 69%,#bcd29a 69.35% 85%,#a8c790 85.35%),linear-gradient(190deg,#e9f5d9,#dbebc8)}
+.ga-meadow {min-height:110px; padding:10px 0 13px}
+.ga-acorn {font-size:clamp(23px,7.5cqw,35px)!important;font-weight:800!important; position:relative; min-width:44px; width:clamp(44px,15cqw,73px); height:clamp(55px,18cqw,80px); padding:10px 0 0; border-radius:48% 48% 52% 52% / 35% 35% 65% 65%;border:2px solid #7d542c; border-bottom-width:4px; background:linear-gradient(120deg,#fce1a1,#ebbd79); box-shadow:0 4px 0 #41634127; animation:ga-float 3.8s ease-in-out infinite; animation-delay:calc(var(--sway) * -.73s)}
+.ga-acorn::before {content:'';position:absolute; inset:-2px -3px auto; height:29%; border-radius:50% 50% 25% 25%; border:2px solid #6f4b31; background:repeating-linear-gradient(130deg,#93663e 0 4px,#a87849 4px 6px)}
+.ga-acorn::after {content:''; position:absolute; top:-9px; left:52%; width:7px; height:11px; transform:rotate(25deg); border-radius:65% 65% 0 0; background:#78522e}
+.ga-pairs .ga-board {background:radial-gradient(circle at 5px 5px,#e4cf9f 1px,transparent 1px) 0 0/12px 12px,#f4ead0}
+.ga-cards {display:grid; grid-template-columns:repeat(var(--cols),minmax(0,1fr)); max-width:420px; gap:clamp(6px,2.4cqw,12px); margin:auto}
+.ga-card {border:2px solid #245549; border-bottom-width:5px; border-radius:14px; background:repeating-linear-gradient(45deg,transparent 0 8px,#ffffff10 8px 10px),#367466; color:#f1df9f!important; font-weight:800!important; min-width:0; min-height:52px; padding:5px 2px; overflow-wrap:anywhere; font-size:clamp(19px,6cqw,35px)!important; transition:background-color .14s}
+.ga-card.ga-open {background:#fffaf0;color:#223f36!important;border-color:#a98e5c}
+.ga-card.ga-paired {background:#c5e6b6;color:#34532d!important;border-color:#84a578; opacity:1}
+.ga-piece {font-size:clamp(16px,6cqw,26px); color:#7e7863; letter-spacing:.04em; padding:2px 8px; overflow-wrap:anywhere}
+.ga-train .ga-board {background:linear-gradient(174deg,#e6f0df 55%,#d7dfc1 55.5% 67%,#eae4cb 67.5%)}
+.ga-track {display:flex; align-items:flex-end; gap:6px; border-bottom:5px double #6a6c52; padding-bottom:6px; margin:10px 0 22px}
+.ga-engine {background:#367567;border:2px solid #2d534c; width:35px; height:22px; position:relative; flex-shrink:0; border-radius:9px 3px 2px 3px}
+.ga-engine::before {content:'';position:absolute; right:0; top:-15px; height:17px; width:15px;background:#a3c8a8;border:3px solid #365749;border-top:5px solid #365749;border-radius:2px}
+.ga-engine::after,.ga-wagon::after,.ga-car::after {content:''; position:absolute; height:8px; width:100%; bottom:-7px;left:0;background:radial-gradient(circle at 20% 50%,#435046 3px,transparent 4px),radial-gradient(circle at 80% 50%,#435046 3px,transparent 4px)}
+.ga-track .ga-progress {margin:0; justify-content:flex-start; gap:5px; row-gap:10px}
+.ga-wagon {position:relative; background:#e6dec8; border-color:#a49a7d; border-radius:5px; min-width:1.3em; color:#766d59; font-size:clamp(15px,5.2cqw,28px); overflow-wrap:anywhere}
+.ga-wagon.ga-loaded {background:#f9cc88;color:#503b24;border-color:#b98352}
+.ga-yard {min-height:72px}
+.ga-car {position:relative; min-width:48px; min-height:46px; max-width:100%; overflow-wrap:anywhere; padding:5px 10px; background:#ffc991; border:2px solid #9b6746; border-bottom-width:4px; border-radius:10px 10px 5px 5px; font-weight:800!important; font-size:clamp(22px,7cqw,34px)!important}
+.ga-car:nth-child(3n+2) {background:#c3d9ce;border-color:#709888}
+.ga-car:nth-child(3n) {background:#f3dca3;border-color:#aa8b52}
+.ga-peek {display:flex; margin:14px auto 0; background:#fffaf0}
+.ga-missing .ga-board {background:repeating-linear-gradient(0deg,transparent 0 29px,#e0d8c699 30px 31px),#f9f2df}
+.ga-key {background:#fdfbf3; border:2px solid #839b81; border-bottom:5px solid #758d73; border-radius:13px; min-width:53px; min-height:53px; font-size:28px!important; font-weight:800!important}
+.ga-hole {border-style:dashed; border-bottom-style:solid}
+.ga .ga-wiggle {animation:ga-wiggle .3s both}
+@keyframes ga-wiggle {25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+@keyframes ga-float {0%,100%{transform:translateY(-3px) rotate(-2deg)}50%{transform:translateY(3px) rotate(2deg)}}
+@media (prefers-reduced-motion:reduce){.ga *,.ga *::before,.ga *::after{animation:none!important;transition:none!important}}
+.ga .ga-landed {animation:ga-land .29s cubic-bezier(.2,.8,.35,1) both}
+@keyframes ga-land {0%{transform:translateY(-8px) scale(.85)}60%{transform:translateY(1px) scale(1.08)}100%{transform:none}}

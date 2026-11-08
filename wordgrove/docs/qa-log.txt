@@ -1,0 +1,21 @@
+2026-11-07T22:43:50Z
+v24.22.1
+All first-party JavaScript parses
+✔ listening, visual clues, incorrect and case-insensitive correct entry (378.929212ms)
+✔ scramble keeps a correctly spelled prefix after a miss and supports undo, duplicate letters (375.980267ms)
+✔ each ladder rung can be climbed, with early exit cancelling the win callback (377.041359ms)
+✔ detective always supplies three unique options for one-letter, accented, repeating and hyphenated words (377.379046ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1594.270336
+PASS 20 playthroughs (4 modes × 5 word shapes), wrong responses, delayed cleanup
+2000 randomized sets passed search, path and crossword invariants.
+OCR PASS: bundled WebAssembly and English model correctly read all five words from the synthetic numbered list.
+7.2M	dist
+
+Browser session reported by the integration owner: a synthetic photo fixture went through the scan/review flow; all eleven game entry points were exercised. No physical iPhone was used.
