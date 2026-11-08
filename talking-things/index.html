@@ -1,0 +1,1232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src blob: data:; media-src blob:; connect-src 'none'; font-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="theme-color" content="#241a38">
+<title>TalkingThings — make anything talk</title>
+<style>
+/* ===== Tokens: primitives -> semantic -> component ===== */
+:root{
+  --grape-900:#241a38; --grape-800:#322550; --grape-700:#43336b;
+  --cream:#fff7e8; --cream-dim:#f3e7cf; --ink:#241a38;
+  --coral:#ff5a5f; --coral-deep:#d93a40; --sun:#ffc53d; --sun-deep:#e0a41c;
+  --teal:#12b5a5; --teal-deep:#0a8a7d; --pink:#ff7bac; --white:#fffdf7;
+  --bg:var(--grape-900); --stage:var(--grape-800); --card:var(--cream);
+  --card-ink:var(--ink); --accent:var(--coral); --primary:var(--sun);
+  --good:var(--teal); --line:var(--ink);
+  --btn-bg:var(--primary); --btn-ink:var(--ink); --rec-bg:var(--coral);
+  --shadow:0 4px 0 var(--ink); --shadow-lg:0 7px 0 var(--ink);
+  --r-lg:22px; --r-md:16px; --r-sm:12px;
+  --font:"Arial Rounded MT Bold","Hiragino Maru Gothic ProN",ui-rounded,system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: light){
+  /* Single-scheme stage design by decision (working notes, Phase 2): photos
+     read on the dark stage in both OS schemes; tokens are identical. */
+  :root{ --bg:var(--grape-900); --stage:var(--grape-800); }
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--cream); font-family:var(--font);
+  min-height:100dvh; padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+button{font-family:inherit; cursor:pointer}
+button:focus-visible, input:focus-visible, [tabindex]:focus-visible{outline:4px solid var(--sun); outline-offset:2px}
+.hidden{display:none !important}
+.wrap{max-width:560px;margin:0 auto;padding:14px 16px 40px}
+h1{font-size:30px;margin:6px 0 2px;letter-spacing:.2px}
+h2{font-size:23px;margin:4px 0 8px}
+p.sub{font-size:16px;line-height:1.45;margin:4px 0 14px;color:var(--cream)}
+p.body-txt{font-size:16px;line-height:1.55}
+.card{background:var(--card);color:var(--card-ink);border:3px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);padding:18px}
+.note-box{background:var(--grape-700);border:3px solid var(--sun);border-radius:var(--r-md);padding:14px 16px;font-size:15px;line-height:1.55}
+.big-err{font-size:17px;line-height:1.55}
+.meta{font-size:13.5px;line-height:1.5;opacity:.85}
+/* ===== Buttons ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;border:3px solid var(--line);border-radius:999px;background:var(--btn-bg);color:var(--btn-ink);font-size:19px;font-weight:800;padding:14px 22px;min-height:56px;box-shadow:var(--shadow);text-decoration:none}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn .ic{width:26px;height:26px;flex:none}
+.btn.secondary{background:var(--white)}
+.btn.teal{background:var(--teal);color:var(--white)}
+.btn.ghost{background:transparent;color:var(--cream);border-color:var(--cream);box-shadow:none}
+.btn.small{font-size:16px;min-height:48px;padding:10px 16px}
+.btn.danger{background:var(--coral);color:var(--white)}
+.btn[disabled]{opacity:.5}
+.btn-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+.ic{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.ic.fill{fill:currentColor;stroke:none}
+/* ===== Header / shelf ===== */
+.topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.spot{display:inline-block;background:var(--sun);color:var(--ink);border:3px solid var(--line);border-radius:999px;padding:3px 12px;font-size:13px;font-weight:800;transform:rotate(-2deg)}
+#shelf-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.thing-card{position:relative;border:3px solid var(--line);border-radius:var(--r-lg);overflow:hidden;background:var(--stage);box-shadow:var(--shadow);padding:0;text-align:left;width:100%}
+.thing-card img{display:block;width:100%;height:auto}
+.thing-card .mouth-holder{position:absolute;inset:0;pointer-events:none}
+.badge-voice{position:absolute;top:8px;right:8px;background:var(--sun);border:2.5px solid var(--line);border-radius:999px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.badge-voice .ic{width:20px;height:20px}
+#btn-new{position:sticky;bottom:16px;width:100%;margin-top:18px;font-size:21px;min-height:68px;background:var(--sun)}
+.empty-art{display:flex;justify-content:center;padding:8px 0 2px}
+.empty-art svg{width:150px;height:110px}
+/* ===== Photo stage (place / record / play) ===== */
+.photo-frame{position:relative;border:3px solid var(--line);border-radius:var(--r-lg);overflow:hidden;background:#17102a;box-shadow:var(--shadow-lg);touch-action:none}
+.photo-frame img.ph, .photo-frame video.ph{display:block;width:100%;height:auto;max-height:62dvh;object-fit:contain;background:#17102a}
+.mouth-holder{position:absolute;pointer-events:none}
+.mouth-holder svg{display:block;width:100%;height:auto;overflow:visible}
+/* ===== Camera ===== */
+#cam-video{width:100%;height:auto;max-height:62dvh;display:block;background:#17102a}
+.disc{width:88px;height:88px;border-radius:50%;border:4px solid var(--line);background:var(--coral);box-shadow:var(--shadow-lg);display:flex;align-items:center;justify-content:center;color:var(--white);margin:16px auto 4px}
+.disc:active{transform:translateY(3px)}
+.disc .ic{width:40px;height:40px}
+.disc.sun{background:var(--sun);color:var(--ink)}
+.disc.recording{background:var(--coral-deep)}
+.center-col{display:flex;flex-direction:column;align-items:center;text-align:center}
+.ringpulse{position:relative}
+.ringpulse::after{content:"";position:absolute;inset:-10px;border-radius:50%;border:4px solid var(--coral);opacity:.7;animation:pulse 1.1s ease-out infinite}
+@keyframes pulse{from{transform:scale(.86);opacity:.8}to{transform:scale(1.18);opacity:0}}
+/* ===== Place controls ===== */
+.style-row{display:flex;gap:12px;margin:14px 0 4px}
+.style-btn{flex:1;background:var(--white);border:3px solid var(--line);border-radius:var(--r-md);box-shadow:var(--shadow);padding:10px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--ink);font-size:14px;font-weight:800;min-height:76px}
+.style-btn.sel{background:var(--sun)}
+.style-btn svg{width:64px;height:44px}
+input[type=range]{width:100%;height:52px;accent-color:var(--coral);margin:2px 0 6px}
+label.lab{font-size:16px;font-weight:800;display:block;margin-top:12px}
+/* ===== Record ===== */
+.level-track{height:26px;border:3px solid var(--line);border-radius:999px;background:var(--white);overflow:hidden;margin:14px 0 4px}
+#level-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--teal),var(--sun),var(--coral));transition:width 60ms linear}
+.rec-state{font-size:19px;font-weight:800;min-height:26px}
+/* ===== Stage playback ===== */
+#btn-play.pulse{animation:btnpulse 1s ease-in-out infinite}
+@keyframes btnpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+/* ===== Gate / hold buttons ===== */
+.hold-btn{position:relative;overflow:hidden;width:100%;height:64px;border-radius:var(--r-md);border:3px solid var(--line);background:var(--cream);color:var(--ink);font-size:18px;font-weight:800;box-shadow:var(--shadow)}
+.hold-fill{position:absolute;inset:0;background:var(--sun);transform:scaleX(0);transform-origin:left center;z-index:0}
+.hold-btn span.lbl{position:relative;z-index:1;display:inline-flex;gap:8px;align-items:center}
+.hold-btn.holding .hold-fill{transition:transform 1200ms linear;transform:scaleX(1)}
+#btn-hold-delete.holding .hold-fill{transition:transform 3000ms linear;transform:scaleX(1)}
+#btn-hold-delete{background:var(--coral);color:var(--white)}
+#btn-hold-delete .hold-fill{background:var(--sun-deep)}
+.grownups-wrap{max-width:560px;margin:0 auto;padding:0 20px 26px;text-align:right}
+#grownups-link{background:none;border:none;font-size:14px;font-weight:600;color:var(--cream);text-decoration:underline;padding:12px 4px;min-height:44px;opacity:.85}
+/* ===== Grown-ups list ===== */
+.gu-item{display:flex;gap:12px;align-items:center;background:var(--white);border:3px solid var(--line);border-radius:var(--r-md);padding:10px;margin-bottom:12px;color:var(--ink)}
+.gu-item img{width:64px;height:64px;object-fit:cover;border-radius:10px;border:2px solid var(--line);flex:none}
+.gu-item .grow{flex:1;min-width:0}
+.gu-item .acts{display:flex;gap:8px;flex-wrap:wrap}
+.voice-tag{display:inline-block;font-size:12.5px;font-weight:800;border:2px solid var(--line);border-radius:999px;padding:1px 9px;background:var(--cream-dim)}
+.voice-tag.has{background:var(--sun)}
+.divider{border:none;border-top:3px dashed var(--grape-700);margin:22px 0}
+.view-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.back-btn{background:var(--white);color:var(--ink);border:3px solid var(--line);border-radius:999px;min-width:52px;height:52px;display:inline-flex;align-items:center;justify-content:center;box-shadow:var(--shadow);flex:none}
+.back-btn .ic{width:24px;height:24px}
+@media (prefers-reduced-motion: reduce){
+  .ringpulse::after{animation:none;opacity:0}
+  #btn-play.pulse{animation:none}
+  *{transition:none !important}
+}
+</style>
+</head>
+<body>
+<!-- ===== SVG icon system (drawn, no emoji) ===== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.4"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5 9.5 18 20 6.5"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 4l-8 8 8 8"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 3v11M8 6l4-3 4 3M5 13v8h14v-8"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></symbol>
+    <symbol id="i-speaker" viewBox="0 0 24 24"><path d="M4 10v4h3l5 4V6l-5 4zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></symbol>
+    <symbol id="i-import" viewBox="0 0 24 24"><path d="M12 4v10M8 10l4 4 4-4M5 20h14"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7M6 10v10h12V10"/></symbol>
+  </defs>
+</svg>
+
+<!-- ===== SHELF ===== -->
+<main class="wrap" id="view-shelf">
+  <div class="topbar">
+    <div>
+      <span class="spot">MAKE ANYTHING TALK</span>
+      <h1>TalkingThings</h1>
+      <p class="sub">Take a photo of a thing. Give it a mouth. Give it your silliest voice.</p>
+    </div>
+  </div>
+  <div class="note-box hidden" id="shelf-banner"></div>
+  <div id="shelf-empty" class="card hidden">
+    <div class="empty-art" aria-hidden="true">
+      <svg viewBox="0 0 200 140"><ellipse cx="100" cy="128" rx="86" ry="8" fill="#43336b"/><rect x="34" y="18" width="132" height="96" rx="14" fill="#fff7e8" stroke="#241a38" stroke-width="5"/><circle cx="76" cy="58" r="8" fill="#241a38"/><circle cx="124" cy="58" r="8" fill="#241a38"/><path d="M62 88 Q100 116 138 88" fill="none" stroke="#ff5a5f" stroke-width="7" stroke-linecap="round"/></svg>
+    </div>
+    <h2>No talking things yet</h2>
+    <p class="body-txt">Your shelf is empty. Photograph anything — a banana, a shoe, a teddy — and it can talk back in your voice.</p>
+    <div class="btn-row"><button class="btn" id="btn-first"><svg class="ic"><use href="#i-camera"/></svg> Make your first thing talk</button></div>
+  </div>
+  <div id="shelf-grid"></div>
+  <button class="btn" id="btn-new"><svg class="ic"><use href="#i-plus"/></svg> New talking thing</button>
+</main>
+<div class="grownups-wrap" id="grownups-wrap"><button id="grownups-link">Grown-ups</button></div>
+
+<!-- ===== CAMERA ===== -->
+<main class="wrap hidden" id="view-camera">
+  <div class="view-head">
+    <button class="back-btn" id="cam-back" aria-label="Back to shelf"><svg class="ic"><use href="#i-back"/></svg></button>
+    <h2>Photo of the thing</h2>
+  </div>
+  <div id="cam-live">
+    <div class="photo-frame"><video class="ph" id="cam-video" playsinline muted autoplay></video></div>
+    <div class="center-col">
+      <button class="disc" id="btn-shutter" aria-label="Take the photo"><svg class="ic"><use href="#i-camera"/></svg></button>
+      <p class="meta">Photos are taken inside TalkingThings — they never go into your Photos app.</p>
+    </div>
+  </div>
+  <div class="card hidden" id="cam-error">
+    <p class="big-err"><strong>The camera did not open.</strong><br>What happened: TalkingThings could not use the camera — it may be turned off for this site, or this phone may not share it.<br>What it means: no photo yet, so nothing can talk yet. Nothing was saved.<br>What to do next: a grown-up can check the browser&rsquo;s site settings for camera permission, or add a photo from the Grown-ups area.</p>
+    <div class="btn-row">
+      <button class="btn secondary" id="cam-err-shelf">Back to the shelf</button>
+      <button class="btn teal" id="cam-err-grown">Grown-ups area</button>
+    </div>
+  </div>
+</main>
+
+<!-- ===== PLACE THE MOUTH ===== -->
+<main class="wrap hidden" id="view-place">
+  <div class="view-head">
+    <button class="back-btn" id="place-back" aria-label="Back"><svg class="ic"><use href="#i-back"/></svg></button>
+    <h2>Put its mouth on</h2>
+  </div>
+  <p class="sub">Tap the photo where the mouth should go — or drag it there.</p>
+  <div class="photo-frame" id="place-frame">
+    <img class="ph" id="place-img" alt="Your photo of the thing">
+    <div class="mouth-holder" id="place-mouth"></div>
+  </div>
+  <label class="lab" for="place-size">Mouth size</label>
+  <input type="range" id="place-size" min="18" max="70" step="1" value="38" aria-label="Mouth size">
+  <label class="lab">Pick its mouth</label>
+  <div class="style-row" id="style-row">
+    <button class="style-btn sel" data-style="grin"><span class="style-prev" data-style="grin"></span>Grin</button>
+    <button class="style-btn" data-style="goofy"><span class="style-prev" data-style="goofy"></span>Goofy</button>
+    <button class="style-btn" data-style="monster"><span class="style-prev" data-style="monster"></span>Monster</button>
+  </div>
+  <div class="btn-row">
+    <button class="btn" id="btn-place-ok" style="flex:1"><svg class="ic"><use href="#i-check"/></svg> Looks good</button>
+  </div>
+</main>
+
+<!-- ===== RECORD ===== -->
+<main class="wrap hidden" id="view-record">
+  <div class="view-head">
+    <button class="back-btn" id="rec-back" aria-label="Back"><svg class="ic"><use href="#i-back"/></svg></button>
+    <h2>Give it a voice</h2>
+  </div>
+  <div class="photo-frame">
+    <img class="ph" id="rec-img" alt="Your thing">
+    <div class="mouth-holder" id="rec-mouth"></div>
+  </div>
+  <div class="center-col">
+    <p class="rec-state" id="rec-state">Tap the red button and talk silly!</p>
+    <div class="level-track" style="width:100%"><div id="level-fill"></div></div>
+    <button class="disc" id="btn-rec" aria-label="Start recording"><svg class="ic" id="rec-icon"><use href="#i-mic"/></svg></button>
+    <p class="meta" id="rec-note">Your voice is kept only on this phone, inside this app.</p>
+  </div>
+  <div class="card hidden" id="rec-silent" style="margin-top:16px">
+    <p class="big-err"><strong>I didn&rsquo;t hear anything.</strong><br>What happened: that recording was almost silent — maybe a hand covered the microphone, or the talking was very quiet.<br>What it means: this thing&rsquo;s mouth would hardly move.<br>What to do next: try again a little closer to the phone — or keep it anyway.</p>
+    <div class="btn-row">
+      <button class="btn" id="btn-retry">Try again</button>
+      <button class="btn secondary" id="btn-keep-silent">Keep it anyway</button>
+    </div>
+  </div>
+  <div class="card hidden" id="rec-error" style="margin-top:16px">
+    <p class="big-err" id="rec-error-txt"></p>
+    <div class="btn-row">
+      <button class="btn secondary" id="rec-err-stage">Done for now</button>
+    </div>
+  </div>
+</main>
+
+<!-- ===== STAGE ===== -->
+<main class="wrap hidden" id="view-stage">
+  <div class="view-head">
+    <button class="back-btn" id="stage-back" aria-label="Back to shelf"><svg class="ic"><use href="#i-back"/></svg></button>
+    <h2>It talks!</h2>
+  </div>
+  <div class="photo-frame">
+    <img class="ph" id="stage-img" alt="Your talking thing">
+    <div class="mouth-holder" id="stage-mouth"></div>
+  </div>
+  <div class="center-col" id="stage-hasvoice">
+    <button class="disc sun" id="btn-play" aria-label="Play its voice"><svg class="ic" id="play-icon"><use href="#i-play"/></svg></button>
+    <p class="meta">The mouth moves with the real ups and downs of the voice.</p>
+  </div>
+  <div class="center-col hidden" id="stage-novoice">
+    <p class="rec-state">This thing has no voice yet.</p>
+    <button class="btn danger" id="btn-give-voice"><svg class="ic"><use href="#i-mic"/></svg> Give it a voice</button>
+  </div>
+  <div class="btn-row" style="justify-content:center">
+    <button class="btn secondary" id="btn-new-voice"><svg class="ic"><use href="#i-mic"/></svg> New voice</button>
+    <button class="btn teal" id="btn-stage-shelf"><svg class="ic"><use href="#i-home"/></svg> Back to the shelf</button>
+  </div>
+</main>
+
+<!-- ===== GATE ===== -->
+<main class="wrap hidden" id="view-gate">
+  <div class="view-head">
+    <button class="back-btn" id="gate-back" aria-label="Back"><svg class="ic"><use href="#i-back"/></svg></button>
+    <h2>Grown-ups area</h2>
+  </div>
+  <p class="sub">This part is for grown-ups — sharing, deleting, and tidying up. Press and hold the button below. It is just a pause to stop little fingers opening it by accident.</p>
+  <button class="hold-btn" id="btn-hold"><span class="hold-fill"></span><span class="lbl"><svg class="ic"><use href="#i-lock"/></svg> Hold for Grown-ups</span></button>
+</main>
+
+<!-- ===== GROWN-UPS ===== -->
+<main class="wrap hidden" id="view-grownups">
+  <div class="view-head">
+    <button class="back-btn" id="gu-back" aria-label="Back to shelf"><svg class="ic"><use href="#i-back"/></svg></button>
+    <h2>Grown-ups</h2>
+  </div>
+  <div class="card">
+    <h2 style="font-size:19px">On this phone</h2>
+    <p class="body-txt" id="gu-storage">Counting things…</p>
+    <p class="body-txt">Photos and voices live <strong>only on this phone, inside this app</strong>. They are never sent anywhere by the app. The only way anything leaves is a photo you share yourself, below — and shared copies can&rsquo;t be taken back or deleted by this app. Sharing sends the <strong>photo only</strong>; its voice stays on this phone.</p>
+    <p class="body-txt meta">TalkingThings is made for your household. If you share this app&rsquo;s link with other families, or it ever gains accounts or sync, its privacy review needs redoing first.</p>
+  </div>
+  <hr class="divider">
+  <h2 style="font-size:19px">All talking things</h2>
+  <div id="gu-list"></div>
+  <p class="body-txt hidden" id="gu-empty">Nothing here yet.</p>
+  <hr class="divider">
+  <h2 style="font-size:19px">Add a photo</h2>
+  <p class="body-txt">A grown-up can add a photo from the Photos app. The copy stored here is re-made inside the app, which strips location data (EXIF) from it. The original in Photos is untouched — that copy lives outside this app.</p>
+  <input type="file" id="import-file" accept="image/*" class="hidden">
+  <div class="btn-row"><button class="btn secondary" id="btn-import"><svg class="ic"><use href="#i-import"/></svg> Add a photo</button></div>
+  <div class="card hidden" id="gu-import-error" style="margin-top:16px">
+    <p class="big-err"><strong>That photo could not be added.</strong><br>What happened: the file could not be read as a photo — it may be damaged, or it may not be a photo at all.<br>What it means: nothing was saved, and nothing else on the shelf was touched.<br>What to do next: pick a different photo.</p>
+  </div>
+</main>
+
+<!-- ===== DELETE CONFIRM ===== -->
+<main class="wrap hidden" id="view-delete">
+  <div class="view-head">
+    <button class="back-btn" id="del-back" aria-label="Back"><svg class="ic"><use href="#i-back"/></svg></button>
+    <h2>Delete this thing?</h2>
+  </div>
+  <div class="card">
+    <div class="center-col"><img id="del-img" alt="The thing to delete" style="width:150px;height:150px;object-fit:cover;border-radius:14px;border:3px solid var(--line)"></div>
+    <p class="big-err" style="margin-top:14px">This removes its photo <strong>and its voice</strong> from TalkingThings on this phone. It does not delete copies in the Photos app or its cloud backup, photos you have already shared, downloads, or device backups.</p>
+    <button class="hold-btn" id="btn-hold-delete" style="margin-top:14px"><span class="hold-fill"></span><span class="lbl"><svg class="ic"><use href="#i-trash"/></svg> Hold 3 seconds — Delete</span></button>
+    <div class="btn-row"><button class="btn secondary" id="del-cancel" style="flex:1">Keep it</button></div>
+  </div>
+</main>
+<audio id="player" class="hidden"></audio>
+
+<script>
+"use strict";
+/* ================================================================
+   TalkingThings — everything runs on this device. No network calls.
+   Photos and voices live in IndexedDB on this phone only.
+   ================================================================ */
+function $(id){ return document.getElementById(id); }
+function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+function uid(){ return "t" + Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function fmtBytes(n){ if(!isFinite(n)) return "some space"; if(n<1024) return n+" B"; if(n<1048576) return Math.round(n/1024)+" KB"; return (n/1048576).toFixed(1)+" MB"; }
+
+/* ================= Mouths (drawn SVG, openness is data) ================= */
+var mouthUID = 0;
+function mouthSVG(style){
+  var id = "mc" + (++mouthUID);
+  var inner = "";
+  if(style === "goofy"){
+    inner = '<g class="m-teeth"><rect x="76" y="4" width="22" height="50" rx="6" fill="#fffdf7" stroke="#241a38" stroke-width="3.5"/><rect x="102" y="4" width="22" height="50" rx="6" fill="#fffdf7" stroke="#241a38" stroke-width="3.5"/></g>';
+  } else if(style === "monster"){
+    inner = '<g class="m-teeth"><path d="M28 0 l11 58 l11 -58 l11 58 l11 -58 l11 58 l11 -58 l11 58 l11 -58 l11 58 l11 -58 l11 58 l11 -58 l11 58 z" fill="#fffdf7" stroke="#241a38" stroke-width="3.5" stroke-linejoin="round"/></g>'
+          + '<g class="m-jaw"><path d="M52 122 l10 -34 l10 34 l10 -34 l10 34 l10 -34 l10 34 l10 -34 l10 34 z" fill="#fffdf7" stroke="#241a38" stroke-width="3.5" stroke-linejoin="round"/></g>';
+  }
+  var tongue = (style === "monster") ? "" :
+    '<g class="m-jaw"><ellipse cx="100" cy="94" rx="42" ry="13" fill="#ff7bac"/></g>';
+  return '<svg viewBox="0 0 200 140" aria-hidden="true">'
+    + '<defs><clipPath id="' + id + '"><ellipse class="m-cav" cx="100" cy="66" rx="78" ry="6"/></clipPath></defs>'
+    + '<g clip-path="url(#' + id + ')">'
+    +   '<ellipse class="m-cav" cx="100" cy="66" rx="78" ry="6" fill="#5e1f28"/>'
+    +   inner + tongue
+    + '</g>'
+    + '<ellipse class="m-cav" cx="100" cy="66" rx="78" ry="6" fill="none" stroke="#241a38" stroke-width="4"/>'
+    + '<path d="M20 60 Q100 24 180 60" fill="none" stroke="#241a38" stroke-width="5" stroke-linecap="round"/>'
+    + '<path class="m-smile" d="M27 58 Q100 100 173 58" fill="none" stroke="#241a38" stroke-width="7" stroke-linecap="round" opacity="1"/>'
+    + '</svg>';
+}
+/* openness v in [0,1] — the ONLY way a mouth's shape changes, besides the
+   placement preview pulse (documented in working notes). */
+function setMouthOpen(root, v){
+  if(!root) return;
+  v = clamp(v, 0, 1);
+  var ry = (5 + v*43).toFixed(1), cy = (62 + v*8).toFixed(1);
+  var cavs = root.querySelectorAll(".m-cav");
+  for(var i=0;i<cavs.length;i++){ cavs[i].setAttribute("ry", ry); cavs[i].setAttribute("cy", cy); }
+  var jaws = root.querySelectorAll(".m-jaw");
+  for(var j=0;j<jaws.length;j++){ jaws[j].setAttribute("transform", "translate(0 " + (v*14).toFixed(1) + ")"); }
+  var teeth = root.querySelector(".m-teeth");
+  if(teeth) teeth.setAttribute("opacity", v > 0.06 ? "1" : "0");
+  var smile = root.querySelector(".m-smile");
+  if(smile) smile.setAttribute("opacity", clamp(1 - v*2.4, 0, 1).toFixed(2));
+  root.dataset.open = v.toFixed(3);
+}
+
+/* ================= Envelope: recorded audio -> mouth targets =================
+   50ms RMS frames, per-recording percentile normalisation (p10 floor, p95
+   ceiling), gamma 0.4 so quiet voices still flap. Silence maps to exactly 0. */
+function computeEnvelope(samples, sampleRate){
+  var frameLen = Math.max(1, Math.round(sampleRate * 0.05));
+  var n = Math.max(1, Math.floor(samples.length / frameLen));
+  var rms = new Float32Array(n);
+  for(var i=0;i<n;i++){
+    var s = 0, off = i*frameLen;
+    for(var j=0;j<frameLen;j++){ var v = samples[off+j] || 0; s += v*v; }
+    rms[i] = Math.sqrt(s/frameLen);
+  }
+  var sorted = Array.prototype.slice.call(rms).sort(function(a,b){ return a-b; });
+  function pct(p){ return sorted[Math.min(sorted.length-1, Math.floor(p*sorted.length))] || 0; }
+  var floor = pct(0.10), ceil = pct(0.95);
+  var maxRms = sorted.length ? sorted[sorted.length-1] : 0;
+  var nearSilent = (ceil < 0.008) || ((ceil - floor) < 0.004);
+  var frames = new Float32Array(n);
+  var range = Math.max(1e-6, ceil - floor);
+  for(var k=0;k<n;k++){
+    var lin = (rms[k]-floor)/range;
+    frames[k] = Math.pow(clamp(lin,0,1), 0.4);
+  }
+  if(nearSilent) frames.fill(0);
+  return { frames:frames, floor:floor, ceil:ceil, maxRms:maxRms, nearSilent:nearSilent,
+           frameSec: frameLen/sampleRate, duration: samples.length/sampleRate };
+}
+/* Playback smoothing: fast attack, slower release. Pauses still reach closed. */
+function smoothOpen(cur, target){
+  var k = (target > cur) ? 0.6 : 0.25;
+  return cur + (target - cur) * k;
+}
+
+var decodeCtx = null;
+function decodeAudioBuffer(arrayBuffer){
+  if(window.OfflineAudioContext){
+    try { return new OfflineAudioContext(1, 1, 44100).decodeAudioData(arrayBuffer); }
+    catch(e){ /* fall through to a shared AudioContext */ }
+  }
+  var AC = window.AudioContext || window.webkitAudioContext;
+  if(!decodeCtx) decodeCtx = new AC();
+  if(decodeCtx.state === "suspended") decodeCtx.resume();
+  return decodeCtx.decodeAudioData(arrayBuffer);
+}
+function decodeToEnvelope(blob){
+  return blob.arrayBuffer().then(function(ab){
+    return decodeAudioBuffer(ab);
+  }).then(function(buf){
+    var ch0 = buf.getChannelData(0), data = ch0;
+    if(buf.numberOfChannels > 1){
+      var ch1 = buf.getChannelData(1);
+      data = new Float32Array(ch0.length);
+      for(var i=0;i<ch0.length;i++) data[i] = (ch0[i]+ch1[i]) / 2;
+    }
+    return computeEnvelope(data, buf.sampleRate);
+  });
+}
+
+/* ================= PCM -> WAV (recorder fallback) ================= */
+function encodeWAV(samples, sampleRate){
+  var buffer = new ArrayBuffer(44 + samples.length*2);
+  var view = new DataView(buffer);
+  function wstr(off, s){ for(var i=0;i<s.length;i++) view.setUint8(off+i, s.charCodeAt(i)); }
+  wstr(0,"RIFF"); view.setUint32(4, 36 + samples.length*2, true); wstr(8,"WAVE");
+  wstr(12,"fmt "); view.setUint32(16,16,true); view.setUint16(20,1,true);
+  view.setUint16(22,1,true); view.setUint32(24,sampleRate,true);
+  view.setUint32(28,sampleRate*2,true); view.setUint16(32,2,true); view.setUint16(34,16,true);
+  wstr(36,"data"); view.setUint32(40, samples.length*2, true);
+  var off = 44;
+  for(var i=0;i<samples.length;i++, off+=2){
+    var s = clamp(samples[i], -1, 1);
+    view.setInt16(off, s < 0 ? s*0x8000 : s*0x7FFF, true);
+  }
+  return new Blob([view], { type:"audio/wav" });
+}
+
+/* ================= Storage: IndexedDB, one record per thing =================
+   Record: { id, createdAt, photo:Blob, photoW, photoH,
+             mouth:{x,y,s,style}, audio:Blob|null, audioType, durationMs }
+   Photo + voice live in the SAME record, so one delete removes both. */
+function makeIDBStore(){
+  return new Promise(function(resolve, reject){
+    var req = indexedDB.open("talkingthings-v1", 1);
+    req.onupgradeneeded = function(){ req.result.createObjectStore("things", { keyPath:"id" }); };
+    req.onsuccess = function(){ resolve(req.result); };
+    req.onerror = function(){ reject(req.error); };
+  }).then(function(db){
+    function tx(mode){ return db.transaction("things", mode).objectStore("things"); }
+    function wrap(r){ return new Promise(function(res, rej){ r.onsuccess = function(){ res(r.result); }; r.onerror = function(){ rej(r.error); }; }); }
+    return {
+      kind:"idb",
+      getAll:function(){ return wrap(tx("readonly").getAll()); },
+      get:function(id){ return wrap(tx("readonly").get(id)); },
+      put:function(rec){ return wrap(tx("readwrite").put(rec)); },
+      delete:function(id){ return wrap(tx("readwrite").delete(id)); }
+    };
+  });
+}
+function makeMemStore(){
+  var map = new Map();
+  return {
+    kind:"memory",
+    getAll:function(){ return Promise.resolve(Array.prototype.slice.call(map.values())); },
+    get:function(id){ return Promise.resolve(map.get(id)); },
+    put:function(rec){ map.set(rec.id, rec); return Promise.resolve(); },
+    delete:function(id){ map.delete(id); return Promise.resolve(); }
+  };
+}
+</script>
+
+<script>
+"use strict";
+/* ================= App state ================= */
+var App = {
+  store: null,
+  things: [],
+  pending: null,              // {blob, w, h, url} photo being made into a thing
+  placeMouth: { x:0.5, y:0.62, s:0.38, style:"grin" },
+  currentId: null,
+  delTarget: null,
+  stageOpen: 0,
+  envelopeCache: new Map(),
+  urls: []
+};
+var VIEWS = ["shelf","camera","place","record","stage","gate","grownups","delete"];
+function trackURL(u){ App.urls.push(u); return u; }
+function thingById(id){ for(var i=0;i<App.things.length;i++) if(App.things[i].id===id) return App.things[i]; return null; }
+function refreshThings(){
+  return App.store.getAll().then(function(all){
+    all.sort(function(a,b){ return b.createdAt - a.createdAt; });
+    App.things = all;
+  });
+}
+function showView(name){
+  if(name !== "camera") stopCamera();
+  if(name !== "stage") stopPlayback(true);
+  if(name !== "record") cancelRecord();
+  if(name !== "place") stopPlacePulse();
+  for(var i=0;i<VIEWS.length;i++) $("view-"+VIEWS[i]).classList.toggle("hidden", VIEWS[i] !== name);
+  $("grownups-wrap").style.display = (name === "shelf") ? "" : "none";
+  window.scrollTo(0,0);
+}
+
+/* ================= Mouth layout on a photo =================
+   Fractions are of the RENDERED photo (letterbox-aware), so the mouth
+   sits on the thing itself at any screen size. */
+function photoBox(frame, img){
+  var fr = frame.getBoundingClientRect(), ir = img.getBoundingClientRect();
+  if(!img.naturalWidth || !ir.width) return { x:0, y:0, w:fr.width, h:fr.height };
+  var na = img.naturalWidth / img.naturalHeight, ba = ir.width / ir.height;
+  var w = (ba > na) ? ir.height*na : ir.width;
+  var h = (ba > na) ? ir.height : ir.width/na;
+  return { x:(ir.left-fr.left) + (ir.width-w)/2, y:(ir.top-fr.top) + (ir.height-h)/2, w:w, h:h };
+}
+function layoutMouth(frame, img, holder, mouth){
+  var box = photoBox(frame, img);
+  holder.style.left = (box.x + mouth.x*box.w) + "px";
+  holder.style.top = (box.y + mouth.y*box.h) + "px";
+  holder.style.width = (mouth.s * box.w) + "px";
+  holder.style.transform = "translate(-50%,-55%)";
+}
+function mountMouth(holder, mouth, open){
+  holder.innerHTML = mouthSVG(mouth.style);
+  setMouthOpen(holder.querySelector("svg"), open || 0);
+  return holder.querySelector("svg");
+}
+
+/* ================= Shelf ================= */
+var shelfMouths = [];   // {card, img, holder, mouth} — px positions must be re-laid on resize
+function relayoutShelf(){
+  shelfMouths.forEach(function(e){
+    var frame = { getBoundingClientRect: function(){ return e.card.getBoundingClientRect(); } };
+    layoutMouth(frame, e.img, e.holder, e.mouth);
+  });
+}
+function renderShelf(){
+  shelfMouths = [];
+  App.urls.forEach(function(u){ URL.revokeObjectURL(u); });
+  App.urls = [];
+  var grid = $("shelf-grid");
+  grid.innerHTML = "";
+  $("shelf-empty").classList.toggle("hidden", App.things.length > 0);
+  $("btn-new").classList.toggle("hidden", App.things.length === 0);
+  App.things.forEach(function(t){
+    var card = document.createElement("button");
+    card.className = "thing-card";
+    card.setAttribute("aria-label", "Play this talking thing");
+    var img = document.createElement("img");
+    img.src = trackURL(URL.createObjectURL(t.photo));
+    img.alt = "A talking thing";
+    card.appendChild(img);
+    var holder = document.createElement("div");
+    holder.className = "mouth-holder";
+    card.appendChild(holder);
+    if(t.audio){
+      var badge = document.createElement("span");
+      badge.className = "badge-voice";
+      badge.innerHTML = '<svg class="ic"><use href="#i-speaker"/></svg>';
+      card.appendChild(badge);
+    }
+    card.addEventListener("click", function(){ openStage(t.id); });
+    grid.appendChild(card);
+    shelfMouths.push({ card:card, img:img, holder:holder, mouth:t.mouth });
+    img.addEventListener("load", function(){
+      mountMouth(holder, t.mouth, 0);
+      relayoutShelf();
+    });
+  });
+}
+
+/* ================= Camera ================= */
+var camStream = null;
+function stopCamera(){
+  if(camStream){ camStream.getTracks().forEach(function(t){ t.stop(); }); camStream = null; }
+  var v = $("cam-video"); if(v) v.srcObject = null;
+}
+function camFail(){
+  $("cam-live").classList.add("hidden");
+  $("cam-error").classList.remove("hidden");
+}
+function openCamera(){
+  showView("camera");
+  $("cam-live").classList.remove("hidden");
+  $("cam-error").classList.add("hidden");
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ camFail(); return; }
+  navigator.mediaDevices.getUserMedia({ video:{ facingMode:"environment" }, audio:false })
+    .then(function(stream){
+      camStream = stream;
+      var v = $("cam-video");
+      v.srcObject = stream;
+      if(v.play) v.play().catch(function(){});
+    })
+    .catch(function(){ camFail(); });
+}
+function takePhoto(){
+  var v = $("cam-video");
+  if(!camStream || !v.videoWidth){ camFail(); return; }
+  var scale = Math.min(1, 1280 / Math.max(v.videoWidth, v.videoHeight));
+  var c = document.createElement("canvas");
+  c.width = Math.round(v.videoWidth*scale); c.height = Math.round(v.videoHeight*scale);
+  c.getContext("2d").drawImage(v, 0, 0, c.width, c.height);
+  c.toBlob(function(blob){
+    if(!blob){ camFail(); return; }
+    setPendingPhoto(blob, c.width, c.height);
+    openPlace();
+  }, "image/jpeg", 0.85);
+}
+function setPendingPhoto(blob, w, h){
+  if(App.pending && App.pending.url) URL.revokeObjectURL(App.pending.url);
+  App.pending = { blob:blob, w:w, h:h, url: URL.createObjectURL(blob) };
+}
+
+/* ================= Place the mouth ================= */
+var placePulse = null, placeSVG = null;
+function stopPlacePulse(){ if(placePulse){ clearInterval(placePulse); placePulse = null; } }
+function openPlace(){
+  App.placeMouth = { x:0.5, y:0.62, s:0.38, style:"grin" };
+  $("place-size").value = 38;
+  document.querySelectorAll(".style-btn").forEach(function(b){
+    b.classList.toggle("sel", b.dataset.style === "grin");
+  });
+  var img = $("place-img");
+  img.src = App.pending.url;
+  showView("place");
+  img.onload = function(){
+    placeSVG = mountMouth($("place-mouth"), App.placeMouth, 0.3);
+    layoutPlace();
+    startPlacePulse();
+  };
+  if(img.complete && img.naturalWidth){ img.onload(); }
+}
+function startPlacePulse(){
+  stopPlacePulse();
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+    setMouthOpen(placeSVG, 0.3); return;
+  }
+  var t0 = Date.now();
+  placePulse = setInterval(function(){
+    var t = (Date.now()-t0)/1000;
+    setMouthOpen(placeSVG, 0.32 + 0.26*(0.5 + 0.5*Math.sin(t*2.2)));
+  }, 90);
+}
+function layoutPlace(){
+  layoutMouth($("place-frame"), $("place-img"), $("place-mouth"), App.placeMouth);
+}
+function placePointFromEvent(e){
+  var frame = $("place-frame"), img = $("place-img");
+  var box = photoBox(frame, img);
+  var fr = frame.getBoundingClientRect();
+  var x = (e.clientX - fr.left - box.x) / box.w;
+  var y = (e.clientY - fr.top - box.y) / box.h;
+  App.placeMouth.x = clamp(x, 0.05, 0.95);
+  App.placeMouth.y = clamp(y, 0.05, 0.95);
+  layoutPlace();
+}
+var placeSaving = false;
+function confirmPlace(){
+  if(placeSaving) return;         /* rapid double-tap must not create twins */
+  placeSaving = true;
+  $("btn-place-ok").disabled = true;
+  var thing = {
+    id: uid(), createdAt: Date.now(),
+    photo: App.pending.blob, photoW: App.pending.w, photoH: App.pending.h,
+    mouth: { x:App.placeMouth.x, y:App.placeMouth.y, s:App.placeMouth.s, style:App.placeMouth.style },
+    audio: null, audioType: null, durationMs: 0
+  };
+  App.store.put(thing).then(function(){
+    return refreshThings();
+  }).then(function(){
+    placeSaving = false;
+    $("btn-place-ok").disabled = false;
+    openRecord(thing.id);
+  }).catch(function(){
+    placeSaving = false;
+    $("btn-place-ok").disabled = false;
+    showPlaceError();
+  });
+}
+function showPlaceError(){
+  var el = $("place-error");
+  if(!el){
+    el = document.createElement("div");
+    el.className = "card"; el.id = "place-error"; el.style.marginTop = "16px";
+    el.innerHTML = '<p class="big-err"><strong>That thing could not be saved.</strong><br>What happened: this phone&rsquo;s storage for the app is full or unavailable.<br>What it means: the photo is still here on this screen, but it will be gone when the page closes.<br>What to do next: a grown-up can free up space or delete old things in the Grown-ups area, then try again.</p>';
+    $("view-place").appendChild(el);
+  }
+  el.classList.remove("hidden");
+  el.scrollIntoView({ block:"center" });
+}
+</script>
+
+<script>
+"use strict";
+/* ================= Record a voice =================
+   Primary: MediaRecorder (iOS 17+ / modern browsers).
+   Fallback: Web Audio PCM capture -> WAV (older iPhones have no
+   MediaRecorder). Both produce a Blob; everything downstream is identical. */
+var rec = { active:false, stream:null, mr:null, chunks:[], pcm:null,
+            actx:null, analyser:null, levelRAF:0, timer:0, thingId:null, pendingTake:null };
+var recSVG = null, recURL = null;
+
+function openRecord(thingId){
+  var t = thingById(thingId);
+  if(!t){ showView("shelf"); return; }
+  rec.thingId = thingId;
+  rec.pendingTake = null;
+  if(recURL) URL.revokeObjectURL(recURL);
+  recURL = URL.createObjectURL(t.photo);
+  var img = $("rec-img");
+  img.src = recURL;
+  showView("record");
+  $("rec-silent").classList.add("hidden");
+  $("rec-error").classList.add("hidden");
+  $("rec-state").textContent = t.audio ? "Give it a NEW voice — the old one will be replaced." : "Tap the red button and talk silly!";
+  $("rec-note").textContent = "Your voice is kept only on this phone, inside this app.";
+  img.onload = function(){
+    recSVG = mountMouth($("rec-mouth"), t.mouth, 0);
+    layoutRecord();
+  };
+  if(img.complete && img.naturalWidth) img.onload();
+}
+function micFail(){
+  $("rec-error-txt").innerHTML = "<strong>The microphone did not open.</strong><br>What happened: TalkingThings could not use the microphone — it may be turned off for this site.<br>What it means: this thing stays a quiet thing for now. Its photo is safe on the shelf.<br>What to do next: a grown-up can check the browser&rsquo;s site settings for microphone permission, then tap New voice.";
+  $("rec-error").classList.remove("hidden");
+}
+function levelLoop(){
+  if(!rec.active || !rec.analyser) return;
+  var data = new Uint8Array(rec.analyser.fftSize);
+  rec.analyser.getByteTimeDomainData(data);
+  var s = 0;
+  for(var i=0;i<data.length;i++){ var v = (data[i]-128)/128; s += v*v; }
+  var rms = Math.sqrt(s/data.length);
+  var pct = Math.pow(clamp((rms-0.004)/(0.45-0.004), 0, 1), 0.4) * 100;
+  $("level-fill").style.width = pct.toFixed(0) + "%";
+  rec.levelRAF = requestAnimationFrame(levelLoop);
+}
+function beginRecord(){
+  if(rec.active) return;
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ micFail(); return; }
+  navigator.mediaDevices.getUserMedia({ audio:true }).then(function(stream){
+    rec.stream = stream;
+    rec.chunks = [];
+    var AC = window.AudioContext || window.webkitAudioContext;
+    rec.actx = new AC();
+    if(rec.actx.state === "suspended") rec.actx.resume();
+    var src = rec.actx.createMediaStreamSource(stream);
+    rec.analyser = rec.actx.createAnalyser();
+    rec.analyser.fftSize = 2048;
+    src.connect(rec.analyser);
+    if(window.MediaRecorder){
+      rec.mode = "mediarecorder";
+      try { rec.mr = new MediaRecorder(stream); }
+      catch(e){ rec.mr = null; }
+      if(rec.mr){
+        rec.mr.ondataavailable = function(ev){ if(ev.data && ev.data.size) rec.chunks.push(ev.data); };
+        rec.mr.onstop = finishTake;
+        rec.mr.start(250);
+      }
+    }
+    if(!rec.mr){
+      /* PCM fallback: ScriptProcessor capture (deprecated but universal —
+         exactly why it is the fallback, not the primary). */
+      rec.mode = "pcm";
+      var proc = rec.actx.createScriptProcessor(4096, 1, 1);
+      var pcmChunks = [];
+      proc.onaudioprocess = function(ev){ pcmChunks.push(new Float32Array(ev.inputBuffer.getChannelData(0))); };
+      src.connect(proc); proc.connect(rec.actx.destination);
+      rec.pcm = { proc:proc, chunks:pcmChunks, rate: rec.actx.sampleRate };
+    }
+    rec.active = true;
+    $("btn-rec").classList.add("recording");
+    $("btn-rec").classList.add("ringpulse");
+    $("rec-icon").innerHTML = '<use href="#i-stop"/>';
+    $("btn-rec").setAttribute("aria-label", "Stop recording");
+    $("rec-state").textContent = "Talking… tap the button to stop.";
+    levelLoop();
+    rec.timer = setTimeout(function(){ if(rec.active) endRecord(); }, 30000);
+  }).catch(function(){ micFail(); });
+}
+function teardownRec(){
+  rec.active = false;
+  if(rec.timer){ clearTimeout(rec.timer); rec.timer = 0; }
+  if(rec.levelRAF){ cancelAnimationFrame(rec.levelRAF); rec.levelRAF = 0; }
+  if(rec.pcm){ try{ rec.pcm.proc.disconnect(); }catch(e){} rec.pcm = null; }
+  if(rec.stream){ rec.stream.getTracks().forEach(function(t){ t.stop(); }); rec.stream = null; }
+  if(rec.actx){ rec.actx.close().catch(function(){}); rec.actx = null; }
+  rec.analyser = null;
+  $("btn-rec").classList.remove("recording");
+  $("btn-rec").classList.remove("ringpulse");
+  $("rec-icon").innerHTML = '<use href="#i-mic"/>';
+  $("btn-rec").setAttribute("aria-label", "Start recording");
+  $("level-fill").style.width = "0%";
+}
+function endRecord(){
+  if(!rec.active) return;
+  if(rec.mr && rec.mr.state !== "inactive"){ rec.mr.stop(); /* finishTake via onstop */ }
+  else { finishTake(); }
+  /* tracks/ctx are torn down in finishTake for the MR path */
+  if(!(rec.mr && rec.mr.state !== "inactive")) teardownRec();
+}
+function finishTake(){
+  var mode = rec.mode;
+  var pcm = rec.pcm, chunks = rec.chunks, mr = rec.mr;
+  rec.mr = null;
+  teardownRec();
+  var blob;
+  if(mode === "mediarecorder" && mr){
+    blob = new Blob(chunks, { type: (chunks[0] && chunks[0].type) || "audio/mp4" });
+  } else if(pcm){
+    var total = 0, i;
+    for(i=0;i<pcm.chunks.length;i++) total += pcm.chunks[i].length;
+    var all = new Float32Array(total), off = 0;
+    for(i=0;i<pcm.chunks.length;i++){ all.set(pcm.chunks[i], off); off += pcm.chunks[i].length; }
+    blob = encodeWAV(all, pcm.rate);
+  } else {
+    return;
+  }
+  $("rec-state").textContent = "Listening to it…";
+  decodeToEnvelope(blob).then(function(env){
+    if(env.nearSilent){
+      rec.pendingTake = { blob:blob, env:env };
+      $("rec-silent").classList.remove("hidden");
+      $("rec-state").textContent = "Hmm…";
+    } else {
+      saveVoice(rec.thingId, blob, env, true);
+    }
+  }).catch(function(){
+    $("rec-error-txt").innerHTML = "<strong>That voice would not play back.</strong><br>What happened: the recording could not be read on this phone.<br>What it means: it was not saved — this thing keeps the voice it had.<br>What to do next: try recording again.";
+    $("rec-error").classList.remove("hidden");
+    $("rec-state").textContent = "Tap the red button and talk silly!";
+  });
+}
+function cancelRecord(){
+  if(rec.mr && rec.active && rec.mr.state !== "inactive"){
+    rec.mr.onstop = null;
+    try{ rec.mr.stop(); }catch(e){}
+    rec.mr = null;
+  }
+  teardownRec();
+  rec.pendingTake = null;
+}
+function saveVoice(thingId, blob, env, autoplay){
+  App.store.get(thingId).then(function(t){
+    if(!t) return;
+    t.audio = blob;
+    t.audioType = blob.type || "";
+    t.durationMs = Math.round((env ? env.duration : 0) * 1000);
+    return App.store.put(t).then(function(){
+      if(env) App.envelopeCache.set(thingId, env);
+      return refreshThings();
+    });
+  }).then(function(){
+    openStage(thingId);
+    if(autoplay){
+      var t = thingById(thingId);
+      if(t && t.audio) playCurrent();
+    }
+  }).catch(function(){
+    $("rec-error-txt").innerHTML = "<strong>That voice could not be saved.</strong><br>What happened: this phone&rsquo;s storage for the app is full or unavailable.<br>What it means: the recording is gone; this thing keeps the voice it had.<br>What to do next: a grown-up can free up space in the Grown-ups area.";
+    $("rec-error").classList.remove("hidden");
+  });
+}
+
+/* ================= Stage: playback with a data-driven mouth ================= */
+var play = { raf:0, open:0, url:null, env:null, id:null, closing:false };
+var stageSVG = null, stageURL = null;
+
+function openStage(thingId){
+  var t = thingById(thingId);
+  if(!t){ showView("shelf"); renderShelf(); return; }
+  App.currentId = thingId;
+  if(stageURL) URL.revokeObjectURL(stageURL);
+  stageURL = URL.createObjectURL(t.photo);
+  var img = $("stage-img");
+  img.src = stageURL;
+  showView("stage");
+  $("stage-hasvoice").classList.toggle("hidden", !t.audio);
+  $("stage-novoice").classList.toggle("hidden", !!t.audio);
+  $("btn-new-voice").classList.toggle("hidden", !t.audio);
+  img.onload = function(){
+    stageSVG = mountMouth($("stage-mouth"), t.mouth, 0);
+    layoutStage();
+  };
+  if(img.complete && img.naturalWidth) img.onload();
+}
+function layoutStage(){
+  var t = thingById(App.currentId);
+  if(!t) return;
+  layoutMouth($("view-stage").querySelector(".photo-frame"), $("stage-img"), $("stage-mouth"), t.mouth);
+}
+function layoutRecord(){
+  var t = thingById(rec.thingId);
+  if(!t) return;
+  layoutMouth($("view-record").querySelector(".photo-frame"), $("rec-img"), $("rec-mouth"), t.mouth);
+}
+function stopPlayback(snap){
+  if(play.raf){ cancelAnimationFrame(play.raf); play.raf = 0; }
+  var p = $("player");
+  if(p && !p.paused) p.pause();
+  if(play.url){ URL.revokeObjectURL(play.url); play.url = null; }
+  play.env = null; play.id = null;
+  play.open = 0; App.stageOpen = 0;
+  if(stageSVG) setMouthOpen(stageSVG, 0);
+  var ic = $("play-icon"); if(ic) ic.innerHTML = '<use href="#i-play"/>';
+  var b = $("btn-play"); if(b) b.classList.remove("pulse");
+}
+function playLoop(){
+  var p = $("player");
+  if(!play.env || p.paused){ play.raf = 0; return; }
+  var idx = Math.floor(p.currentTime / play.env.frameSec);
+  var target = (idx >= 0 && idx < play.env.frames.length) ? play.env.frames[idx] : 0;
+  play.open = smoothOpen(play.open, target);
+  App.stageOpen = play.open;
+  if(stageSVG) setMouthOpen(stageSVG, play.open);
+  play.raf = requestAnimationFrame(playLoop);
+}
+function playCurrent(){
+  var t = thingById(App.currentId);
+  if(!t || !t.audio) return;
+  var p = $("player");
+  if(play.id === t.id && play.env && p.src){ /* resume */
+    p.play().catch(function(){});
+    $("play-icon").innerHTML = '<use href="#i-pause"/>';
+    if(!play.raf) play.raf = requestAnimationFrame(playLoop);
+    return;
+  }
+  stopPlayback(true);
+  var envP = App.envelopeCache.has(t.id)
+    ? Promise.resolve(App.envelopeCache.get(t.id))
+    : decodeToEnvelope(t.audio).then(function(env){ App.envelopeCache.set(t.id, env); return env; });
+  envP.then(function(env){
+    play.env = env; play.id = t.id;
+    play.url = URL.createObjectURL(t.audio);
+    p.src = play.url;
+    p.currentTime = 0;
+    $("play-icon").innerHTML = '<use href="#i-pause"/>';
+    return p.play();
+  }).then(function(){
+    if(!play.raf) play.raf = requestAnimationFrame(playLoop);
+  }).catch(function(){
+    /* decode or autoplay refusal: mouth stays shut, button returns to Play */
+    $("play-icon").innerHTML = '<use href="#i-play"/>';
+  });
+}
+function togglePlay(){
+  var p = $("player");
+  if(play.id === App.currentId && play.env && !p.paused && !p.ended){
+    p.pause();
+    if(play.raf){ cancelAnimationFrame(play.raf); play.raf = 0; }
+    /* ease the mouth closed rather than snapping */
+    var closeStep = function(){
+      play.open = smoothOpen(play.open, 0);
+      App.stageOpen = play.open;
+      if(stageSVG) setMouthOpen(stageSVG, play.open);
+      if(play.open > 0.02) requestAnimationFrame(closeStep);
+      else { play.open = 0; if(stageSVG) setMouthOpen(stageSVG, 0); }
+    };
+    closeStep();
+    $("play-icon").innerHTML = '<use href="#i-play"/>';
+  } else {
+    playCurrent();
+  }
+}
+$("player").addEventListener("ended", function(){
+  if(play.raf){ cancelAnimationFrame(play.raf); play.raf = 0; }
+  play.open = 0; App.stageOpen = 0;
+  if(stageSVG){
+    setMouthOpen(stageSVG, 0);
+    var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if(!reduced && stageSVG.animate){
+      stageSVG.animate(
+        [{ transform:"translateY(0)" }, { transform:"translateY(-7%)" }, { transform:"translateY(0)" }],
+        { duration:450, easing:"ease-out" });
+    }
+  }
+  $("play-icon").innerHTML = '<use href="#i-play"/>';
+  $("btn-play").classList.add("pulse");
+});
+
+/* ================= Grown-ups gate (hold) ================= */
+function wireHold(el, ms, cb){
+  var timer = null;
+  function start(e){ if(timer) return; if(e && e.preventDefault) e.preventDefault(); el.classList.add("holding");
+    timer = setTimeout(function(){ el.classList.remove("holding"); timer = null; cb(); }, ms); }
+  function cancel(){ el.classList.remove("holding"); if(timer){ clearTimeout(timer); timer = null; } }
+  el.addEventListener("pointerdown", start);
+  el.addEventListener("pointerup", cancel);
+  el.addEventListener("pointerleave", cancel);
+  el.addEventListener("pointercancel", cancel);
+  /* Keyboard path: the gate must not be pointer-only. Hold Enter/Space. */
+  el.addEventListener("keydown", function(e){
+    if((e.key === "Enter" || e.key === " " || e.key === "Spacebar") && !e.repeat) start(e);
+  });
+  el.addEventListener("keyup", function(e){
+    if(e.key === "Enter" || e.key === " " || e.key === "Spacebar") cancel();
+  });
+  el.addEventListener("blur", cancel);
+}
+
+/* ================= Grown-ups ================= */
+var guURLs = [];
+function renderGrownups(){
+  guURLs.forEach(function(u){ URL.revokeObjectURL(u); });
+  guURLs = [];
+  return refreshThings().then(function(){
+    var n = App.things.length;
+    var withVoice = App.things.filter(function(t){ return !!t.audio; }).length;
+    var txt = n + (n === 1 ? " talking thing" : " talking things") + " saved — " + withVoice + " with voices, " + (n - withVoice) + " quiet.";
+    if(navigator.storage && navigator.storage.estimate){
+      navigator.storage.estimate().then(function(est){
+        if(est && est.usage) $("gu-storage").textContent = txt + " They use about " + fmtBytes(est.usage) + " on this phone.";
+      }).catch(function(){});
+    }
+    $("gu-storage").textContent = txt;
+    var list = $("gu-list");
+    list.innerHTML = "";
+    $("gu-empty").classList.toggle("hidden", n > 0);
+    App.things.forEach(function(t){
+      var row = document.createElement("div");
+      row.className = "gu-item";
+      var img = document.createElement("img");
+      var u = URL.createObjectURL(t.photo); guURLs.push(u);
+      img.src = u; img.alt = "A talking thing";
+      row.appendChild(img);
+      var grow = document.createElement("div");
+      grow.className = "grow";
+      var tag = document.createElement("span");
+      tag.className = "voice-tag" + (t.audio ? " has" : "");
+      tag.textContent = t.audio ? "Has a voice" : "Quiet — no voice yet";
+      grow.appendChild(tag);
+      var acts = document.createElement("div");
+      acts.className = "acts"; acts.style.marginTop = "8px";
+      if(t.audio || true){
+        var sh = document.createElement("button");
+        sh.className = "btn small secondary";
+        sh.innerHTML = '<svg class="ic"><use href="#i-share"/></svg> Share photo';
+        sh.addEventListener("click", function(){ shareThing(t); });
+        acts.appendChild(sh);
+      }
+      var del = document.createElement("button");
+      del.className = "btn small danger";
+      del.innerHTML = '<svg class="ic"><use href="#i-trash"/></svg> Delete';
+      del.addEventListener("click", function(){ openDelete(t.id); });
+      acts.appendChild(del);
+      grow.appendChild(acts);
+      row.appendChild(grow);
+      list.appendChild(row);
+    });
+  });
+}
+function shareThing(t){
+  var msg = $("gu-storage");
+  var file = new File([t.photo], "talking-thing.jpg", { type: t.photo.type || "image/jpeg" });
+  if(navigator.canShare && navigator.canShare({ files:[file] }) && navigator.share){
+    navigator.share({ files:[file] }).catch(function(){ /* parent closed the sheet */ });
+  } else {
+    msg.textContent = "Sharing is not available in this browser. The photo stays on this phone — you can show it to people on the phone itself.";
+  }
+}
+function openDelete(id){
+  var t = thingById(id);
+  if(!t) return;
+  App.delTarget = id;
+  if(stageURL) URL.revokeObjectURL(stageURL);
+  stageURL = URL.createObjectURL(t.photo);
+  $("del-img").src = stageURL;
+  showView("delete");
+}
+function doDelete(){
+  var id = App.delTarget;
+  if(!id) return;
+  App.store.delete(id).then(function(){
+    App.envelopeCache.delete(id);
+    return App.store.get(id);   /* verify it is really gone */
+  }).then(function(gone){
+    if(gone) console.error("TalkingThings: delete did not remove", id);
+    App.delTarget = null;
+    return renderGrownups();
+  }).then(function(){
+    showView("grownups");
+  });
+}
+function doImport(file){
+  if(!file) return;
+  $("gu-import-error").classList.add("hidden");
+  var url = URL.createObjectURL(file);
+  var img = new Image();
+  img.onerror = function(){
+    URL.revokeObjectURL(url);
+    var el = $("gu-import-error");
+    el.classList.remove("hidden");
+    el.scrollIntoView({ block:"center" });
+  };
+  img.onload = function(){
+    var scale = Math.min(1, 1280 / Math.max(img.naturalWidth, img.naturalHeight));
+    var c = document.createElement("canvas");
+    c.width = Math.round(img.naturalWidth*scale); c.height = Math.round(img.naturalHeight*scale);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    URL.revokeObjectURL(url);
+    /* canvas re-encode: the stored copy carries no EXIF/location data */
+    c.toBlob(function(blob){
+      if(!blob) return;
+      setPendingPhoto(blob, c.width, c.height);
+      openPlace();
+    }, "image/jpeg", 0.85);
+  };
+  img.src = url;
+}
+
+/* ================= Wiring + init ================= */
+function wire(){
+  $("btn-new").addEventListener("click", openCamera);
+  $("btn-first").addEventListener("click", openCamera);
+  $("cam-back").addEventListener("click", function(){ showView("shelf"); });
+  $("btn-shutter").addEventListener("click", takePhoto);
+  $("cam-err-shelf").addEventListener("click", function(){ showView("shelf"); });
+  $("cam-err-grown").addEventListener("click", function(){ showView("gate"); });
+  $("place-back").addEventListener("click", function(){ showView("shelf"); renderShelf(); });
+  $("btn-place-ok").addEventListener("click", confirmPlace);
+  $("place-size").addEventListener("input", function(e){
+    App.placeMouth.s = parseInt(e.target.value, 10) / 100;
+    layoutPlace();
+  });
+  document.querySelectorAll(".style-btn").forEach(function(b){
+    b.addEventListener("click", function(){
+      App.placeMouth.style = b.dataset.style;
+      document.querySelectorAll(".style-btn").forEach(function(x){ x.classList.toggle("sel", x === b); });
+      placeSVG = mountMouth($("place-mouth"), App.placeMouth, 0.3);
+      layoutPlace();
+    });
+  });
+  var frame = $("place-frame"), dragging = false;
+  frame.addEventListener("pointerdown", function(e){ dragging = true; frame.setPointerCapture(e.pointerId); placePointFromEvent(e); });
+  frame.addEventListener("pointermove", function(e){ if(dragging) placePointFromEvent(e); });
+  frame.addEventListener("pointerup", function(){ dragging = false; });
+  frame.addEventListener("pointercancel", function(){ dragging = false; });
+  $("rec-back").addEventListener("click", function(){ cancelRecord(); openStage(rec.thingId); });
+  $("btn-rec").addEventListener("click", function(){ if(rec.active) endRecord(); else beginRecord(); });
+  $("btn-retry").addEventListener("click", function(){
+    rec.pendingTake = null;
+    $("rec-silent").classList.add("hidden");
+    $("rec-state").textContent = "Tap the red button and talk silly!";
+  });
+  $("btn-keep-silent").addEventListener("click", function(){
+    var take = rec.pendingTake; rec.pendingTake = null;
+    $("rec-silent").classList.add("hidden");
+    if(take) saveVoice(rec.thingId, take.blob, take.env, false);
+    openStage(rec.thingId);
+  });
+  $("rec-err-stage").addEventListener("click", function(){ openStage(rec.thingId); });
+  $("stage-back").addEventListener("click", function(){ showView("shelf"); renderShelf(); });
+  $("btn-stage-shelf").addEventListener("click", function(){ showView("shelf"); renderShelf(); });
+  $("btn-play").addEventListener("click", togglePlay);
+  $("btn-give-voice").addEventListener("click", function(){ openRecord(App.currentId); });
+  $("btn-new-voice").addEventListener("click", function(){ openRecord(App.currentId); });
+  $("grownups-link").addEventListener("click", function(){ showView("gate"); });
+  $("gate-back").addEventListener("click", function(){ showView("shelf"); });
+  wireHold($("btn-hold"), 1200, function(){ renderGrownups().then(function(){ showView("grownups"); }); });
+  $("gu-back").addEventListener("click", function(){ showView("shelf"); renderShelf(); });
+  $("btn-import").addEventListener("click", function(){ $("import-file").click(); });
+  $("import-file").addEventListener("change", function(e){
+    var f = e.target.files && e.target.files[0];
+    e.target.value = "";
+    doImport(f);
+  });
+  $("del-back").addEventListener("click", function(){ showView("grownups"); });
+  $("del-cancel").addEventListener("click", function(){ showView("grownups"); });
+  wireHold($("btn-hold-delete"), 3000, doDelete);
+  var resizeT = 0;
+  window.addEventListener("resize", function(){
+    if(resizeT) clearTimeout(resizeT);
+    resizeT = setTimeout(function(){
+      if(!$("view-place").classList.contains("hidden")) layoutPlace();
+      if(!$("view-stage").classList.contains("hidden")) layoutStage();
+      if(!$("view-record").classList.contains("hidden")) layoutRecord();
+      if(!$("view-shelf").classList.contains("hidden")) relayoutShelf();
+    }, 120);
+  });
+  document.querySelectorAll(".style-prev").forEach(function(span){
+    span.innerHTML = mouthSVG(span.dataset.style);
+    setMouthOpen(span.querySelector("svg"), 0.72);
+  });
+}
+function init(){
+  var p = ("indexedDB" in window) ? makeIDBStore() : Promise.reject(new Error("no idb"));
+  p.catch(function(){ return makeMemStore(); }).then(function(store){
+    App.store = store;
+    if(store.kind === "memory"){
+      var b = $("shelf-banner");
+      b.innerHTML = "<strong>Saving is off in this browser.</strong><br>What happened: this browser would not let TalkingThings store things.<br>What it means: things you make will be gone when this page closes.<br>What to do next: a grown-up can try opening TalkingThings in a different browser.";
+      b.classList.remove("hidden");
+    }
+    if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function(){});
+    return refreshThings();
+  }).then(function(){
+    wire();
+    renderShelf();
+    showView("shelf");
+  });
+}
+/* Test hooks (used by the verification harness + independent auditor). */
+window.TT = {
+  App: App,
+  computeEnvelope: computeEnvelope,
+  smoothOpen: smoothOpen,
+  encodeWAV: encodeWAV,
+  decodeToEnvelope: decodeToEnvelope,
+  setMouthOpen: setMouthOpen,
+  mouthSVG: mouthSVG,
+  get store(){ return App.store; }
+};
+init();
+</script>
+</body>
+</html>
