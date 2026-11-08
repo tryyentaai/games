@@ -1,16 +1,14 @@
 {
   "schema_version": 1,
   "app": "Wordgrove",
-  "status": "verification_pending",
+  "status": "published",
   "route": "pwa",
   "tested_at": "2026-11-07",
   "tested_environment": "Recovered source on macOS. Node module, interaction, scanner, storage, asset-integrity tests passed. Camp home screen inspected in local browser preview. Physical iPhone and standalone installation not tested.",
   "github_url": "https://github.com/tryyentaai/games/tree/main/wordgrove",
-  "tested_commit": "",
+  "tested_commit": "39a6b505864d85582a0eb53e1aa70c47bd0e0692",
   "install_url": "https://tryyentaai.github.io/games/wordgrove/",
-  "blockers": [
-    "Hosted release and physical iPhone verification remain pending at this pre-publication checkpoint."
-  ],
+  "blockers": [],
   "checks": {
     "build": {
       "status": "passed",
@@ -32,8 +30,10 @@
     },
     "visual": {
       "status": "partial",
-      "observation": "Local camp home screen inspected at a narrow browser viewport. Complete multi-screen visual QA remains pending.",
-      "evidence": []
+      "observation": "Live camp preview inspected at a narrow viewport; game list and spelling practice exercised. Full multi-viewport audit is pending.",
+      "evidence": [
+        "https://tryyentaai.github.io/games/wordgrove/"
+      ]
     },
     "persistence": {
       "status": "passed",
@@ -58,19 +58,27 @@
       "evidence": []
     },
     "production": {
-      "status": "blocked",
-      "observation": "The managed preview was available. Production deployment verification is pending at this checkpoint.",
-      "evidence": []
+      "status": "passed",
+      "observation": "GitHub Pages build succeeded. Live camp, all eleven game links, Echo Hollow spelling submission and star award, and camera/photo entry controls verified. No browser console errors observed.",
+      "evidence": [
+        "https://github.com/tryyentaai/games/actions/runs/42430258753",
+        "https://tryyentaai.github.io/games/wordgrove/"
+      ]
     },
     "distribution": {
-      "status": "blocked",
-      "observation": "Initial manifest and app icons exist. A deployed standalone launch is pending.",
-      "evidence": []
+      "status": "partial",
+      "observation": "Live manifest, app icons and service-worker source included. Physical iPhone standalone installation remains unverified.",
+      "evidence": [
+        "manifest.webmanifest",
+        "sw.js"
+      ]
     },
     "github": {
-      "status": "prepared",
-      "observation": "Complete source recovered. Scanner engine and English model uploaded to GitHub and verified against local blob SHA-1 identifiers. Final publication commit and Pages reachability are pending.",
-      "evidence": []
+      "status": "passed",
+      "observation": "Published to main. All 51 Wordgrove file blob SHAs match the local publication manifest.",
+      "evidence": [
+        "https://github.com/tryyentaai/games/commit/39a6b505864d85582a0eb53e1aa70c47bd0e0692"
+      ]
     },
     "offline_update": {
       "status": "not_run",
@@ -124,12 +132,15 @@
     },
     "delivery": {
       "score": 2,
-      "observation": "Static app shell and local assets are prepared.",
-      "remaining_weakness": "Remote commit, production reachability and physical standalone installation are pending at this checkpoint.",
+      "observation": "Full source committed to GitHub and Pages game reachable. README includes installation guidance.",
+      "remaining_weakness": "Physical iPhone standalone installation remains unverified.",
       "evidence": [
         "index.html",
         "manifest.webmanifest"
       ]
     }
-  }
+  },
+  "verification_limits": [
+    "Physical iPhone camera, standalone installation, VoiceOver, and offline/upgrade behavior have not been exercised on a physical device."
+  ]
 }
