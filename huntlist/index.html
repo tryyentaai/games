@@ -121,15 +121,15 @@ label.flabel{display:block;font-size:15px;font-weight:700;margin:14px 0 6px}
 .kid-note{text-align:center;font-size:16px;font-weight:700;color:var(--marigold-deep);margin-top:12px}
 
 /* camera */
-#v-camera{max-width:none;padding:0;background:#14342F;min-height:100vh;position:relative}
-#cam-video{width:100%;height:100vh;object-fit:cover;display:block;background:#14342F}
-.cam-ui{position:absolute;left:0;right:0;bottom:0;padding:18px 20px 30px;text-align:center}
+#v-camera{max-width:none;padding:0;background:#14342F;min-height:100vh;min-height:100dvh;position:relative}
+#cam-video{width:100%;height:100vh;height:100dvh;object-fit:cover;display:block;background:#14342F}
+.cam-ui{position:absolute;left:0;right:0;bottom:0;padding:18px 20px calc(30px + env(safe-area-inset-bottom));text-align:center;z-index:4}
 #btn-shutter{width:104px;height:104px;border-radius:999px;background:var(--marigold);border:4px solid var(--paper-raised);box-shadow:var(--shadow);font-size:0;padding:16px}
 #btn-shutter svg{width:100%;height:100%}
-#btn-cam-close{position:absolute;top:16px;right:16px;width:52px;height:52px;border-radius:999px;background:var(--paper-raised);border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;z-index:5}
+#btn-cam-close{position:absolute;top:calc(16px + env(safe-area-inset-top));right:calc(16px + env(safe-area-inset-right));width:52px;height:52px;border-radius:999px;background:var(--paper-raised);border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;z-index:5}
 #btn-cam-close .ic{width:24px;height:24px}
 .cam-reminder{color:#FFFEF7;font-size:17px;font-weight:700;margin-top:12px;text-shadow:0 2px 0 rgba(20,52,47,.5)}
-.cam-err{position:absolute;inset:auto 20px 150px 20px;background:var(--paper-raised);border:2px solid var(--ink);border-radius:16px;padding:16px;font-size:16px;font-weight:600;line-height:1.45}
+.cam-err{position:absolute;inset:auto 20px 150px 20px;z-index:6;background:var(--paper-raised);border:2px solid var(--ink);border-radius:16px;padding:16px;font-size:16px;font-weight:600;line-height:1.45}
 
 /* review */
 .photo-frame{background:var(--paper-raised);border:3px solid var(--ink);border-radius:28px;box-shadow:var(--shadow);padding:12px;position:relative;margin:10px 0 18px}
@@ -230,14 +230,12 @@ label.flabel{display:block;font-size:15px;font-weight:700;margin:14px 0 6px}
 .center{text-align:center}
 .big-lead{font-size:24px;font-weight:800;line-height:1.35;text-align:center}
 .rules-wrap{position:relative}
-.seal-on-card{position:absolute;right:2px;bottom:2px;width:110px;height:110px;transform:rotate(-8deg);pointer-events:none;z-index:5}
-.seal-on-card.stamping{animation:stampin 420ms ease-out forwards}
 
 @media (prefers-reduced-motion: reduce){
   .star-cur{animation:none}
   .rays{animation:none}
   .burst-shape{display:none}
-  .seal.stamping,.seal-on-card.stamping{animation:sealfade .2s ease-out forwards}
+  .seal.stamping{animation:sealfade .2s ease-out forwards}
   @keyframes sealfade{from{opacity:0}to{opacity:1}}
   .btn:active,.cam-btn:active{transform:none}
 }
@@ -404,7 +402,6 @@ label.flabel{display:block;font-size:15px;font-weight:700;margin:14px 0 6px}
       <span class="speak-hint"><svg class="ic"><use href="#i-speaker"/></svg> Tap to hear it</span>
       <span id="kid-examples"></span>
     </button>
-    <div class="seal hidden" id="kid-stamp" style="right:2px;bottom:2px"></div>
   </div>
   <div id="kid-photo-zone">
     <button class="cam-btn" id="btn-kid-camera" aria-label="Take a photo"><svg><use href="#i-camera"/></svg></button>
@@ -423,7 +420,7 @@ label.flabel{display:block;font-size:15px;font-weight:700;margin:14px 0 6px}
   <video id="cam-video" autoplay playsinline muted></video>
   <button id="btn-cam-close" aria-label="Close camera"><svg class="ic"><use href="#i-close"/></svg></button>
   <div class="cam-err hidden" id="cam-error"></div>
-  <div class="cam-ui">
+  <div class="cam-ui" id="cam-ui">
     <button id="btn-shutter" aria-label="Take the photo"><svg><use href="#i-camera"/></svg></button>
     <p class="cam-reminder">Snap things, not people.</p>
   </div>
@@ -448,9 +445,9 @@ label.flabel{display:block;font-size:15px;font-weight:700;margin:14px 0 6px}
   <p class="helper">You spotted it!</p>
   <div class="photo-frame">
     <div class="illus-big" id="spot-illus"></div>
-    <div class="item-word center" id="spot-word" style="text-align:center"></div>
     <div class="seal hidden" id="spot-seal"></div>
   </div>
+  <div class="item-word center" id="spot-word" style="text-align:center"></div>
 </main>
 
 <!-- ============ PARKED RE-OFFER ============ -->
@@ -891,7 +888,6 @@ function renderKid(){
   $("kid-examples").innerHTML=chipExamplesHTML(it.icon,false);
   $("btn-kid-finish").classList.toggle("hidden",foundCount(h)<4);
   $("kid-storage-line").classList.toggle("hidden",!memMode);
-  $("kid-stamp").classList.add("hidden");
 }
 var _voice=null,_voiceWarmed=false;
 function refreshVoice(){try{if(!("speechSynthesis" in window))return null;var voices=speechSynthesis.getVoices().filter(function(v){return v.localService});if(!voices.length){_voice=null;return null}var en=voices.filter(function(v){return v.lang&&v.lang.toLowerCase().indexOf("en")===0});_voice=en.length?en[0]:voices[0];return _voice}catch(e){return null}}
@@ -952,7 +948,7 @@ function renderCelebration(h){
 /* ================= CAMERA ================= */
 function stopCamera(){if(S.stream){S.stream.getTracks().forEach(function(t){t.stop()});S.stream=null}var v=$("cam-video");if(v)v.srcObject=null}
 function openCamera(mode){
-  S.camMode=mode;$("cam-error").classList.add("hidden");show("v-camera");
+  S.camMode=mode;$("cam-error").classList.add("hidden");$("cam-ui").classList.remove("hidden");show("v-camera");
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){camFail(mode);return}
   navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:false}).then(function(stream){
     S.stream=stream;$("cam-video").srcObject=stream;
@@ -963,7 +959,7 @@ function camFail(mode){
   if(mode==="check"){show("v-check");var e=$("check-error");e.classList.remove("hidden");
     e.innerHTML="<strong>The camera did not open.</strong><br>What happened: HuntList could not use the camera — it may be turned off for this site, or this phone may not share it.<br>What it means: kids cannot take photos inside the hunt yet.<br>What to do next: check the browser&rsquo;s site settings for camera permission, or carry on — a grown-up can import a photo later from the Grown-ups area, on the hunt&rsquo;s detail page.";
     $("btn-check-import-route").classList.remove("hidden");return}
-  var ce=$("cam-error");ce.classList.remove("hidden");
+  var ce=$("cam-error");ce.classList.remove("hidden");$("cam-ui").classList.add("hidden");
   ce.innerHTML="<strong>The camera did not open.</strong> Ask a grown-up to help — they can import a photo from the Grown-ups area, or add one with the in-app camera from Help.";
 }
 function shutter(){
