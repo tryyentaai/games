@@ -1,3 +1,414 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Games</title><style>body{margin:0;background:#1a1342;color:#fff;font:18px system-ui,sans-serif;padding:32px 16px}a{color:#ffc233;font-size:22px}</style></head>
-<body><h1>Games</h1><ul><li><a href="drawalong/">Draw With Me · Step-by-Step Drawing Lessons</a></li><li><a href="talking-things/">TalkingThings · Make Anything Talk</a></li><li><a href="dragons-nap/">Dragon's Nap · Keep-It-Quiet Game</a></li><li><a href="huntlist/">HuntList · Photo Scavenger Hunts</a></li><li><a href="wordgrove/">Wordgrove Spelling Camp</a></li><li><a href="sparkle-dots/">Sparkle Dots</a></li><li><a href="glitter-dot-sparkles/">Glitter Dot Sparkles</a></li><li><a href="pony-farm/">Rainbow Pony Farm</a></li><li><a href="home-run-derby/">Moonshot Derby</a></li><li><a href="moonshot-club/">Moonshot Club · 3D Baseball</a></li><li><a href="hoop-pop/">Hoop Pop</a></li><li><a href="math-color-quest/">Math Color Quest</a></li><li><a href="star-keys/">Star Keys</a></li><li><a href="jelly-volley/">Jelly Volley</a></li><li><a href="ninja-goal/">Ninja Goal</a></li><li><a href="mega-kick/">Mega Kick</a></li><li><a href="mega-bat/">Mega Bat</a></li><li><a href="cuddle-pals/">Cuddle Pals</a></li><li><a href="block-hop/">Block Hop</a></li><li><a href="puff-pop/">Puff Pop</a></li><li><a href="pocket-rally-64/">Pocket Rally 64 · 3D Kart Racing</a></li><li><a href="stackfall/">Stackfall</a></li><li><a href="putt-pals/">Putt Pals</a></li></ul></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yenta Games — A Family Game Shelf</title>
+<meta name="description" content="A browsable shelf of free games for kids and families. Every game opens right in your browser — nothing to download, no accounts.">
+<style>
+  :root{
+    --paper:#fff9f1; --ink:#262052; --ink-soft:#5b5680; --card:#ffffff;
+    --coral:#ff6b4a; --amber:#ffc233; --teal:#0ea5a4; --violet:#6d5df0;
+    --line:#f0e3d3; --shadow:0 6px 22px rgba(38,32,82,.08);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font:17px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 18px 64px}
+
+  /* Hero */
+  header{padding:44px 0 8px;text-align:left}
+  .kicker{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--coral)}
+  .kicker svg{width:18px;height:18px}
+  h1{font-size:clamp(34px,6vw,52px);line-height:1.06;margin:10px 0 10px;font-weight:800;letter-spacing:-.01em}
+  h1 .accent{color:var(--violet)}
+  .sub{font-size:clamp(16px,2.6vw,19px);color:var(--ink-soft);max-width:640px;margin:0}
+  .promise{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 4px;padding:0;list-style:none}
+  .promise li{background:#fff;border:1px solid var(--line);border-radius:999px;
+    padding:7px 14px;font-size:14px;font-weight:600;box-shadow:var(--shadow)}
+  .promise li b{color:var(--coral);font-weight:800;margin-right:6px}
+
+  /* Search + section jumps */
+  .tools{position:sticky;top:0;z-index:5;background:linear-gradient(var(--paper) 82%,rgba(255,249,241,0));
+    padding:16px 0 12px;margin-top:14px}
+  .search{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--line);
+    border-radius:14px;padding:11px 14px;box-shadow:var(--shadow)}
+  .search svg{width:20px;height:20px;flex:none;color:var(--ink-soft)}
+  .search input{border:0;outline:0;font:inherit;width:100%;background:transparent;color:var(--ink)}
+  .search input::placeholder{color:#9a95b8}
+  .jumps{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .jumps a{text-decoration:none;color:var(--ink);background:#fff;border:1px solid var(--line);
+    border-radius:999px;padding:6px 13px;font-size:13.5px;font-weight:600}
+  .jumps a:hover{border-color:var(--amber)}
+  .noresults{display:none;background:#fff;border:1px dashed var(--line);border-radius:14px;
+    padding:18px;text-align:center;color:var(--ink-soft);margin-top:14px}
+
+  /* Sections */
+  section{margin-top:38px}
+  .sec-head{display:flex;align-items:baseline;gap:12px;border-bottom:3px solid var(--amber);
+    padding-bottom:8px;margin-bottom:6px}
+  .sec-head h2{font-size:clamp(22px,4vw,28px);margin:0;font-weight:800}
+  .sec-head p{margin:0;color:var(--ink-soft);font-size:15px}
+  .grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:16px}
+  @media(min-width:560px){.grid{grid-template-columns:1fr 1fr}}
+  @media(min-width:900px){.grid{grid-template-columns:1fr 1fr 1fr}}
+
+  /* Cards */
+  .card{display:flex;gap:14px;align-items:flex-start;background:var(--card);border:1px solid var(--line);
+    border-radius:20px;padding:16px;text-decoration:none;color:inherit;box-shadow:var(--shadow);
+    transition:transform .15s ease,box-shadow .15s ease}
+  .card:hover,.card:focus-visible{transform:translateY(-2px);box-shadow:0 12px 28px rgba(38,32,82,.13);outline:none}
+  .tile{width:76px;height:76px;flex:none;border-radius:19px;overflow:hidden;background:#eee;
+    box-shadow:inset 0 0 0 1px rgba(38,32,82,.06)}
+  .tile img{width:100%;height:100%;display:block;object-fit:cover}
+  .tile svg{width:100%;height:100%;display:block}
+  .card-body{min-width:0;flex:1}
+  .card h3{margin:1px 0 4px;font-size:19px;font-weight:800;line-height:1.2}
+  .card p{margin:0 0 10px;font-size:14.5px;color:var(--ink-soft);line-height:1.45}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+  .tag{font-size:12px;font-weight:700;letter-spacing:.02em;background:#fdf1e3;color:#8a5a12;
+    border-radius:999px;padding:3px 9px}
+  .tag.blue{background:#e9e7ff;color:#453a9e}
+  .tag.green{background:#e2f4ec;color:#146c4a}
+  .play{display:inline-flex;align-items:center;gap:7px;background:var(--coral);color:#fff;
+    font-size:14.5px;font-weight:800;border-radius:999px;padding:8px 16px}
+  .play svg{width:11px;height:11px}
+  .card:hover .play{background:#f5562f}
+
+  footer{margin-top:56px;border-top:1px solid var(--line);padding-top:18px;color:var(--ink-soft);font-size:14px}
+  footer b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="kicker">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l2.4 6.2L21 9l-5 4.4L17.5 20 12 16.6 6.5 20 8 13.4 3 9l6.6-.8L12 2z" fill="#ffc233" stroke="#e8a90c" stroke-width="1.2" stroke-linejoin="round"/></svg>
+      Yenta Games
+    </span>
+    <h1>A game shelf for <span class="accent">kids &amp; families</span></h1>
+    <p class="sub">Every game here was made to be picked up and played in seconds. Browse by what your kid feels like doing — drawing, sports, puzzles, or something calm — and tap Play.</p>
+    <ul class="promise">
+      <li><b>Free</b> every game, always</li>
+      <li><b>No downloads</b> opens right in the browser</li>
+      <li><b>No accounts</b> just tap and play</li>
+    </ul>
+  </header>
+
+  <div class="tools">
+    <label class="search">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5L21 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      <input id="q" type="search" placeholder="Search games — try &quot; drawing&quot;, &quot;soccer&quot;, &quot;piano&quot;…" aria-label="Search games">
+    </label>
+    <nav class="jumps" aria-label="Jump to a section">
+      <a href="#create">Make &amp; Create</a>
+      <a href="#sports">Sports &amp; Action</a>
+      <a href="#puzzles">Puzzles &amp; Brain Play</a>
+      <a href="#together">Play Together</a>
+    </nav>
+    <div class="noresults" id="noresults">No game matches that search yet. Try a shorter word, like &quot;ball&quot; or &quot;pop&quot;.</div>
+  </div>
+
+  <!-- MAKE & CREATE -->
+  <section id="create" data-section>
+    <div class="sec-head"><h2>Make &amp; Create</h2><p>Drawing, photos, pets and make-believe</p></div>
+    <div class="grid">
+
+      <a class="card" href="drawalong/" data-search="draw with me drawing lessons draw step by step art pencil">
+        <span class="tile" aria-hidden="true"><svg viewBox="0 0 96 96"><rect width="96" height="96" fill="#ff9f43"/><rect x="18" y="22" width="46" height="56" rx="5" fill="#fff7ea" transform="rotate(-6 41 50)"/><path d="M27 36h26M27 47h26M27 58h17" stroke="#d8c9ae" stroke-width="4" stroke-linecap="round" transform="rotate(-6 41 50)"/><path d="M63 66l14-14 7 7-14 14-9 3 2-10z" fill="#262052"/><path d="M63 66l-2 10 9-3-7-7z" fill="#ffd9a0"/></svg></span>
+        <span class="card-body">
+          <h3>Draw With Me</h3>
+          <p>Learn to draw by following step-by-step lessons, one simple shape at a time.</p>
+          <span class="tags"><span class="tag">Drawing lessons</span><span class="tag blue">Step by step</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+      <a class="card" href="talking-things/" data-search="talking things photo camera mouth voice record talk anything">
+        <span class="tile" aria-hidden="true"><svg viewBox="0 0 96 96"><rect width="96" height="96" fill="#0ea5a4"/><path d="M20 24h56a6 6 0 016 6v30a6 6 0 01-6 6H46l-14 12V66H20a6 6 0 01-6-6V30a6 6 0 016-6z" fill="#eafaf8"/><path d="M33 45c5 7 10 10 15 10s10-3 15-10c-4 12-9 17-15 17s-11-5-15-17z" fill="#262052"/><circle cx="36" cy="36" r="3.4" fill="#262052"/><circle cx="60" cy="36" r="3.4" fill="#262052"/></svg></span>
+        <span class="card-body">
+          <h3>TalkingThings</h3>
+          <p>Snap a photo of anything, give it a mouth, record your voice — and watch it talk back.</p>
+          <span class="tags"><span class="tag">Camera game</span><span class="tag green">Record your voice</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+      <a class="card" href="math-color-quest/" data-search="math color quest coloring book colour by number maths problems paint">
+        <span class="tile"><img src="math-color-quest/icon-192.png" alt="Math Color Quest icon" loading="lazy"></span>
+        <span class="card-body">
+          <h3>Math Color Quest</h3>
+          <p>A color-by-number coloring book where every paint pot is a little math problem to solve first.</p>
+          <span class="tags"><span class="tag">Coloring</span><span class="tag blue">Ages 5–8</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+      <a class="card" href="cuddle-pals/" data-search="cuddle pals pet pony kitty puppy adopt care feed bath sleep virtual pet">
+        <span class="tile"><img src="cuddle-pals/icon-192.png" alt="Cuddle Pals icon" loading="lazy"></span>
+        <span class="card-body">
+          <h3>Cuddle Pals</h3>
+          <p>Adopt a baby pony, kitty or puppy and keep it fed, clean, rested and happy.</p>
+          <span class="tags"><span class="tag">Virtual pet</span><span class="tag blue">Ages 3–6</span><span class="tag green">Nothing can be lost</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+      <a class="card" href="pony-farm/" data-search="rainbow pony farm ponies horse care feed brush carrots">
+        <span class="tile"><img src="pony-farm/icon-192.png" alt="Rainbow Pony Farm icon" loading="lazy"></span>
+        <span class="card-body">
+          <h3>Rainbow Pony Farm</h3>
+          <p>Pick a pony friend, then feed, brush and care for your ponies down on the farm.</p>
+          <span class="tags"><span class="tag">Pet care</span><span class="tag green">Gentle play</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- SPORTS & ACTION -->
+  <section id="sports" data-section>
+    <div class="sec-head"><h2>Sports &amp; Action</h2><p>Swing, kick, race and hop</p></div>
+    <div class="grid">
+
+      <a class="card" href="home-run-derby/" data-search="moonshot derby baseball home run swing bat one tap">
+        <span class="tile"><img src="home-run-derby/icon-192.png" alt="Moonshot Derby icon" loading="lazy"></span>
+        <span class="card-body">
+          <h3>Moonshot Derby</h3>
+          <p>A one-tap home run derby: tap anywhere to swing. No reading, and no way to lose.</p>
+          <span class="tags"><span class="tag">Baseball</span><span class="tag green">One tap</span><span class="tag blue">No reading needed</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+      <a class="card" href="moonshot-club/" data-search="moonshot club baseball 3d batting practice home run swing">
+        <span class="tile"><img src="moonshot-club/icon-192.png" alt="Moonshot Club icon" loading="lazy"></span>
+        <span class="card-body">
+          <h3>Moonshot Club</h3>
+          <p>3D baseball batting practice — time your one-tap swing and watch the ball fly.</p>
+          <span class="tags"><span class="tag">Baseball</span><span class="tag blue">3D</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+      <a class="card" href="mega-bat/" data-search="mega bat baseball dinger swing trampoline balloons one tap">
+        <span class="tile"><img src="mega-bat/icon-192.png" alt="Mega Bat icon" loading="lazy"></span>
+        <span class="card-body">
+          <h3>Mega Bat</h3>
+          <p>Tap to swing and send Dinger the baseball bouncing through trampolines, balloons and zoom pads.</p>
+          <span class="tags"><span class="tag">Baseball</span><span class="tag green">One tap</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+      <a class="card" href="mega-kick/" data-search="mega kick soccer football bouncy kick trampoline one tap">
+        <span class="tile"><img src="mega-kick/icon-192.png" alt="Mega Kick icon" loading="lazy"></span>
+        <span class="card-body">
+          <h3>Mega Kick</h3>
+          <p>One tap kicks Bouncy the soccer ball on a flying trip through trampolines and wind clouds.</p>
+          <span class="tags"><span class="tag">Soccer</span><span class="tag green">One tap</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+      <a class="card" href="ninja-goal/" data-search="ninja goal soccer penalty kick goalie football">
+        <span class="tile"><img src="ninja-goal/icon-192.png" alt="Ninja Goal icon" loading="lazy"></span>
+        <span class="card-body">
+          <h3>Ninja Goal</h3>
+          <p>Tap where to shoot — ninja penalty kicks against an animal-ninja goalie.</p>
+          <span class="tags"><span class="tag">Soccer</span><span class="tag blue">No reading needed</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+      <a class="card" href="hoop-pop/" data-search="hoop pop basketball carnival toss throw points">
+        <span class="tile"><img src="hoop-pop/icon-192.png" alt="Hoop Pop icon" loading="lazy"></span>
+        <span class="card-body">
+          <h3>Hoop Pop</h3>
+          <p>Tap or swipe to toss balls at carnival hoops — the higher and farther the hoop, the more it is worth.</p>
+          <span class="tags"><span class="tag">Hoop toss</span><span class="tag blue">Ages 5–9</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+      <a class="card" href="putt-pals/" data-search="putt pals mini golf putt courses animal pal">
+        <span class="tile"><img src="putt-pals/icon-192.png" alt="Putt Pals icon" loading="lazy"></span>
+        <span class="card-body">
+          <h3>Putt Pals</h3>
+          <p>Pull back and let go to putt through mini-golf courses, with an animal pal along for the round.</p>
+          <span class="tags"><span class="tag">Mini golf</span><span class="tag blue">Ages 5–9</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+      <a class="card" href="jelly-volley/" data-search="jelly volley beach ball net volleyball bounce">
+        <span class="tile"><img src="jelly-volley/icon-192.png" alt="Jelly Volley icon" loading="lazy"></span>
+        <span class="card-body">
+          <h3>Jelly Volley</h3>
+          <p>Slide and jump to bounce a beach ball over the net with a wobbly jelly dome.</p>
+          <span class="tags"><span class="tag">Beach volley</span><span class="tag blue">Ages 5–9</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+      <a class="card" href="pocket-rally-64/" data-search="pocket rally 64 kart racing race car 3d drive">
+        <span class="tile"><img src="pocket-rally-64/dist/icon-192.png" alt="Pocket Rally 64 icon" loading="lazy"></span>
+        <span class="card-body">
+          <h3>Pocket Rally 64</h3>
+          <p>A 3D kart racer built for touch — steer your kart around the course, in landscape or portrait.</p>
+          <span class="tags"><span class="tag">Kart racing</span><span class="tag blue">3D</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+      <a class="card" href="block-hop/" data-search="block hop runner jump hop coins trophy platform">
+        <span class="tile"><img src="block-hop/icon-192.png" alt="Block Hop icon" loading="lazy"></span>
+        <span class="card-body">
+          <h3>Block Hop</h3>
+          <p>Your hero runs on their own — tap to hop the gaps, grab coins and reach the trophy.</p>
+          <span class="tags"><span class="tag">Runner</span><span class="tag blue">Ages 5–7</span><span class="tag green">No way to lose</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+      <a class="card" href="ninja-star-academy/" data-search="ninja star academy sky run star throw lantern pop stickers mini games">
+        <span class="tile"><img src="ninja-star-academy/icon-192.png" alt="Ninja Star Academy icon" loading="lazy"></span>
+        <span class="card-body">
+          <h3>Ninja Star Academy</h3>
+          <p>Three touch-first ninja games in one — Sky Run, Star Throw and Lantern Pop — with stickers to collect.</p>
+          <span class="tags"><span class="tag">Ninja games</span><span class="tag green">Stickers to collect</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- PUZZLES & BRAIN PLAY -->
+  <section id="puzzles" data-section>
+    <div class="sec-head"><h2>Puzzles &amp; Brain Play</h2><p>Words, music, matching and blocks</p></div>
+    <div class="grid">
+
+      <a class="card" href="wordgrove/" data-search="wordgrove spelling camp words arcade letters worksheet">
+        <span class="tile"><img src="wordgrove/art/icon-192.png" alt="Wordgrove Spelling Camp icon" loading="lazy"></span>
+        <span class="card-body">
+          <h3>Wordgrove Spelling Camp</h3>
+          <p>A spelling arcade with eleven games — play the starter lists, or bring your own words from a worksheet.</p>
+          <span class="tags"><span class="tag">Spelling</span><span class="tag blue">Your own word lists</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+      <a class="card" href="star-keys/" data-search="star keys piano music rhythm notes songs keyboard">
+        <span class="tile"><img src="star-keys/icon-192.png" alt="Star Keys icon" loading="lazy"></span>
+        <span class="card-body">
+          <h3>Star Keys</h3>
+          <p>Glowing star notes fall onto a real piano — tap the matching keys and learn songs by color.</p>
+          <span class="tags"><span class="tag">Piano</span><span class="tag blue">Ages 5–9</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+      <a class="card" href="puff-pop/" data-search="puff pop bubble shooter match pop fluffy stickers">
+        <span class="tile"><img src="puff-pop/icon-192.png" alt="Puff Pop icon" loading="lazy"></span>
+        <span class="card-body">
+          <h3>Puff Pop</h3>
+          <p>Aim, let go, and pop groups of three or more fluffy Puffs to free them all and earn a sticker.</p>
+          <span class="tags"><span class="tag">Bubble pop</span><span class="tag blue">Ages 5–9</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+      <a class="card" href="sparkle-dots/" data-search="sparkle dots match color shape drag chain points">
+        <span class="tile"><img src="sparkle-dots/icon-192.png" alt="Sparkle Dots icon" loading="lazy"></span>
+        <span class="card-body">
+          <h3>Sparkle Dots</h3>
+          <p>Drag your finger across dots that match by color or shape to score points and build chains.</p>
+          <span class="tags"><span class="tag">Matching game</span><span class="tag green">Calm pace</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+      <a class="card" href="glitter-dot-sparkles/" data-search="glitter dot sparkles match connect dots stars magic chains">
+        <span class="tile"><img src="glitter-dot-sparkles/icon-192.png" alt="Glitter Dot Sparkles icon" loading="lazy"></span>
+        <span class="card-body">
+          <h3>Glitter Dot Sparkles</h3>
+          <p>Connect three or more matching dots to pop sparkle chains, collect stars, and make a little magic.</p>
+          <span class="tags"><span class="tag">Matching game</span><span class="tag green">Calm pace</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+      <a class="card" href="stackfall/" data-search="stackfall falling block puzzle rows clear tetris style fast">
+        <span class="tile"><img src="stackfall/icon-192.png" alt="Stackfall icon" loading="lazy"></span>
+        <span class="card-body">
+          <h3>Stackfall</h3>
+          <p>A fast falling-block puzzle: fit the pieces, fill rows and clear them as the speed climbs.</p>
+          <span class="tags"><span class="tag">Block puzzle</span><span class="tag blue">Fast-paced</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- PLAY TOGETHER -->
+  <section id="together" data-section>
+    <div class="sec-head"><h2>Play Together</h2><p>Games for the whole room, out in the real world</p></div>
+    <div class="grid">
+
+      <a class="card" href="huntlist/" data-search="huntlist photo scavenger hunt find spot camera list group">
+        <span class="tile" aria-hidden="true"><svg viewBox="0 0 96 96"><rect width="96" height="96" fill="#3aa655"/><rect x="16" y="30" width="64" height="46" rx="9" fill="#eafaf0"/><rect x="36" y="22" width="24" height="10" rx="4" fill="#eafaf0"/><circle cx="48" cy="53" r="13" fill="#262052"/><circle cx="48" cy="53" r="7" fill="#7fd4ff"/><circle cx="70" cy="68" r="11" fill="#ffc233"/><path d="M65 68l4 4 6-7" stroke="#262052" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="card-body">
+          <h3>HuntList</h3>
+          <p>A photo scavenger hunt — take the list, hunt for each thing, and snap a photo when you spot it.</p>
+          <span class="tags"><span class="tag">Scavenger hunt</span><span class="tag green">Camera game</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+      <a class="card" href="dragons-nap/" data-search="dragons nap quiet game dragon sleep treasure microphone calm restaurant">
+        <span class="tile" aria-hidden="true"><svg viewBox="0 0 96 96"><rect width="96" height="96" fill="#3b3675"/><path d="M62 18a30 30 0 1020 38A24 24 0 0162 18z" fill="#ffc233"/><path d="M30 24l10-8M27 34l9-5M68 66l8-6M66 75l7-4" stroke="#bdb7ff" stroke-width="4" stroke-linecap="round"/><circle cx="30" cy="66" r="3.5" fill="#bdb7ff"/><circle cx="22" cy="52" r="2.6" fill="#bdb7ff"/></svg></span>
+        <span class="card-body">
+          <h3>Dragon&rsquo;s Nap</h3>
+          <p>Everyone stays quiet to fill the treasure and let the dragon sleep — the phone listens, and only measures sound on the device.</p>
+          <span class="tags"><span class="tag">Quiet game</span><span class="tag blue">Uses the microphone</span><span class="tag green">Great for restaurants</span></span>
+          <span class="play"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1l9 5-9 5V1z" fill="#fff"/></svg>Play</span>
+        </span>
+      </a>
+
+    </div>
+  </section>
+
+  <footer>
+    <p><b>For grown-ups:</b> every game on this shelf opens in the browser with nothing to install, and most keep everything on the device. Games marked &ldquo;no way to lose&rdquo; or &ldquo;nothing can be lost&rdquo; were built that way on purpose — they end in a party, not a game over.</p>
+    <p>Yenta Games — a family game shelf. New games get added to this page as they ship.</p>
+  </footer>
+
+</div>
+<script>
+  (function(){
+    var q=document.getElementById('q'), cards=[].slice.call(document.querySelectorAll('.card')),
+        secs=[].slice.call(document.querySelectorAll('[data-section]')),
+        none=document.getElementById('noresults');
+    q.addEventListener('input',function(){
+      var needle=q.value.trim().toLowerCase(), anyVisible=false;
+      cards.forEach(function(c){
+        var hit=!needle||(c.getAttribute('data-search')+' '+c.textContent).toLowerCase().indexOf(needle)>-1;
+        c.style.display=hit?'':'none'; if(hit)anyVisible=true;
+      });
+      secs.forEach(function(s){
+        var visible=[].slice.call(s.querySelectorAll('.card')).some(function(c){return c.style.display!=='none'});
+        s.style.display=visible?'':'none';
+      });
+      none.style.display=anyVisible?'none':'block';
+    });
+  })();
+</script>
+</body>
+</html>
