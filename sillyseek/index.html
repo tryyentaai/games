@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:;">
+<title>Silly Seek! — Don's Hide-and-Guess Game</title>
+<style>
+  :root{
+    --ink:#2d2350; --paper:#fff8ee; --card:#ffffff;
+    --purple:#7c5cd6; --purple-dark:#5b3fb8; --pink:#ff7bac; --pink-soft:#ffe3ee;
+    --teal:#2bb3a3; --sun:#ffc94d; --sky:#bde8ff; --good:#2f9e63; --bad:#e05260;
+    --radius:22px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Avenir Next Rounded","Trebuchet MS","Comic Sans MS",ui-rounded,system-ui,sans-serif;
+    background:linear-gradient(180deg,#cfeeff 0%,#e9e2ff 55%,#ffe9f3 100%);
+    color:var(--ink); min-height:100dvh;
+    padding:env(safe-area-inset-top) 14px calc(20px + env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:560px;margin:0 auto;}
+  header{text-align:center;padding:18px 6px 6px;}
+  h1{font-size:clamp(34px,9vw,52px);margin:0;letter-spacing:.5px;color:var(--purple-dark);
+     text-shadow:0 3px 0 #fff, 0 6px 14px rgba(91,63,184,.25);}
+  h1 .pop{color:var(--pink);}
+  .tagline{font-size:17px;margin:6px 0 0;font-weight:600;opacity:.85;}
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:0 8px 24px rgba(45,35,80,.14);
+        padding:20px;margin:14px 0;border:3px solid #fff;}
+  .big-btn{display:block;width:100%;border:none;cursor:pointer;border-radius:18px;
+    background:var(--purple);color:#fff;font-family:inherit;font-weight:800;
+    font-size:24px;padding:16px 20px;box-shadow:0 6px 0 var(--purple-dark);transition:transform .08s, box-shadow .08s;}
+  .big-btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--purple-dark);}
+  .big-btn.pink{background:var(--pink);box-shadow:0 6px 0 #d14f83;}
+  .big-btn.pink:active{box-shadow:0 2px 0 #d14f83;}
+  .big-btn.teal{background:var(--teal);box-shadow:0 6px 0 #1d7f73;}
+  .big-btn.teal:active{box-shadow:0 2px 0 #1d7f73;}
+  .howto{font-size:18px;line-height:1.5;margin:0 0 14px;}
+  .howto b{color:var(--purple-dark);}
+  .progress{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;}
+  .stars{font-size:15px;letter-spacing:2px;flex:1;background:#f1edff;border-radius:999px;padding:7px 12px;min-height:34px;}
+  .stars .on{color:#f5a623;} .stars .off{color:#cfc6ec;}
+  .cluebox{background:var(--pink-soft);border:3px dashed var(--pink);border-radius:18px;padding:14px 16px;margin:12px 0;}
+  .cluebox .who{font-size:13px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#d14f83;margin:0 0 6px;}
+  .clue{font-size:21px;line-height:1.45;margin:0;font-weight:700;}
+  .ask{font-size:20px;font-weight:800;margin:14px 0 10px;text-align:center;}
+  .spots{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .spot{border:3px solid #e4defa;background:#fbfaff;border-radius:18px;padding:12px 8px;cursor:pointer;
+    font-family:inherit;font-weight:800;font-size:17px;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:6px;
+    min-height:118px;justify-content:center;transition:transform .1s, border-color .1s;}
+  .spot:active{transform:scale(.96);}
+  .spot svg{width:54px;height:54px;}
+  .spot.wrong{animation:shake .4s;border-color:var(--bad);background:#ffeef0;}
+  .spot.right{border-color:var(--good);background:#e9f9f0;}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+  .feedback{text-align:center;font-size:19px;font-weight:800;min-height:28px;margin:12px 0 0;}
+  .feedback.good{color:var(--good);} .feedback.oops{color:var(--bad);}
+  .reveal{text-align:center;}
+  .reveal .art{width:min(300px,80vw);margin:0 auto;}
+  .reveal .art svg{width:100%;height:auto;animation:pop .45s cubic-bezier(.2,1.6,.4,1);}
+  @keyframes pop{0%{transform:scale(.3) rotate(-6deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
+  .names{display:grid;gap:10px;margin-top:6px;}
+  .name-btn{border:3px solid #e4defa;background:#fbfaff;border-radius:16px;padding:14px;cursor:pointer;
+    font-family:inherit;font-weight:800;font-size:19px;color:var(--ink);min-height:56px;}
+  .name-btn:active{transform:scale(.97);}
+  .name-btn.right{border-color:var(--good);background:#e9f9f0;}
+  .name-btn.wrong{border-color:var(--bad);background:#ffeef0;animation:shake .4s;}
+  .confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50;}
+  .confetti i{position:absolute;top:-14px;width:11px;height:15px;border-radius:3px;animation:fall linear forwards;}
+  @keyframes fall{to{transform:translateY(105dvh) rotate(560deg);}}
+  .finish-art{width:min(260px,70vw);margin:0 auto;}
+  .finish-art svg{width:100%;height:auto;}
+  .footer-note{text-align:center;font-size:14px;opacity:.65;margin:10px 0 0;font-weight:600;}
+  .hidden{display:none !important;}
+  @media (prefers-reduced-motion: reduce){
+    .reveal .art svg{animation:none;} .spot.wrong,.name-btn.wrong{animation:none;} .confetti{display:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Silly <span class="pop">Seek!</span></h1>
+    <p class="tagline">Don hid 15 silly things. Read the clue, find the hiding spot, guess the silly thing!</p>
+  </header>
+
+  <!-- START -->
+  <section id="screen-start" class="card">
+    <p class="howto"><b>How to play:</b><br>
+    1. Read the clue out loud.<br>
+    2. Tap the hiding spot the clue points to.<br>
+    3. When it pops out, guess <b>what it is</b>!<br>
+    Find all 15 to win. The dancing pickle is in there somewhere…</p>
+    <button class="big-btn pink" id="btn-start">Start Seeking!</button>
+  </section>
+
+  <!-- GAME -->
+  <section id="screen-game" class="card hidden">
+    <div class="progress"><span id="round-label">Hunt 1 of 15</span></div>
+    <div class="stars" id="stars" aria-label="Found so far"></div>
+    <div class="cluebox">
+      <p class="who">Clue</p>
+      <p class="clue" id="clue-text"></p>
+    </div>
+
+    <div id="phase-where">
+      <p class="ask">Where is it hiding?</p>
+      <div class="spots" id="spots"></div>
+      <p class="feedback" id="feedback-where"></p>
+    </div>
+
+    <div id="phase-what" class="hidden">
+      <div class="reveal"><div class="art" id="reveal-art"></div></div>
+      <p class="ask">You found it! But what IS it?</p>
+      <div class="names" id="names"></div>
+      <p class="feedback" id="feedback-what"></p>
+      <button class="big-btn teal hidden" id="btn-next">Next Silly Thing</button>
+    </div>
+  </section>
+
+  <!-- FINISH -->
+  <section id="screen-finish" class="card hidden">
+    <div class="reveal">
+      <div class="finish-art" id="finish-art"></div>
+      <p class="ask" style="font-size:26px;">You found all 15 silly things!</p>
+      <p class="howto" style="text-align:center;">Detective Caroline wins the day. Don will have to hide them better next time.</p>
+    </div>
+    <button class="big-btn pink" id="btn-again">Play Again</button>
+  </section>
+
+  <p class="footer-note">Made by Don for Caroline (and Jack, when he is on the case).</p>
+</div>
+<div class="confetti hidden" id="confetti"></div>
+
+<script>
+"use strict";
+/* ---------- Hiding spots ---------- */
+const SPOTS = {
+  rug:   { name:"Under the Rug",
+    icon:'<svg viewBox="0 0 100 100"><ellipse cx="50" cy="58" rx="40" ry="24" fill="#ff8fab"/><ellipse cx="50" cy="54" rx="40" ry="24" fill="#ffb3c6"/><path d="M22 46 q28 -14 56 0" stroke="#e05260" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M12 62 v10 M88 62 v10" stroke="#e05260" stroke-width="4" stroke-linecap="round"/></svg>'},
+  fridge:{ name:"In the Fridge",
+    icon:'<svg viewBox="0 0 100 100"><rect x="30" y="8" width="40" height="84" rx="7" fill="#bde8ff" stroke="#5aa7d6" stroke-width="4"/><line x1="30" y1="38" x2="70" y2="38" stroke="#5aa7d6" stroke-width="4"/><line x1="63" y1="18" x2="63" y2="30" stroke="#5aa7d6" stroke-width="4" stroke-linecap="round"/><line x1="63" y1="48" x2="63" y2="66" stroke="#5aa7d6" stroke-width="4" stroke-linecap="round"/></svg>'},
+  tub:   { name:"In the Bathtub",
+    icon:'<svg viewBox="0 0 100 100"><path d="M12 48 h76 v8 a24 24 0 0 1 -24 24 h-28 a24 24 0 0 1 -24 -24 z" fill="#bde8ff" stroke="#5aa7d6" stroke-width="4"/><circle cx="30" cy="40" r="8" fill="#eaf7ff"/><circle cx="48" cy="34" r="10" fill="#eaf7ff"/><circle cx="66" cy="40" r="8" fill="#eaf7ff"/><path d="M30 84 l-4 8 M70 84 l4 8" stroke="#5aa7d6" stroke-width="4" stroke-linecap="round"/></svg>'},
+  tree:  { name:"In the Treehouse",
+    icon:'<svg viewBox="0 0 100 100"><rect x="45" y="52" width="10" height="38" fill="#a9743f"/><circle cx="50" cy="34" r="26" fill="#69c24a"/><circle cx="28" cy="46" r="15" fill="#7ed957"/><circle cx="72" cy="46" r="15" fill="#7ed957"/><rect x="36" y="30" width="28" height="20" rx="3" fill="#ffb35c"/><path d="M32 31 l18 -12 18 12 z" fill="#e05260"/><rect x="45" y="38" width="10" height="12" fill="#a9743f"/></svg>'},
+  chest: { name:"In the Toy Chest",
+    icon:'<svg viewBox="0 0 100 100"><rect x="14" y="42" width="72" height="44" rx="6" fill="#c99a5b"/><path d="M10 44 a40 16 0 0 1 80 0 z" fill="#e0aa6a"/><rect x="43" y="40" width="14" height="14" rx="3" fill="#ffc94d" stroke="#c78f1d" stroke-width="3"/><circle cx="28" cy="30" r="9" fill="#ff7bac"/><rect x="62" y="20" width="8" height="16" rx="4" fill="#2bb3a3" transform="rotate(20 66 28)"/></svg>'},
+  shelf: { name:"On the Bookshelf",
+    icon:'<svg viewBox="0 0 100 100"><rect x="12" y="12" width="76" height="76" rx="5" fill="#c99a5b"/><rect x="19" y="50" width="62" height="6" fill="#a9743f"/><rect x="24" y="24" width="9" height="26" fill="#e05260"/><rect x="35" y="21" width="9" height="29" fill="#2bb3a3"/><rect x="46" y="25" width="9" height="25" fill="#ffc94d"/><rect x="60" y="23" width="9" height="27" fill="#7c5cd6"/><rect x="26" y="60" width="9" height="24" fill="#ff7bac"/><rect x="38" y="58" width="9" height="26" fill="#5aa7d6"/><rect x="52" y="61" width="20" height="10" rx="2" fill="#69c24a"/></svg>'},
+  pillow:{ name:"In the Pillow Fort",
+    icon:'<svg viewBox="0 0 100 100"><rect x="20" y="30" width="56" height="44" rx="14" fill="#ffe3ee" stroke="#ff7bac" stroke-width="4" transform="rotate(-6 48 52)"/><rect x="30" y="24" width="52" height="42" rx="14" fill="#bde8ff" stroke="#5aa7d6" stroke-width="4" transform="rotate(7 56 45)"/><path d="M50 84 l8 -12 8 12" fill="#7c5cd6"/></svg>'}
+};
+
+/* ---------- The 15 silly things ---------- */
+const THINGS = [
+{ name:"A Dancing Pickle", spot:"rug",
+  clue:"I wiggle and groove to a beat you can't hear. I'm flat on the floor, and something flat is near!",
+  decoys:["A Singing Carrot","A Sleeping Cucumber"],
+  art:'<svg viewBox="0 0 200 200"><path d="M78 30 q-14 60 0 118 q4 18 22 18 t22 -18 q14 -58 0 -118 q-4 -16 -22 -16 t-22 16z" fill="#69c24a" stroke="#3e8e2f" stroke-width="4"/><circle cx="88" cy="60" r="4" fill="#3e8e2f"/><circle cx="110" cy="86" r="4" fill="#3e8e2f"/><circle cx="90" cy="120" r="4" fill="#3e8e2f"/><circle cx="94" cy="72" r="5" fill="#2d2350"/><circle cx="108" cy="72" r="5" fill="#2d2350"/><path d="M93 84 q8 7 16 0" stroke="#2d2350" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M80 96 q-26 6 -30 -16 M120 96 q26 6 30 -16" stroke="#3e8e2f" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M88 162 q-8 14 -20 16 M112 162 q8 14 20 16" stroke="#3e8e2f" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M40 40 q6 -8 12 0 M160 30 q6 -8 12 0 M30 110 q6 -8 12 0" stroke="#7c5cd6" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="46" cy="46" r="4" fill="#7c5cd6"/><circle cx="166" cy="36" r="4" fill="#7c5cd6"/></svg>'},
+{ name:"A Unicorn on a Skateboard", spot:"tree",
+  clue:"I roll on four wheels where the leaves say hi. My horn points up at the big blue sky!",
+  decoys:["A Horse on a Bicycle","A Donkey on Roller Skates"],
+  art:'<svg viewBox="0 0 200 200"><ellipse cx="100" cy="104" rx="46" ry="34" fill="#ffffff" stroke="#c9c2e8" stroke-width="4"/><circle cx="140" cy="76" r="24" fill="#fff" stroke="#c9c2e8" stroke-width="4"/><path d="M146 54 l6 -24 12 20 z" fill="#ffc94d" stroke="#e0a41c" stroke-width="3"/><path d="M122 58 q-12 16 -4 34 q10 -8 10 -20 q10 4 12 -8 q-8 -8 -18 -6z" fill="#ff7bac"/><rect x="106" y="66" width="34" height="12" rx="6" fill="#2d2350"/><rect x="112" y="69" width="8" height="6" fill="#bde8ff"/><rect x="126" y="69" width="8" height="6" fill="#bde8ff"/><circle cx="128" cy="86" r="4" fill="#2d2350"/><path d="M120 94 q8 5 14 0" stroke="#2d2350" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M70 128 v22 M124 128 v22" stroke="#c9c2e8" stroke-width="7" stroke-linecap="round"/><rect x="46" y="156" width="112" height="10" rx="5" fill="#e05260"/><circle cx="68" cy="174" r="9" fill="#2d2350"/><circle cx="136" cy="174" r="9" fill="#2d2350"/><path d="M56 100 q-16 -6 -14 -22" stroke="#ff7bac" stroke-width="7" fill="none" stroke-linecap="round"/></svg>'},
+{ name:"A Giggling Banana", spot:"fridge",
+  clue:"I'm yellow and chilly and giggling with glee, in the coldest box in the kitchen — that's me!",
+  decoys:["A Sneezing Apple","A Dancing Lemon"],
+  art:'<svg viewBox="0 0 200 200"><path d="M58 34 q-6 84 66 118 q22 10 30 -4 q-58 -22 -76 -84 q-8 -28 -20 -30z" fill="#ffd93b" stroke="#e0a41c" stroke-width="4"/><path d="M58 34 q10 -10 18 -4 l-6 12 q-8 0 -12 -8z" fill="#a9743f"/><circle cx="102" cy="86" r="5" fill="#2d2350"/><circle cx="122" cy="98" r="5" fill="#2d2350"/><path d="M100 108 q12 12 26 4" stroke="#2d2350" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M84 66 q-6 6 0 12 M146 76 q6 6 0 12 M92 140 q-6 6 0 12" stroke="#ff7bac" stroke-width="4" fill="none" stroke-linecap="round"/><text x="30" y="60" font-size="17" font-weight="800" fill="#7c5cd6" font-family="inherit">hee!</text><text x="140" y="150" font-size="15" font-weight="800" fill="#7c5cd6" font-family="inherit">hee hee!</text></svg>'},
+{ name:"A Robot Eating Spaghetti", spot:"shelf",
+  clue:"I beep and I slurp between stories and tales. My dinner is noodles — I eat them in pails!",
+  decoys:["A Robot Drinking Soup","A Robot Eating Pizza"],
+  art:'<svg viewBox="0 0 200 200"><line x1="100" y1="14" x2="100" y2="34" stroke="#8b93a7" stroke-width="5"/><circle cx="100" cy="12" r="7" fill="#e05260"/><rect x="62" y="34" width="76" height="58" rx="10" fill="#c7cede" stroke="#8b93a7" stroke-width="4"/><rect x="76" y="52" width="20" height="14" rx="4" fill="#bde8ff"/><rect x="104" y="52" width="20" height="14" rx="4" fill="#bde8ff"/><circle cx="86" cy="59" r="4" fill="#2d2350"/><circle cx="114" cy="59" r="4" fill="#2d2350"/><rect x="86" y="76" width="28" height="6" rx="3" fill="#8b93a7"/><rect x="70" y="98" width="60" height="38" rx="8" fill="#aab3c5" stroke="#8b93a7" stroke-width="4"/><circle cx="100" cy="112" r="6" fill="#ffc94d"/><path d="M62 108 q-20 6 -16 22 M138 108 q20 6 16 22" stroke="#8b93a7" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M64 152 a36 14 0 0 0 72 0 z" fill="#e05260"/><path d="M70 148 q8 -12 16 0 q8 -12 16 0 q8 -12 16 0 q8 -12 12 0" stroke="#ffd93b" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M100 136 q0 -14 10 -18" stroke="#ffd93b" stroke-width="4" fill="none" stroke-linecap="round"/></svg>'},
+{ name:"A Penguin in a Bubble Bath", spot:"tub",
+  clue:"I splash and I soak where the bubbles go POP. A chilly bird in warm water — I can't stop!",
+  decoys:["A Duck in a Rainstorm","A Penguin on an Iceberg"],
+  art:'<svg viewBox="0 0 200 200"><path d="M20 138 h160 v6 a26 26 0 0 1 -26 26 h-108 a26 26 0 0 1 -26 -26 z" fill="#bde8ff" stroke="#5aa7d6" stroke-width="4"/><ellipse cx="100" cy="96" rx="34" ry="42" fill="#2d2350"/><ellipse cx="100" cy="108" rx="20" ry="28" fill="#fff"/><circle cx="88" cy="72" r="5" fill="#fff"/><circle cx="112" cy="72" r="5" fill="#fff"/><path d="M94 82 h12 l-6 8 z" fill="#ffc94d"/><circle cx="46" cy="120" r="12" fill="#eaf7ff" stroke="#bde8ff" stroke-width="3"/><circle cx="70" cy="106" r="9" fill="#eaf7ff" stroke="#bde8ff" stroke-width="3"/><circle cx="136" cy="108" r="10" fill="#eaf7ff" stroke="#bde8ff" stroke-width="3"/><circle cx="156" cy="122" r="8" fill="#eaf7ff" stroke="#bde8ff" stroke-width="3"/><circle cx="100" cy="34" r="7" fill="#eaf7ff" stroke="#bde8ff" stroke-width="3"/><circle cx="66" cy="48" r="5" fill="#eaf7ff" stroke="#bde8ff" stroke-width="3"/><path d="M34 176 l-6 10 M166 176 l6 10" stroke="#5aa7d6" stroke-width="5" stroke-linecap="round"/></svg>'},
+{ name:"A Sleepy Moon Sipping Cocoa", spot:"pillow",
+  clue:"I'm soft and I'm cozy and ready for bed, in a fort full of pillows — rest your head!",
+  decoys:["A Sleepy Star Eating Soup","A Wide-Awake Sun"],
+  art:'<svg viewBox="0 0 200 200"><path d="M128 22 a74 74 0 1 0 50 116 a60 60 0 1 1 -50 -116z" fill="#ffd93b" stroke="#e0a41c" stroke-width="4"/><path d="M62 84 q10 8 20 0" stroke="#2d2350" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M96 116 q8 5 14 -2" stroke="#2d2350" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="66" cy="102" r="7" fill="#ffb3c6"/><path d="M138 118 h34 v26 a10 10 0 0 1 -10 10 h-14 a10 10 0 0 1 -10 -10 z" fill="#e05260"/><path d="M172 124 q14 4 0 16" stroke="#e05260" stroke-width="5" fill="none"/><path d="M146 106 q4 -8 0 -14 M158 106 q4 -8 0 -14" stroke="#bde8ff" stroke-width="4" fill="none" stroke-linecap="round"/><text x="140" y="52" font-size="22" font-weight="800" fill="#7c5cd6" font-family="inherit">z</text><text x="156" y="34" font-size="17" font-weight="800" fill="#7c5cd6" font-family="inherit">z</text><text x="168" y="20" font-size="13" font-weight="800" fill="#7c5cd6" font-family="inherit">z</text></svg>'},
+{ name:"A Giraffe in Sneakers", spot:"tree",
+  clue:"I'm tall, tall, tall and I live up high — but my fancy shoes are the ones that fly!",
+  decoys:["A Horse in Slippers","A Giraffe in Boots"],
+  art:'<svg viewBox="0 0 200 200"><rect x="88" y="52" width="20" height="74" rx="9" fill="#ffd93b" stroke="#e0a41c" stroke-width="3"/><ellipse cx="102" cy="140" rx="38" ry="24" fill="#ffd93b" stroke="#e0a41c" stroke-width="3"/><circle cx="128" cy="44" r="20" fill="#ffd93b" stroke="#e0a41c" stroke-width="3"/><path d="M118 28 l-4 -14 M136 28 l4 -14" stroke="#e0a41c" stroke-width="5" stroke-linecap="round"/><circle cx="114" cy="12" r="5" fill="#a9743f"/><circle cx="140" cy="12" r="5" fill="#a9743f"/><circle cx="122" cy="42" r="4" fill="#2d2350"/><circle cx="138" cy="42" r="4" fill="#2d2350"/><ellipse cx="130" cy="54" rx="9" ry="6" fill="#ffb3c6"/><circle cx="94" cy="80" r="6" fill="#e0a41c"/><circle cx="104" cy="106" r="7" fill="#e0a41c"/><circle cx="84" cy="138" r="6" fill="#e0a41c"/><circle cx="122" cy="146" r="6" fill="#e0a41c"/><path d="M78 158 v14 M124 158 v14" stroke="#e0a41c" stroke-width="7" stroke-linecap="round"/><path d="M62 178 h30 a6 6 0 0 0 -6 -10 h-24 z" fill="#e05260"/><path d="M110 178 h30 a6 6 0 0 0 -6 -10 h-24 z" fill="#2bb3a3"/><path d="M66 132 q-14 4 -12 18" stroke="#e0a41c" stroke-width="6" fill="none" stroke-linecap="round"/></svg>'},
+{ name:"A Singing Toaster", spot:"fridge",
+  clue:"I hum a warm tune where the cold snacks stay. I pop up songs at the start of the day!",
+  decoys:["A Dancing Freezer","A Singing Sandwich"],
+  art:'<svg viewBox="0 0 200 200"><rect x="52" y="78" width="96" height="76" rx="14" fill="#c7cede" stroke="#8b93a7" stroke-width="4"/><path d="M74 78 q-4 -34 16 -34 q10 0 12 12 q4 -12 14 -10 q18 4 10 32" fill="#f2b25c" stroke="#d18a2e" stroke-width="3"/><rect x="66" y="96" width="10" height="34" rx="5" fill="#8b93a7"/><line x1="148" y1="96" x2="162" y2="96" stroke="#8b93a7" stroke-width="6" stroke-linecap="round"/><rect x="158" y="86" width="10" height="20" rx="4" fill="#e05260"/><circle cx="96" cy="118" r="6" fill="#2d2350"/><circle cx="118" cy="118" r="6" fill="#2d2350"/><path d="M100 134 q8 -8 16 0" stroke="#2d2350" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M30 60 q6 -8 12 0 M160 44 q6 -8 12 0 M26 116 q6 -8 12 0" stroke="#7c5cd6" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="36" cy="66" r="4" fill="#7c5cd6"/><circle cx="166" cy="50" r="4" fill="#7c5cd6"/><path d="M70 168 h14 M116 168 h14" stroke="#8b93a7" stroke-width="6" stroke-linecap="round"/></svg>'},
+{ name:"An Octopus Playing Drums", spot:"tub",
+  clue:"Eight arms go tap-tap where the water runs. Bath time is band time — isn't this fun?",
+  decoys:["A Squid Playing Piano","An Octopus Washing Dishes"],
+  art:'<svg viewBox="0 0 200 200"><path d="M56 92 a44 40 0 0 1 88 0 z" fill="#b388eb"/><path d="M56 92 q-14 26 2 34 q10 5 16 -4 M76 98 q-6 26 8 32 q10 4 15 -6 M100 100 v30 q0 10 10 10 t10 -10 M124 98 q6 26 -8 32 q-10 4 -15 -6 M144 92 q14 26 -2 34 q-10 5 -16 -4" stroke="#9a6ad8" stroke-width="10" fill="none" stroke-linecap="round"/><circle cx="84" cy="66" r="6" fill="#2d2350"/><circle cx="116" cy="66" r="6" fill="#2d2350"/><path d="M90 80 q10 8 20 0" stroke="#2d2350" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="70" cy="52" r="4" fill="#fff" opacity=".55"/><circle cx="128" cy="44" r="5" fill="#fff" opacity=".55"/><ellipse cx="46" cy="156" rx="26" ry="12" fill="#e05260"/><ellipse cx="46" cy="150" rx="26" ry="10" fill="#fff" stroke="#e05260" stroke-width="3"/><ellipse cx="156" cy="156" rx="26" ry="12" fill="#2bb3a3"/><ellipse cx="156" cy="150" rx="26" ry="10" fill="#fff" stroke="#2bb3a3" stroke-width="3"/><path d="M40 118 L22 142 M160 118 L178 142" stroke="#a9743f" stroke-width="5" stroke-linecap="round"/><circle cx="20" cy="144" r="5" fill="#ffc94d"/><circle cx="180" cy="144" r="5" fill="#ffc94d"/></svg>'},
+{ name:"A Turtle in a Party Hat", spot:"chest",
+  clue:"I'm slow and I'm hiding with toys all around. My party hat is the best one in town!",
+  decoys:["A Turtle in a Crown","A Snail in a Party Hat"],
+  art:'<svg viewBox="0 0 200 200"><path d="M36 138 a64 44 0 0 1 128 0 z" fill="#69c24a" stroke="#3e8e2f" stroke-width="4"/><path d="M64 108 a40 26 0 0 1 72 0" fill="#8ede6d"/><path d="M100 96 v40 M64 116 q36 14 72 0" stroke="#3e8e2f" stroke-width="3" fill="none"/><rect x="28" y="136" width="144" height="10" rx="5" fill="#3e8e2f"/><circle cx="164" cy="118" r="17" fill="#8ede6d" stroke="#3e8e2f" stroke-width="3"/><circle cx="170" cy="114" r="3" fill="#2d2350"/><path d="M160 126 q6 4 12 0" stroke="#2d2350" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M152 100 l12 -30 14 28 z" fill="#ff7bac"/><circle cx="165" cy="66" r="6" fill="#ffc94d"/><path d="M48 156 q-6 8 -14 8 M152 156 q6 8 14 8" stroke="#3e8e2f" stroke-width="7" stroke-linecap="round"/></svg>'},
+{ name:"A Dragon Blowing Bubbles", spot:"pillow",
+  clue:"I puff soft bubbles, not fire at all! In the coziest fort, by the softest wall.",
+  decoys:["A Dragon Blowing Fire","A Dinosaur Blowing Bubbles"],
+  art:'<svg viewBox="0 0 200 200"><ellipse cx="94" cy="118" rx="44" ry="38" fill="#69c24a" stroke="#3e8e2f" stroke-width="4"/><ellipse cx="94" cy="128" rx="24" ry="24" fill="#d9f7c4"/><circle cx="128" cy="76" r="26" fill="#69c24a" stroke="#3e8e2f" stroke-width="4"/><circle cx="120" cy="72" r="4" fill="#2d2350"/><circle cx="140" cy="72" r="4" fill="#2d2350"/><circle cx="118" cy="88" r="4" fill="#3e8e2f"/><circle cx="140" cy="88" r="4" fill="#3e8e2f"/><path d="M112 54 l-8 -16 M146 56 l10 -14" stroke="#e05260" stroke-width="6" stroke-linecap="round"/><path d="M56 104 q-30 -26 -8 -48 q20 16 22 38" fill="#b388eb"/><path d="M50 130 q-24 10 -34 -6" stroke="#3e8e2f" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="168" cy="104" r="9" fill="#eaf7ff" stroke="#5aa7d6" stroke-width="2"/><circle cx="182" cy="82" r="6" fill="#eaf7ff" stroke="#5aa7d6" stroke-width="2"/><circle cx="160" cy="70" r="5" fill="#eaf7ff" stroke="#5aa7d6" stroke-width="2"/><path d="M72 150 v12 M116 150 v12" stroke="#3e8e2f" stroke-width="8" stroke-linecap="round"/></svg>'},
+{ name:"A Moose in a Tutu", spot:"rug",
+  clue:"I twirl on the floor, flat and soft below. A dancing moose — just watch me go!",
+  decoys:["A Bear in a Tutu","A Moose in a Sweater"],
+  art:'<svg viewBox="0 0 200 200"><ellipse cx="100" cy="76" rx="30" ry="34" fill="#b07a45"/><ellipse cx="100" cy="90" rx="18" ry="14" fill="#d9a066"/><circle cx="93" cy="94" r="3" fill="#2d2350"/><circle cx="107" cy="94" r="3" fill="#2d2350"/><circle cx="88" cy="66" r="5" fill="#2d2350"/><circle cx="112" cy="66" r="5" fill="#2d2350"/><path d="M74 52 q-22 -18 -30 -4 q12 4 16 12 q-12 0 -14 8 q16 6 28 -4 M126 52 q22 -18 30 -4 q-12 4 -16 12 q12 0 14 8 q-16 6 -28 -4" fill="#8a5a2b"/><path d="M84 116 h32 l6 12 h-44 z" fill="#a9743f"/><path d="M58 130 q42 -16 84 0 l10 22 q-52 14 -104 0 z" fill="#ff7bac"/><path d="M70 148 q6 10 12 0 q6 10 12 0 q6 10 12 0 q6 10 12 0 q6 10 12 0" stroke="#d14f83" stroke-width="3" fill="none"/><path d="M76 168 q-6 12 -16 14 M124 168 q6 12 16 14" stroke="#8a5a2b" stroke-width="7" stroke-linecap="round"/><ellipse cx="56" cy="184" rx="10" ry="5" fill="#ff7bac"/><ellipse cx="144" cy="184" rx="10" ry="5" fill="#ff7bac"/></svg>'},
+{ name:"A Waffle with a Mustache", spot:"fridge",
+  clue:"I'm crispy and square in the cold morning light. My mustache is fancy — a very fine sight!",
+  decoys:["A Pancake with a Beard","A Waffle with a Hat"],
+  art:'<svg viewBox="0 0 200 200"><rect x="48" y="48" width="104" height="104" rx="16" fill="#f2b25c" stroke="#d18a2e" stroke-width="4"/><path d="M74 48 v104 M100 48 v104 M126 48 v104 M48 74 h104 M48 100 h104 M48 126 h104" stroke="#d18a2e" stroke-width="4"/><rect x="78" y="66" width="14" height="10" rx="3" fill="#ffe9a8"/><rect x="108" y="66" width="14" height="10" rx="3" fill="#ffe9a8"/><circle cx="86" cy="94" r="5" fill="#2d2350"/><circle cx="114" cy="94" r="5" fill="#2d2350"/><path d="M100 116 q-14 -12 -30 -4 q-10 6 0 12 q14 6 30 -6 q16 12 30 6 q10 -6 0 -12 q-16 -8 -30 4z" fill="#5b3a1e"/><path d="M60 34 q40 -14 80 0" stroke="#e05260" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="152" cy="40" r="9" fill="#e05260"/><circle cx="158" cy="30" r="6" fill="#c22f42"/></svg>'},
+{ name:"An Owl Reading Bedtime Stories", spot:"shelf",
+  clue:"I read quiet stories where the books all sleep. Shhh — turn the page, don't make a peep!",
+  decoys:["An Owl Singing Songs","A Bat Reading Comics"],
+  art:'<svg viewBox="0 0 200 200"><ellipse cx="100" cy="104" rx="46" ry="54" fill="#a9743f"/><ellipse cx="100" cy="118" rx="28" ry="36" fill="#e8c890"/><circle cx="82" cy="82" r="15" fill="#fff"/><circle cx="118" cy="82" r="15" fill="#fff"/><circle cx="82" cy="84" r="7" fill="#2d2350"/><circle cx="118" cy="84" r="7" fill="#2d2350"/><path d="M72 58 l-8 -12 M128 58 l8 -12" stroke="#a9743f" stroke-width="6" stroke-linecap="round"/><path d="M94 96 h12 l-6 8 z" fill="#ffc94d"/><path d="M56 118 q-14 18 -6 36 M144 118 q14 18 6 36" stroke="#8a5a2b" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M64 148 q36 -12 72 0 v26 q-36 -12 -72 0 z" fill="#7c5cd6"/><path d="M100 142 v26" stroke="#5b3fb8" stroke-width="3"/><path d="M72 152 q10 -3 20 0 M108 152 q10 -3 20 0 M72 162 q10 -3 20 0 M108 162 q10 -3 20 0" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M84 168 h10 M106 168 h10" stroke="#ffc94d" stroke-width="6" stroke-linecap="round"/></svg>'},
+{ name:"A Snail in a Racing Car", spot:"chest",
+  clue:"I zoom (very slowly) past the toys in a line. The slowest racer wins every time!",
+  decoys:["A Snail on a Skateboard","A Turtle in a Racing Car"],
+  art:'<svg viewBox="0 0 200 200"><path d="M30 138 q10 -22 44 -24 l14 -16 q6 -8 18 -8 h22 q14 0 22 10 l12 14 q36 2 40 24 q2 12 -12 12 h-148 q-14 0 -12 -12z" fill="#e05260"/><rect x="96" y="98" width="34" height="18" rx="5" fill="#bde8ff"/><circle cx="62" cy="152" r="16" fill="#2d2350"/><circle cx="62" cy="152" r="7" fill="#c7cede"/><circle cx="142" cy="152" r="16" fill="#2d2350"/><circle cx="142" cy="152" r="7" fill="#c7cede"/><circle cx="58" cy="128" r="6" fill="#ffc94d"/><path d="M96 84 q-26 -4 -30 -26 q-3 -18 12 -26 q16 -9 30 2 q13 10 8 26 q-4 16 -20 24z" fill="#ff9f43"/><path d="M92 80 q-18 -6 -18 -22 q0 -13 13 -17 q12 -3 19 7" fill="none" stroke="#d18a2e" stroke-width="4"/><path d="M104 88 q14 -20 30 -22" stroke="#8ede6d" stroke-width="9" fill="none" stroke-linecap="round"/><circle cx="140" cy="62" r="9" fill="#8ede6d"/><path d="M134 56 l-4 -12 M146 56 l4 -12" stroke="#3e8e2f" stroke-width="3" stroke-linecap="round"/><circle cx="138" cy="60" r="2.5" fill="#2d2350"/><circle cx="144" cy="60" r="2.5" fill="#2d2350"/><path d="M170 96 l14 -10 M174 108 l14 -4" stroke="#5aa7d6" stroke-width="4" stroke-linecap="round"/></svg>'}
+];
+
+/* ---------- Game logic ---------- */
+const $ = id => document.getElementById(id);
+let order = [], round = 0, found = 0, busy = false;
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function save(){ try{ localStorage.setItem("sillyseek-v1", JSON.stringify({order, round, found})); }catch(e){} }
+function load(){ try{ const s = JSON.parse(localStorage.getItem("sillyseek-v1")); if(s && Array.isArray(s.order) && s.order.length===THINGS.length) return s; }catch(e){} return null; }
+
+function stars(){
+  $("stars").innerHTML = THINGS.map((_,i)=> '<span class="'+(i<found?'on':'off')+'">★</span>').join("");
+}
+function show(id){
+  ["screen-start","screen-game","screen-finish"].forEach(s=>$(s).classList.toggle("hidden", s!==id));
+}
+function confetti(){
+  const box = $("confetti"); box.classList.remove("hidden"); box.innerHTML = "";
+  const colors = ["#ff7bac","#ffc94d","#2bb3a3","#7c5cd6","#69c24a","#5aa7d6"];
+  for(let i=0;i<36;i++){
+    const p = document.createElement("i");
+    p.style.left = Math.random()*100 + "vw";
+    p.style.background = colors[i % colors.length];
+    p.style.animationDuration = (0.9 + Math.random()*0.9) + "s";
+    p.style.animationDelay = (Math.random()*0.25) + "s";
+    p.style.transform = "rotate(" + (Math.random()*360) + "deg)";
+    box.appendChild(p);
+  }
+  setTimeout(()=>{ box.classList.add("hidden"); box.innerHTML=""; }, 2400);
+}
+
+function startGame(fresh){
+  if(fresh || !order.length){ order = shuffle(THINGS.map((_,i)=>i)); round = 0; found = 0; }
+  show("screen-game");
+  renderRound(); save();
+}
+function renderRound(){
+  busy = false;
+  const t = THINGS[order[round]];
+  $("round-label").textContent = "Hunt " + (round+1) + " of " + THINGS.length;
+  stars();
+  $("clue-text").textContent = t.clue;
+  $("phase-where").classList.remove("hidden");
+  $("phase-what").classList.add("hidden");
+  $("feedback-where").textContent = "";
+  $("feedback-what").textContent = "";
+  $("btn-next").classList.add("hidden");
+  const others = shuffle(Object.keys(SPOTS).filter(k=>k!==t.spot)).slice(0,3);
+  const opts = shuffle([t.spot, ...others]);
+  $("spots").innerHTML = "";
+  opts.forEach(key=>{
+    const b = document.createElement("button");
+    b.className = "spot"; b.type = "button";
+    b.innerHTML = SPOTS[key].icon + "<span>" + SPOTS[key].name + "</span>";
+    b.setAttribute("aria-label", SPOTS[key].name);
+    b.addEventListener("click", ()=>pickSpot(b, key));
+    $("spots").appendChild(b);
+  });
+}
+function pickSpot(btn, key){
+  if(busy) return;
+  const t = THINGS[order[round]];
+  if(key !== t.spot){
+    btn.classList.add("wrong");
+    $("feedback-where").textContent = "Not there! Read the clue once more…";
+    $("feedback-where").className = "feedback oops";
+    setTimeout(()=>btn.classList.remove("wrong"), 450);
+    return;
+  }
+  busy = true;
+  btn.classList.add("right");
+  $("feedback-where").textContent = "You found the hiding spot!";
+  $("feedback-where").className = "feedback good";
+  setTimeout(()=>{
+    $("phase-where").classList.add("hidden");
+    $("phase-what").classList.remove("hidden");
+    $("reveal-art").innerHTML = t.art;
+    const names = shuffle([t.name, ...t.decoys]);
+    $("names").innerHTML = "";
+    names.forEach(n=>{
+      const b = document.createElement("button");
+      b.className = "name-btn"; b.type = "button"; b.textContent = n;
+      b.addEventListener("click", ()=>pickName(b, n));
+      $("names").appendChild(b);
+    });
+    busy = false;
+  }, 650);
+}
+function pickName(btn, n){
+  if(busy) return;
+  const t = THINGS[order[round]];
+  if(n !== t.name){
+    btn.classList.add("wrong");
+    $("feedback-what").textContent = "Hmm, look at the picture once more!";
+    $("feedback-what").className = "feedback oops";
+    setTimeout(()=>btn.classList.remove("wrong"), 450);
+    return;
+  }
+  busy = true;
+  btn.classList.add("right");
+  found++; stars(); confetti();
+  $("feedback-what").textContent = "YES! It is " + t.name + "!";
+  $("feedback-what").className = "feedback good";
+  $("btn-next").textContent = (round === THINGS.length-1) ? "See Your Prize!" : "Next Silly Thing";
+  $("btn-next").classList.remove("hidden");
+  save();
+}
+$("btn-next").addEventListener("click", ()=>{
+  round++;
+  if(round >= THINGS.length){
+    $("finish-art").innerHTML = THINGS[0].art;
+    show("screen-finish");
+    try{ localStorage.removeItem("sillyseek-v1"); }catch(e){}
+    confetti();
+  } else { renderRound(); save(); }
+});
+$("btn-start").addEventListener("click", ()=>startGame(false));
+$("btn-again").addEventListener("click", ()=>startGame(true));
+const saved = load();
+if(saved){ order = saved.order; round = Math.min(saved.round, THINGS.length-1); found = saved.found || 0; }
+</script>
+</body>
+</html>
