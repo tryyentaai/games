@@ -1,0 +1,16 @@
+{
+  "name": "Hollow Orbit",
+  "short_name": "Hollow Orbit",
+  "description": "Round-based sci-fi survival shooter. Shields, wonder weapons, and the Hollow.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#05080b",
+  "theme_color": "#05080b",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

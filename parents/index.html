@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Parents · Games</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#05080b">
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Parents">
+<link rel="apple-touch-icon" href="hollow-orbit/icon-180.png">
+<style>
+  :root { --bg:#05080b; --ink:#e9f6ff; --dim:rgba(233,246,255,.6); --cy:#6fe6ff; --or:#ff8a3a; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:radial-gradient(120% 80% at 20% 0%, #0d1a22 0%, var(--bg) 60%); color:var(--ink); min-height:100vh;
+    font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    padding:calc(28px + env(safe-area-inset-top)) calc(20px + env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left)); }
+  header { max-width:1040px; margin:0 auto 26px; display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  h1 { font-size:clamp(26px,4vw,38px); letter-spacing:.08em; font-weight:800; }
+  h1 span { color:var(--cy); }
+  .sub { color:var(--dim); font-size:14px; margin-top:4px; letter-spacing:.04em; }
+  .back { color:var(--dim); text-decoration:none; font-size:14px; border:1px solid rgba(111,230,255,.25); padding:8px 14px; border-radius:999px; }
+  .back:hover { color:var(--ink); border-color:var(--cy); }
+  main { max-width:1040px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px; }
+  .card { display:block; text-decoration:none; color:inherit; border-radius:18px; overflow:hidden; background:#0a1117;
+    border:1px solid rgba(111,230,255,.14); transition:transform .18s, border-color .18s, box-shadow .18s; }
+  .card:hover, .card:focus-visible { transform:translateY(-3px); border-color:rgba(111,230,255,.5); box-shadow:0 14px 40px rgba(0,0,0,.5), 0 0 30px rgba(111,230,255,.12); outline:none; }
+  .cover { aspect-ratio:16/9; background:#000 center/cover; position:relative; }
+  .cover::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,transparent 55%,rgba(5,8,11,.85)); }
+  .badge { position:absolute; top:12px; left:12px; z-index:1; font-size:11px; font-weight:700; letter-spacing:.14em; padding:4px 9px; border-radius:6px; background:rgba(255,138,58,.92); color:#1a0800; }
+  .meta { padding:14px 16px 16px; }
+  .meta h2 { font-size:19px; letter-spacing:.06em; }
+  .meta p { color:var(--dim); font-size:14px; line-height:1.4; margin-top:5px; }
+  .tags { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+  .tags i { font-style:normal; font-size:11px; letter-spacing:.06em; color:var(--cy); border:1px solid rgba(111,230,255,.3); padding:3px 8px; border-radius:999px; }
+</style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>PARENTS <span>·</span> AFTER HOURS</h1>
+      <div class="sub">Grown-up games, kept separate from the kids' shelf.</div>
+    </div>
+    <a class="back" href="../">← Kids' games</a>
+  </header>
+  <main>
+    <a class="card" href="hollow-orbit/">
+      <div class="cover" style="background-image:url(hollow-orbit/cover.jpg)"><span class="badge">NEW</span></div>
+      <div class="meta">
+        <h2>HOLLOW ORBIT</h2>
+        <p>Round-based sci-fi survival. Recharging shields, wonder weapons, perks, the Reliquary — hold Station Halcyon-9 against the Hollow.</p>
+        <div class="tags"><i>Shooter</i><i>Phone + desktop</i><i>Gamepad</i><i>Teen+</i></div>
+      </div>
+    </a>
+  </main>
+</body>
+</html>
