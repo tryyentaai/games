@@ -30,3 +30,6 @@ A USB/Bluetooth MIDI keyboard works in Chrome or Edge on a computer (Connect MID
 Turn on Guided Access (Settings → Accessibility → Guided Access) to keep your kid inside the game. Check the iPad silent switch if there is no sound.
 
 No ads, purchases, links, accounts or data collection. Progress saves on the device.
+
+## Art
+The five world backdrops (`bg-*.jpg`) are original paintings rendered offline on-device with FLUX.2 Klein 4B (mflux). The game falls back to its code-drawn art if any image fails to load.

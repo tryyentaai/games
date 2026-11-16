@@ -36,3 +36,6 @@ No ads, purchases, links, accounts or data collection. Art, music and sound effe
 ## For developers
 Single file `index.html`. Save key: `cuddle-pals.save.v1`. Service worker cache prefix `cp-` (bump `VERSION` in `sw.js` on every change). `?icon=1` renders the icon art.
 `window.CP` exposes `G`, `S`, and `api`: `state()`, `tap(x,y)`, `down/move/up`, `step(sec,fps)`, `press(id)`, `btns()`, `act(need)`, `setNeeds(obj)`, `feed()`, `balloons()`, `play()`, `bath()`, `pet()`, `voice()`, `resetStats()`.
+
+## Art
+The pony pasture, kitten room, puppy yard and pet-picker sky (`bg-*.jpg`) are original paintings rendered offline on-device with FLUX.2 Klein 4B (mflux). The game falls back to its code-drawn art if any image fails to load.
