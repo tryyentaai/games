@@ -31,9 +31,9 @@ button{font-family:var(--font);border:0;cursor:pointer;touch-action:manipulation
 .screen.on{display:flex}
 .screen>:first-child{margin-top:auto}#bPals,#pickGrid,#ballRow,.pbox,.gp{margin-bottom:auto}
 .screen>*{flex-shrink:0}
-h1.title{margin:0;font-size:min(17vw,96px);line-height:.95;color:#fff;letter-spacing:1px;text-shadow:0 5px 0 #2a7d2b,0 9px 0 rgba(0,0,0,.15);transform:rotate(-3deg)}
-h1.title span{color:#ffd23f;text-shadow:0 5px 0 #c98a00,0 9px 0 rgba(0,0,0,.15)}
-h2{margin:0;font-size:42px;color:#fff;text-shadow:0 4px 0 rgba(0,0,0,.2)}
+h1.title{margin:0;font-size:min(17vw,96px);line-height:.95;color:#fff;letter-spacing:1px;-webkit-text-stroke:3px #2a7d2b;paint-order:stroke fill;text-shadow:0 5px 0 #2a7d2b,0 9px 0 rgba(0,0,0,.15);transform:rotate(-3deg)}
+h1.title span{color:#ffd23f;-webkit-text-stroke:3px #c98a00;text-shadow:0 5px 0 #c98a00,0 9px 0 rgba(0,0,0,.15)}
+h2{margin:0;font-size:42px;color:#fff;-webkit-text-stroke:2.5px #2f7fc0;paint-order:stroke fill;text-shadow:0 4px 0 rgba(20,60,110,.35)}
 #hero{width:min(80vw,340px);height:min(56vw,236px)}
 .row{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;align-items:center}
 #gear{position:fixed;right:calc(var(--sr) + 14px);bottom:calc(var(--sb) + 14px);background:conic-gradient(#ffd23f calc(var(--p,0)*1%),#fff 0)}
@@ -67,7 +67,7 @@ h2{margin:0;font-size:42px;color:#fff;text-shadow:0 4px 0 rgba(0,0,0,.2)}
 @keyframes bin{0%{transform:translate(-50%,-50%) scale(.3)}70%{transform:translate(-50%,-50%) scale(1.1)}100%{transform:translate(-50%,-50%) scale(1)}}
 #party{background:rgba(40,30,70,.55)}
 .pbox{background:#fff;border-radius:36px;padding:22px 26px 26px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 10px 0 rgba(0,0,0,.2);max-width:94vw}
-.pbox h2{color:#2fb84a;text-shadow:none;font-size:46px}
+.pbox h2{color:#2fb84a;text-shadow:none;-webkit-text-stroke:0;font-size:46px}
 #pStars{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:380px}
 #pStars i{width:40px;height:40px;display:block;transform:scale(0)}
 #pStars i.in{animation:sin .4s ease-out forwards}

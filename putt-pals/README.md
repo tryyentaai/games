@@ -30,3 +30,6 @@ Hold the gear on the home screen for 2 seconds. You can set:
 - No ads, purchases, links, accounts or data collection.
 - If there's no sound on iPhone, check the silent switch.
 - **Guided Access** (Settings › Accessibility › Guided Access) keeps your kid inside the game.
+
+## Art
+The meadow, beach and snow grounds and the title scene (`bg-*.jpg`) are original paintings rendered offline on-device with FLUX.2 Klein 4B (mflux). The game falls back to its code-drawn art if any image fails to load.

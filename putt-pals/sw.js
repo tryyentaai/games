@@ -1,6 +1,6 @@
-const VERSION = '2';
+const VERSION = '3';
 const CACHE = 'pp-' + VERSION;
-const FILES = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png'];
+const FILES = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png', './bg-meadow.jpg', './bg-beach.jpg', './bg-snow.jpg', './bg-menu.jpg'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
 });
