@@ -72,3 +72,6 @@ Settings > Accessibility > Guided Access, turn it on. Open the game, triple-clic
 ## Files
 
 `index.html` (the whole game), `manifest.webmanifest`, `sw.js` (offline cache, `jv-` prefix, bump `VERSION` on changes), icons.
+
+## Art
+The place backdrops (`bg-*.jpg`) are original paintings rendered offline on-device with FLUX.2 Klein 4B (mflux). The game falls back to its code-drawn art if any image fails to load.
