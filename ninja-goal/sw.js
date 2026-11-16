@@ -1,7 +1,7 @@
 // Ninja Goal offline cache. Bump VERSION on every change.
-const VERSION = '1';
+const VERSION = '2';
 const CACHE = 'ng-' + VERSION;
-const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png'];
+const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png', './bg-bamboo.jpg', './bg-blossom.jpg', './bg-moon.jpg', './bg-peak.jpg'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));

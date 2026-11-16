@@ -1,8 +1,8 @@
 // Hoop Pop offline cache. Bump VERSION on every change.
-const VERSION = '1';
+const VERSION = '2';
 const PREFIX = 'hp-';
 const CACHE = PREFIX + VERSION;
-const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png'];
+const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png', './bg-carnival.jpg'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));

@@ -249,6 +249,9 @@ let W = 0, H = 0, DPR = 1, dprScale = 1;
 const safe = { t: 0, r: 0, b: 0, l: 0 };
 const L = {};
 let bgCache = null;
+// Painted carnival backdrop (rendered offline with FLUX.2 Klein via mflux). The plain teal wall shows until it loads, and stays if it fails.
+const BOOTH_ART = { img: null };
+if (typeof Image !== 'undefined') { const im = new Image(); im.onload = () => { BOOTH_ART.img = im; if (bgCache) buildBg(); }; im.src = 'bg-carnival.jpg'; }
 function readSafe() {
   try { const cs = getComputedStyle($('probe'));
     safe.t = parseFloat(cs.paddingTop) || 0; safe.r = parseFloat(cs.paddingRight) || 0;
@@ -558,6 +561,11 @@ function buildBg() {
   // wall
   const wg = c.createLinearGradient(0, L.awnB, 0, L.floorY); wg.addColorStop(0, '#16525c'); wg.addColorStop(1, '#1f7480');
   c.fillStyle = wg; c.fillRect(0, 0, W, L.floorY + 2);
+  if (BOOTH_ART.img) { // painted carnival behind the booth, tinted teal so the hoops stay the brightest thing on screen
+    const im = BOOTH_ART.img, top = L.awnB * .5, hh = L.floorY - top, sc = Math.max(W / im.naturalWidth, hh / im.naturalHeight), dw = im.naturalWidth * sc, dh = im.naturalHeight * sc;
+    c.drawImage(im, (W - dw) / 2, top + (hh - dh) * .55, dw, dh);
+    const tg = c.createLinearGradient(0, L.awnB, 0, L.floorY); tg.addColorStop(0, 'rgba(18,70,84,.42)'); tg.addColorStop(1, 'rgba(24,96,108,.62)'); c.fillStyle = tg; c.fillRect(0, 0, W, L.floorY + 2);
+  }
   c.fillStyle = 'rgba(255,255,255,.05)';
   const step = 34; for (let y = L.awnB; y < L.floorY; y += step) for (let x = ((y / step) % 2) * step / 2; x < W; x += step) { c.beginPath(); c.arc(x, y, 2.2, 0, TAU); c.fill(); }
   // side posts

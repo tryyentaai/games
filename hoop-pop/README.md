@@ -43,3 +43,6 @@ No ads, purchases, links, accounts or data collection. Progress is saved on the 
 
 - Turn on **Guided Access** (Settings › Accessibility › Guided Access) and triple-click the side button to keep your kid in the game.
 - If there's no sound, check the iPhone silent switch.
+
+## Art
+The carnival backdrop behind the booth (`bg-carnival.jpg`) are original paintings rendered offline on-device with FLUX.2 Klein 4B (mflux). The game falls back to its code-drawn art if any image fails to load.

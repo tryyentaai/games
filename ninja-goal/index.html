@@ -425,7 +425,11 @@ function pagoda(c,x,y,s,col,lit){c.fillStyle=col;for(var i=0;i<3;i++){var w=s*(1
  if(lit){c.fillStyle='rgba(255,210,120,.9)';c.fillRect(x-w*.12,yy-s*.3,w*.08,s*.16);c.fillRect(x+w*.05,yy-s*.3,w*.08,s*.16);c.fillStyle=col}}
  c.fillRect(x-s*.04,y-s*1.75,s*.08,s*.35)}
 function cloud(c,x,y,s){c.fillStyle='rgba(255,255,255,.92)';[[0,0,1],[.9,.1,.75],[-.9,.15,.7],[.4,-.45,.7],[-.35,-.35,.6]].forEach(function(p){c.beginPath();c.arc(x+p[0]*s,y+p[1]*s,p[2]*s,0,7);c.fill()})}
+// Painted dojo backdrops (rendered offline with FLUX.2 Klein via mflux). The code-drawn sky shows until each loads, and stays if one fails.
+var ART={};['bamboo','blossom','moon','peak'].forEach(function(id){if(typeof Image==='undefined')return;var im=new Image();im.onload=function(){ART[id]=im;BG.id=null};im.src='bg-'+id+'.jpg'});
+function drawArtTo(c,im,o){var W=o.W,bot=o.grassTop+o.gh*.05,iw=im.naturalWidth,ih=im.naturalHeight,sc=Math.max(W/iw,bot/(ih*.94)),dw=iw*sc,dh=ih*sc;c.drawImage(im,(W-dw)/2,bot-dh*.94,dw,dh)}
 function drawBGTo(c,id,o){var W=o.W,H=o.H,rng=mulberry(id.length*977+13),m=Math.min(W,H);
+ if(ART[id]){drawArtTo(c,ART[id],o);ridge(c,o,o.grassTop+2,o.gh*.45,MTN[id][1],rng,1.2,false,false)}else{
  var sk=SKY[id],g=c.createLinearGradient(0,0,0,o.grassTop);g.addColorStop(0,sk[0]);g.addColorStop(.62,sk[1]);g.addColorStop(1,sk[2]);c.fillStyle=g;c.fillRect(0,0,W,o.grassTop+4);
  if(id==='moon'){for(var i=0;i<110;i++){c.fillStyle='rgba(255,255,255,'+(.3+rng()*.7).toFixed(2)+')';var sz=rng()*1.8+.5;c.fillRect(rng()*W,rng()*o.grassTop*.9,sz,sz)}
   var mx=W*.78,my=Math.max(o.st+70,o.gt*.45),mr=m*.085;var mg=c.createRadialGradient(mx,my,mr*.5,mx,my,mr*3);mg.addColorStop(0,'rgba(255,248,210,.55)');mg.addColorStop(1,'rgba(255,248,210,0)');c.fillStyle=mg;c.fillRect(mx-mr*3,my-mr*3,mr*6,mr*6);
@@ -436,6 +440,7 @@ function drawBGTo(c,id,o){var W=o.W,H=o.H,rng=mulberry(id.length*977+13),m=Math.
  var M=MTN[id];ridge(c,o,o.grassTop-o.gh*.08,o.gh*(id==='peak'?1.9:1.25),M[0],rng,id==='peak'?.9:.6,id==='peak',id==='peak');
  if(id!=='peak')pagoda(c,W*.2,o.grassTop-o.gh*.42,o.gh*.32,id==='moon'?'#10163f':shade(M[1],-.35),id==='moon');
  ridge(c,o,o.grassTop+2,o.gh*.62,M[1],rng,1.2,false,false);
+ }
  // field
  var F=FIELD[id],fg=c.createLinearGradient(0,o.grassTop,0,H);fg.addColorStop(0,F[0]);fg.addColorStop(1,F[1]);c.fillStyle=fg;c.fillRect(0,o.grassTop,W,H-o.grassTop);
  for(var k=0;k<10;k+=2){var y1=o.grassTop+(H-o.grassTop)*Math.pow(k/10,1.6),y2=o.grassTop+(H-o.grassTop)*Math.pow((k+1)/10,1.6);c.fillStyle='rgba(255,255,255,.07)';c.fillRect(0,y1,W,y2-y1)}

@@ -43,3 +43,6 @@ No ads, purchases, links, accounts or data collection. Everything (art, sound, m
 ## Tips
 - **iPhone silent switch** can mute game sounds; flip it if there is no sound.
 - **Guided Access** keeps him in the game: Settings → Accessibility → Guided Access → On, then triple-click the side button inside the game.
+
+## Art
+The four dojo backdrops (`bg-*.jpg`) are original paintings rendered offline on-device with FLUX.2 Klein 4B (mflux). The game falls back to its code-drawn art if any image fails to load.

@@ -40,3 +40,6 @@ No ads, purchases, links, accounts or data collection. Art, music and sound effe
 ## For developers
 Single file `index.html`. Save key `block-hop.save.v1`. Service worker cache prefix `bh-` (bump `VERSION` in `sw.js` on every change). `?icon=1` renders the icon art.
 `window.BH` exposes `G`, `S`, `CFG` and `api`: `state()`, `start(world,stage)`, `step(sec)`, `tap()`, `press(id)`, `btns()`, `nextTx()`.
+
+## Art
+The five world panoramas (`bg-*.jpg`, drawn mirrored-tiled so they scroll without a seam) are original paintings rendered offline on-device with FLUX.2 Klein 4B (mflux). The game falls back to its code-drawn art if any image fails to load.
