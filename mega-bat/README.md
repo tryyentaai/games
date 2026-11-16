@@ -53,3 +53,6 @@ No ads, purchases, links, accounts or data collection. Art, music and sound effe
 
 ## For developers / QA
 `window.MB` exposes `G`, `S`, `sim(opts)` (pass `timing` in seconds, + = late), plus `tap()`, `state()`, `step(frames)`, `tick(seconds)`, `swing(e, seed)`, `pitchClock()`, `boost()`, `play()`, `again()`, `home()`, `skipIntro()`, `setSave(obj)`, `voice()`. Save key: `mega-bat.save.v1`. Service worker cache prefix: `mb-` (bump `VERSION` in `sw.js` on every change). `?icon=1` renders the icon art. Voice lines were rendered offline with Kokoro (af_heart; Dinger is af_bella pitched up).
+
+## Art
+The nine zone skies (`sky-*.jpg`) are original paintings rendered offline on-device with FLUX.2 Klein 4B (mflux). The game falls back to its code-drawn art if any image fails to load.

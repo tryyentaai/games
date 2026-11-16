@@ -33,3 +33,6 @@ Tip: turn on Guided Access (Settings › Accessibility › Guided Access, then t
 | `icon-180.png`, `icon-192.png`, `icon-512.png` | App icons |
 
 Progress is saved only on the device, in `localStorage` under the key `hrd.save.v1`. When you change the game, bump `VERSION` in `sw.js` so devices pick up the new copy.
+
+## Art
+The five park panoramas (`bg-*.jpg`) are original paintings rendered offline on-device with FLUX.2 Klein 4B (mflux). The game falls back to its code-drawn art if any image fails to load.

@@ -58,3 +58,6 @@ No ads, purchases, links, accounts or data collection. Everything (art, sound, m
 
 ## For developers / QA
 `window.MK` exposes `G`, `S` and `sim(opts)`, plus test helpers: `tap()`, `state()`, `skipIntro()`, `play()`, `again()`, `home()`, `pickMode(m)`, `kick(angle, power, seed)`, `boost()`, `tick(seconds)`, `setSave(obj)`, `resetSave()`, `fx()`, `warp(x, y)`. `sim()` runs the same physics and generation code as live play. With `{commit: true}` it updates the save exactly like a real kick. Save key: `mega-kick.save.v1`. Service worker cache prefix: `mk-` (bump `VERSION` in `sw.js` on every change). `?icon=1` renders the home-screen icon art.
+
+## Art
+The nine zone skies (`sky-*.jpg`) are original paintings rendered offline on-device with FLUX.2 Klein 4B (mflux). The game falls back to its code-drawn art if any image fails to load.
