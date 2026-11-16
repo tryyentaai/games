@@ -1,6 +1,6 @@
 // Math Color Quest offline cache. Bump VERSION on every change.
-const VERSION = 'mcq-v2.0.0';
-const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png'];
+const VERSION = 'mcq-v2.0.1';
+const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png', './bg-studio.jpg', './bg-neon.jpg'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));

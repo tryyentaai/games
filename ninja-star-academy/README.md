@@ -27,3 +27,6 @@ These are browser and responsive-layout checks, not physical iPhone, WebKit, scr
 - Lantern Pop: swipe/tap lanterns or use Pop. Twelve lanterns finish; no lives to lose.
 
 Settings offers mute, gentler play, calmer motion, and progress backup/restore. All interface/world/character artwork in this shipped version is original vector/code art. No third-party characters or external art assets are used.
+
+## Art
+The mission world (`art/world.jpg`) are original paintings rendered offline on-device with FLUX.2 Klein 4B (mflux). The game falls back to its code-drawn art if any image fails to load.
