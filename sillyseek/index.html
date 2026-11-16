@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:;">
 <title>Silly Seek! — Don's Hide-and-Guess Game</title>
 <style>
   :root{
@@ -59,6 +59,9 @@
   .reveal{text-align:center;}
   .reveal .art{width:min(300px,80vw);margin:0 auto;}
   .reveal .art svg{width:100%;height:auto;animation:pop .45s cubic-bezier(.2,1.6,.4,1);}
+  .reveal .art img{width:100%;height:auto;display:block;border-radius:28px;box-shadow:0 10px 24px rgba(90,60,160,.18);animation:pop .45s cubic-bezier(.2,1.6,.4,1);}
+  .spot img{width:84px;height:84px;border-radius:16px;object-fit:cover;}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;background:url(art/bg.jpg) center bottom/cover no-repeat;opacity:.55;pointer-events:none;}
   @keyframes pop{0%{transform:scale(.3) rotate(-6deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
   .names{display:grid;gap:10px;margin-top:6px;}
   .name-btn{border:3px solid #e4defa;background:#fbfaff;border-radius:16px;padding:14px;cursor:pointer;
@@ -71,10 +74,11 @@
   @keyframes fall{to{transform:translateY(105dvh) rotate(560deg);}}
   .finish-art{width:min(260px,70vw);margin:0 auto;}
   .finish-art svg{width:100%;height:auto;}
+  .finish-art img{width:100%;height:auto;display:block;border-radius:28px;}
   .footer-note{text-align:center;font-size:14px;opacity:.65;margin:10px 0 0;font-weight:600;}
   .hidden{display:none !important;}
   @media (prefers-reduced-motion: reduce){
-    .reveal .art svg{animation:none;} .spot.wrong,.name-btn.wrong{animation:none;} .confetti{display:none;}
+    .reveal .art svg,.reveal .art img{animation:none;} .spot.wrong,.name-btn.wrong{animation:none;} .confetti{display:none;}
   }
 </style>
 </head>
@@ -135,6 +139,15 @@
 
 <script>
 "use strict";
+/* ---------- Painted art (rendered offline with FLUX.2 Klein via mflux) ----------
+   Each picture falls back to the hand-drawn SVG if it can't load. */
+function setArt(el, src, svg){
+  const im = new Image(); im.alt = ""; im.decoding = "async";
+  im.onerror = ()=>{ el.innerHTML = svg; };
+  im.src = src; el.innerHTML = ""; el.appendChild(im);
+}
+function thingSrc(t){ return "art/thing" + String(THINGS.indexOf(t)+1).padStart(2,"0") + ".jpg"; }
+
 /* ---------- Hiding spots ---------- */
 const SPOTS = {
   rug:   { name:"Under the Rug",
@@ -268,7 +281,8 @@ function renderRound(){
   opts.forEach(key=>{
     const b = document.createElement("button");
     b.className = "spot"; b.type = "button";
-    b.innerHTML = SPOTS[key].icon + "<span>" + SPOTS[key].name + "</span>";
+    b.innerHTML = "<i></i><span>" + SPOTS[key].name + "</span>";
+    const ic = b.firstChild; ic.style.cssText = "display:contents"; setArt(ic, "art/spot-" + key + ".jpg", SPOTS[key].icon);
     b.setAttribute("aria-label", SPOTS[key].name);
     b.addEventListener("click", ()=>pickSpot(b, key));
     $("spots").appendChild(b);
@@ -291,7 +305,7 @@ function pickSpot(btn, key){
   setTimeout(()=>{
     $("phase-where").classList.add("hidden");
     $("phase-what").classList.remove("hidden");
-    $("reveal-art").innerHTML = t.art;
+    setArt($("reveal-art"), thingSrc(t), t.art);
     const names = shuffle([t.name, ...t.decoys]);
     $("names").innerHTML = "";
     names.forEach(n=>{
@@ -325,7 +339,7 @@ function pickName(btn, n){
 $("btn-next").addEventListener("click", ()=>{
   round++;
   if(round >= THINGS.length){
-    $("finish-art").innerHTML = THINGS[0].art;
+    setArt($("finish-art"), thingSrc(THINGS[0]), THINGS[0].art);
     show("screen-finish");
     try{ localStorage.removeItem("sillyseek-v1"); }catch(e){}
     confetti();

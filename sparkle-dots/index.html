@@ -13,7 +13,9 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
 <style>
-html,body{margin:0;padding:0;background:#1a1342}
+html,body{margin:0;padding:0;background:#1a1342}body{background:transparent}
+/* Painted night backdrop (rendered offline with FLUX.2 Klein via mflux); the flat color shows if it can't load. */
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(26,19,66,.55),rgba(26,19,66,.1) 60%,rgba(26,19,66,0)),url(bg-night.jpg) center bottom/cover no-repeat}
 body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box}
 </style>
 </head>

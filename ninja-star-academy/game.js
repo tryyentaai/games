@@ -6,7 +6,7 @@ function rr(c,x,y,w,h,r,color){c.beginPath();c.roundRect(x,y,w,h,r);c.fillStyle=
 function star(c,x,y,r,color='#ffe39b',angle=0,points=4){c.save();c.translate(x,y);c.rotate(angle);c.beginPath();for(let i=0;i<points*2;i++){let a=i*Math.PI/points-Math.PI/2,q=i%2?r*.37:r;i?c.lineTo(Math.cos(a)*q,Math.sin(a)*q):c.moveTo(Math.cos(a)*q,Math.sin(a)*q);}c.closePath();c.fillStyle=color;c.fill();c.restore();}
 export function startGame(o){
 const canvas=document.getElementById('canvas'),c=canvas.getContext('2d'),mode=o.mode,goal=MISSIONS[mode].goal,world=new Image(),hero=new Image();
-world.src=uri(worldSVG);hero.src=uri(ninjaSVG(o.color));canvas.style.width='100%';canvas.style.height='100%';
+world.onerror=()=>{world.onerror=null;world.src=uri(worldSVG)};world.src='art/world.jpg';/* painted world, rendered offline with FLUX.2 Klein via mflux; falls back to the SVG */hero.src=uri(ninjaSVG(o.color));canvas.style.width='100%';canvas.style.height='100%';
 let w=0,h=0,dpr=1,ground=0,ny=0,velocity=0,jumps=0,time=0,roundTime=0,count=0,paused=false,alive=true,done=false,finishAt=0,last=performance.now(),raf=0,pose=0,spawn=2,coinSpawn=.7,lanternSpawn=1,previous=null,particles=[],words=[],coins=[],boxes=[],targets=[],lanterns=[],shots=[],trails=[];
 const speed=o.easy?148:188;
 function resize(){const old=ground;w=canvas.parentElement.clientWidth;h=canvas.parentElement.clientHeight;dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);ground=h*.73;ny=ny?ground-(old-ny):ground;for(const t of targets){t.x=w*t.px;t.y=h*t.py;}for(const l of lanterns){l.x=Math.max(50,Math.min(w-50,l.x));l.y=Math.max(135,Math.min(h*.64,l.y));}}

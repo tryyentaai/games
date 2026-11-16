@@ -26,6 +26,9 @@
   html,body{margin:0;padding:0;background:var(--night-2);color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
   body{min-height:100svh;background:radial-gradient(120% 90% at 50% 0%,var(--dusk-2) 0%,var(--night) 55%,var(--night-2) 100%);}
+  /* Painted lair backdrop (rendered offline with FLUX.2 Klein via mflux). The gradient shows if it can't load. */
+  body{position:relative;z-index:0}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(12,9,30,.35),rgba(12,9,30,.15) 40%,rgba(12,9,30,.55)),url(bg-lair.jpg) center/cover no-repeat;}
   button{font:inherit;color:inherit}
   :focus-visible{outline:3px solid var(--gold-soft);outline-offset:2px;border-radius:8px}
 

@@ -31,6 +31,8 @@ h1.app-title{font-size:34px;font-weight:800;margin:6px 0 2px;letter-spacing:.2px
 .card{background:var(--paper-raised);border:2px solid var(--ink);border-radius:16px;box-shadow:var(--shadow);padding:16px;margin:0 0 12px}
 .tpl-card{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--paper-raised);border:2px solid var(--ink);border-radius:16px;box-shadow:var(--shadow);padding:14px 16px;margin:0 0 12px;min-height:76px}
 .tpl-card .tpl-ic{flex:0 0 auto;width:52px;height:52px}
+.tpl-card .tpl-ic{position:relative}.tpl-card .tpl-art{position:absolute;inset:-6px;width:64px;height:64px;border-radius:14px;border:2px solid var(--ink);object-fit:cover;opacity:0}
+.tpl-card .tpl-ic.has-art .tpl-art{opacity:1}.tpl-card .tpl-ic.has-art svg{visibility:hidden}
 .tpl-name{font-size:20px;font-weight:800}
 .tpl-sub{font-size:14px;font-weight:600;color:var(--ink-soft)}
 .hunt-card{background:var(--paper-raised);border:2px solid var(--ink);border-radius:16px;box-shadow:var(--shadow);padding:16px;margin:0 0 12px}
@@ -731,7 +733,7 @@ function renderHome(){
   var tpl=$("home-templates");tpl.innerHTML="";
   TEMPLATES.forEach(function(t){
     var b=document.createElement("button");b.className="tpl-card";
-    b.innerHTML='<span class="tpl-ic">'+iconUse(t.icon)+'</span><span><span class="tpl-name">'+t.name+'</span><br><span class="tpl-sub">'+t.items.length+' things to find'+(t.mode==="spot"?" · spot it and tap":"")+'</span></span>';
+    b.innerHTML='<span class="tpl-ic">'+iconUse(t.icon)+'<img class="tpl-art" alt="" src="art/hunt-'+t.id+'.jpg" onload="this.parentNode.classList.add(\'has-art\')" onerror="this.remove()"></span><span><span class="tpl-name">'+t.name+'</span><br><span class="tpl-sub">'+t.items.length+' things to find'+(t.mode==="spot"?" · spot it and tap":"")+'</span></span>';
     b.querySelector("svg").setAttribute("width","52");b.querySelector("svg").setAttribute("height","52");
     b.onclick=function(){openSetup(t.id)};tpl.appendChild(b);
   });

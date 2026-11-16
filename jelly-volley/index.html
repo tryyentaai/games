@@ -235,6 +235,8 @@ var PLACES=[
  {id:'moon',name:'Moon',say:'To the moon!',icon:'moon',theme:'moon',sky:['#0d0b2e','#3a2a6e'],accent:'#c38bff',sand:'#7c7c94',cpu:{name:'Luna',color:'#c38bff',trait:'antenna',R:58},skill:0.42,jump:true,wind:0,netH:120,grav:0.62,root:65,bpm:92},
  {id:'lava',name:'Lava',say:'Lava island!',icon:'volcano',theme:'lava',sky:['#5a1438','#ff8a3d'],accent:'#ffb02e',sand:'#2e2222',cpu:{name:'King Blob',color:'#ff4d6d',trait:'crown',R:72},skill:0.5,jump:true,wind:0.7,netH:130,grav:1,root:55,bpm:118}
 ];
+// Painted place backdrops (rendered offline with FLUX.2 Klein via mflux). The drawn scenery shows until each loads, and stays if one fails.
+PLACES.forEach(function(pl){ if(typeof Image==='undefined') return; var im=new Image(); im.onload=function(){ pl.img=im; bgDirty=true; }; im.src='bg-'+pl.id+'.jpg'; });
 var KID_COLORS=['#3f9dff','#ff6fb5','#ffc933','#4fd977','#a26bff','#ff8a3d'];
 var HATS=[{id:'none',cost:0},{id:'cap',cost:15},{id:'flower',cost:40},{id:'bow',cost:80},{id:'party',cost:130},{id:'pirate',cost:200},{id:'crown',cost:300},{id:'wizard',cost:420}];
 var STICKERS=[
@@ -960,7 +962,10 @@ function buildBg(){
   gr.addColorStop(0,pl.sky[0]); gr.addColorStop(1,pl.sky[1]); c.fillStyle=gr; c.fillRect(0,0,L.vw,L.vh);
   var k=L.dpr*L.scale; c.setTransform(k,0,0,k,L.dpr*L.offX,L.dpr*L.offY);
   var i;
-  if(th==='beach'){
+  if(pl.img){ // painted place: cover the visible world above the floor, horizon on the floor line
+    var im=pl.img, aw=wb.r-wb.l, ah=FLOOR+8-wb.t, s2=Math.max(aw/im.naturalWidth, ah/(im.naturalHeight*0.97)), dw=im.naturalWidth*s2, dh=im.naturalHeight*s2;
+    c.drawImage(im, (wb.l+wb.r)/2-dw/2, FLOOR+8-dh*0.97, dw, dh);
+  } else if(th==='beach'){
     var sg=c.createRadialGradient(860,110,10,860,110,170); sg.addColorStop(0,'rgba(255,240,150,.9)'); sg.addColorStop(1,'rgba(255,240,150,0)'); c.fillStyle=sg; c.beginPath(); c.arc(860,110,170,0,7); c.fill();
     c.fillStyle='#ffe066'; c.beginPath(); c.arc(860,110,55,0,7); c.fill();
     var sea=c.createLinearGradient(0,350,0,FLOOR); sea.addColorStop(0,'#1aa6d0'); sea.addColorStop(1,'#62d9ec'); c.fillStyle=sea; c.fillRect(wb.l,350,wb.r-wb.l,FLOOR-350);

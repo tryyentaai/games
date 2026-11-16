@@ -503,17 +503,24 @@ function ballFill(c,x,y,r,idx,t){
  c.fillStyle='rgba(255,255,255,.85)'; circ(c,x-r*0.35,y-r*0.38,r*0.28); c.fill();
 }
 
+/* ================= painted art ================= */
+// Ground and title paintings rendered offline with FLUX.2 Klein via mflux. Code-drawn versions show until each loads, and stay if one fails.
+const ART={};
+['meadow','beach','snow','menu'].forEach(k=>{ if(typeof Image==='undefined') return; const im=new Image(); im.onload=()=>{ ART[k]=im; cacheKey=''; }; im.src='bg-'+k+'.jpg'; });
+function coverDraw(c,im,W,H,ay){ const s2=Math.max(W/im.naturalWidth,H/im.naturalHeight), dw=im.naturalWidth*s2, dh=im.naturalHeight*s2; c.drawImage(im,(W-dw)/2,(H-dh)*ay,dw,dh); }
+
 /* ================= course rendering ================= */
 function buildCache(){
  const key=G.hole.id+(G.hole.mir?'m':'')+vw+'x'+vh+'@'+dpr; if(key===cacheKey&&cache) return; cacheKey=key;
  if(!cache) cache=document.createElement('canvas'); cache.width=cv.width; cache.height=cv.height;
  const c=cache.getContext('2d'), th=THEMES[WORLDS[G.trip.w]], h=G.hole, R=rng(hashStr(h.id)+(h.mir?7:0));
  c.setTransform(1,0,0,1,0,0); c.fillStyle=th.bg; c.fillRect(0,0,cache.width,cache.height);
+ const art=ART[WORLDS[G.trip.w]]; if(art){ coverDraw(c,art,cache.width,cache.height,0.5); }
  c.setTransform(dpr*sc,0,0,dpr*sc,dpr*ox,dpr*oy);
  const wx0=-ox/sc-40, wy0=-oy/sc-40, wx1=(vw-ox)/sc+40, wy1=(vh-oy)/sc+40, theme=WORLDS[G.trip.w];
  // backdrop decor
  if(theme==='beach'){ c.fillStyle='#57c3e8'; c.fillRect(wx0,wy0,wx1-wx0,100-wy0); c.fillStyle='#fff'; c.globalAlpha=.5; for(let x=wx0;x<wx1;x+=60){ell(c,x,100,34,8);c.fill();} c.globalAlpha=1; }
- for(let i=0;i<70;i++){ const x=lerp(wx0,wx1,R()), y=lerp(wy0,wy1,R()); if(insidePoly(h.poly,x,y,40)) continue;
+ for(let i=0;i<(art?0:70);i++){ const x=lerp(wx0,wx1,R()), y=lerp(wy0,wy1,R()); if(insidePoly(h.poly,x,y,40)) continue;
   if(theme==='meadow'){ if(R()<0.5){ c.fillStyle=th.bg2; ell(c,x,y,14+R()*14,8+R()*6); c.fill(); } else { const col=['#fff','#ffe14d','#ff8fc7','#b9a6ff'][Math.floor(R()*4)]; for(let k=0;k<5;k++){c.fillStyle=col; circ(c,x+Math.cos(k*1.26)*5,y+Math.sin(k*1.26)*5,3.6); c.fill();} c.fillStyle='#ffb703'; circ(c,x,y,2.8); c.fill(); } }
   else if(theme==='beach'){ if(y<110) continue; if(R()<0.4){ c.fillStyle='#ffb3c7'; c.beginPath(); c.moveTo(x,y); c.arc(x,y,9,Math.PI*1.1,Math.PI*1.9); c.closePath(); c.fill(); } else { c.fillStyle=th.bg2; circ(c,x,y,2+R()*3); c.fill(); } }
   else { if(R()<0.45){ c.fillStyle='#4f8f6f'; for(let k=0;k<3;k++){ c.beginPath(); c.moveTo(x,y-34+k*10); c.lineTo(x-14+k*-3,y-12+k*10); c.lineTo(x+14+k*3,y-12+k*10); c.closePath(); c.fill(); } c.fillStyle='#fff'; c.globalAlpha=.7; c.beginPath(); c.moveTo(x,y-34); c.lineTo(x-6,y-24); c.lineTo(x+6,y-24); c.closePath(); c.fill(); c.globalAlpha=1; c.fillStyle='#7a5a3a'; c.fillRect(x-3,y+8,6,7); }
@@ -631,6 +638,7 @@ function drawParts(c,under){ for(const p of G.parts){ if(p.under!==under) contin
 
 /* ================= menu background ================= */
 function drawMenuBg(){ const c=ctx; c.fillStyle='#7fd0ff'; c.fillRect(0,0,cv.width,cv.height); const t=G.time;
+ if(ART.menu){ coverDraw(c,ART.menu,cv.width,cv.height,0.75); c.save(); c.scale(dpr,dpr); c.fillStyle='rgba(255,255,255,.85)'; for(let i=0;i<3;i++){ const x=((i*300+t*10)%(vw+300))-150, y=50+i*45; c.globalAlpha=.55; ell(c,x,y,50,18); c.fill(); ell(c,x+34,y+7,34,13); c.fill(); } c.restore(); return; }
  c.save(); c.scale(dpr,dpr); c.fillStyle='#fff'; for(let i=0;i<5;i++){ const x=((i*230+t*12)%(vw+300))-150, y=60+i*40%160; ell(c,x,y,60,22); c.fill(); ell(c,x+40,y+8,40,16); c.fill(); }
  c.fillStyle='#6fcf5a'; c.beginPath(); c.moveTo(0,vh*0.55); c.quadraticCurveTo(vw*0.3,vh*0.45,vw*0.6,vh*0.55); c.quadraticCurveTo(vw*0.85,vh*0.62,vw,vh*0.5); c.lineTo(vw,vh); c.lineTo(0,vh); c.fill();
  c.fillStyle='#4fae45'; c.beginPath(); c.moveTo(0,vh*0.7); c.quadraticCurveTo(vw*0.5,vh*0.6,vw,vh*0.72); c.lineTo(vw,vh); c.lineTo(0,vh); c.fill(); c.restore(); }

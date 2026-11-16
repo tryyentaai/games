@@ -19,6 +19,9 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;font-family:var(--font);color:var(--ink)}
 body{background:linear-gradient(160deg,#ffe3f3 0%,#e6dcff 45%,#d4f1ff 100%);transition:background .4s}
+/* Painted studio sky (rendered offline with FLUX.2 Klein via mflux); the gradient shows if it can't load. */
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:url(bg-studio.jpg) center bottom/cover no-repeat;opacity:.6}
+body.neon::before{background-image:url(bg-neon.jpg);opacity:.5}
 body.neon{--ink:#eef;--card:#16122b;--cardInk:#f3f0ff;--accent:#ff7a18;--accent2:#00e5ff;--btn:#1e1838;--btnInk:#f5f1ff;background:radial-gradient(circle at 50% 0%,#2a1650 0%,#0d0a1c 60%,#07060f 100%)}
 canvas#cv,canvas#fx{position:fixed;left:0;top:0;width:100vw;height:100vh;display:block}
 canvas#cv{z-index:0}canvas#fx{z-index:6;pointer-events:none}

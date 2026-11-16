@@ -141,6 +141,8 @@ const WORLDS=[
  {id:'forest',name:'Forest',at:22,bg:['#062918','#0f4d2e','#2f8f4e'],p:'leaf'},
  {id:'gold',name:'Gold',at:26,bg:['#2a1700','#6a4300','#b8860b'],p:'spark'}];
 WORLDS.forEach(w=>w.icon='w_'+w.id);
+// Painted world backdrops (rendered offline with FLUX.2 Klein via mflux). The gradient shows until each loads, and stays if one fails.
+WORLDS.forEach(w=>{if(typeof Image==='undefined')return;const im=new Image();im.onload=()=>{w.img=im};im.src='bg-'+w.id+'.jpg';});
 const UNLOCKS=[...SOUNDS.filter(x=>x.at>0).map(x=>({...x,kind:'sound'})),...WORLDS.filter(x=>x.at>0).map(x=>({...x,kind:'world'}))].sort((a,b)=>a.at-b.at);
 const ASSIST={more:{w:1.4,t:.9},normal:{w:1,t:1},less:{w:.8,t:1.1}};
 
@@ -380,6 +382,8 @@ function world(){return WORLDS.find(w=>w.id===S.world)||WORLDS[0];}
 function initBg(){G.bgP=[];const n=Math.round(clamp(W*H/16000,20,60));for(let k=0;k<n;k++)G.bgP.push({x:Math.random()*W,y:Math.random()*H,r:rnd(2,6),ph:Math.random()*TAU,sp:rnd(6,22)});}
 function drawBg(c,dt){
  const w=world();const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,w.bg[0]);g.addColorStop(.6,w.bg[1]);g.addColorStop(1,w.bg[2]);c.fillStyle=g;c.fillRect(0,0,W,H);
+ if(w.img){const im=w.img,sc=Math.max(W/im.naturalWidth,H/im.naturalHeight),dw=im.naturalWidth*sc,dh=im.naturalHeight*sc;c.drawImage(im,(W-dw)/2,(H-dh)/2,dw,dh);
+  const dg=c.createLinearGradient(0,0,0,H);dg.addColorStop(0,'rgba(0,0,0,.05)');dg.addColorStop(.55,'rgba(0,0,0,.25)');dg.addColorStop(1,'rgba(0,0,0,.45)');c.fillStyle=dg;c.fillRect(0,0,W,H);}
  if(G.sp>0){c.save();c.globalAlpha=.18*Math.min(1,G.sp);const hg=c.createLinearGradient(0,0,W,0);for(let k=0;k<7;k++)hg.addColorStop(k/6,NC[(k+Math.floor(G.time*6))%7]);c.fillStyle=hg;c.fillRect(0,0,W,H);c.restore();}
  const rise=w.p==='bubble'||w.p==='spark',fall=w.p==='leaf'||w.p==='heart';
  for(const p of G.bgP){if(rise){p.y-=p.sp*dt;if(p.y<-10){p.y=H+10;p.x=Math.random()*W;}}else if(fall){p.y+=p.sp*dt*.6;p.x+=Math.sin(G.time+p.ph)*.3;if(p.y>H+10){p.y=-10;p.x=Math.random()*W;}}

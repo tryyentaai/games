@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src blob: data:; media-src blob:; connect-src 'none'; font-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' blob: data:; media-src blob:; connect-src 'none'; font-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="theme-color" content="#241a38">
 <title>TalkingThings — make anything talk</title>
 <style>
@@ -32,6 +32,8 @@ body{
   background:var(--bg); color:var(--cream); font-family:var(--font);
   min-height:100dvh; padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
+/* Painted night-shelf backdrop (rendered offline with FLUX.2 Klein via mflux). The flat color shows if it can't load. */
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(20,14,40,.25),rgba(20,14,40,.6)),url(bg-shelf.jpg) center/cover no-repeat}
 button{font-family:inherit; cursor:pointer}
 button:focus-visible, input:focus-visible, [tabindex]:focus-visible{outline:4px solid var(--sun); outline-offset:2px}
 .hidden{display:none !important}

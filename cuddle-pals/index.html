@@ -393,10 +393,14 @@ function drawMouth(c,p,a,OL){var t=p.type,my=t==='pony'?40:t==='puppy'?24:20;c.s
 
 /* ================= BACKGROUNDS ================= */
 var BG={key:'',cv:null};
+/* Painted home scenes (rendered offline with FLUX.2 Klein via mflux). The drawn scenes show until each loads, and stay if one fails. */
+var CART={};['pony','kitty','puppy','pick'].forEach(function(k){if(typeof Image==='undefined')return;var im=new Image();im.onload=function(){CART[k]=im;BG.key=''};im.src='bg-'+k+'.jpg'});
+function coverArt(c,im,anchorY,frac){var iw=im.naturalWidth,ih=im.naturalHeight,sc=Math.max(W/iw,H/ih),dw=iw*sc,dh=ih*sc,y=clamp(anchorY-dh*frac,H-dh,0);c.drawImage(im,(W-dw)/2,y,dw,dh)}
 function bgCanvas(type){var key=type+'|'+W+'x'+H+'@'+DPR+'|'+Math.round(L.groundY)+'|'+Math.round(L.petH);if(BG.key===key&&BG.cv)return BG.cv;
  var o=BG.cv||document.createElement('canvas');o.width=Math.round(W*DPR);o.height=Math.round(H*DPR);var c=o.getContext('2d');c.setTransform(DPR,0,0,DPR,0,0);
  var gy=L.groundY-L.petH*.42,R=seeded(hashStr(type)+7);
  function cloud(x,y,s){c.fillStyle='rgba(255,255,255,.92)';[[0,0,1],[-.9,.25,.7],[.9,.25,.75],[.35,-.35,.7]].forEach(function(q){circ(c,x+q[0]*s,y+q[1]*s,q[2]*s);c.fill()})}
+ if(CART[type]){coverArt(c,CART[type],gy,.6);ell(c,L.petX,L.groundY,L.petH*.58,L.petH*.1);c.fillStyle='rgba(70,40,90,.16)';c.fill();BG.cv=o;BG.key=key;return o}
  if(type==='pony'){var g=c.createLinearGradient(0,0,0,gy);g.addColorStop(0,'#bfe7ff');g.addColorStop(1,'#ffe4f2');c.fillStyle=g;c.fillRect(0,0,W,gy+2);
   var rc=['#ff9bb8','#ffc98a','#fff09a','#a8eab8','#a6d8ff','#cdb2ff'];c.globalAlpha=.35;rc.forEach(function(col,i){c.beginPath();c.arc(W*.72,gy+40,W*.42-i*10*U,PI,0);c.lineWidth=10*U;c.strokeStyle=col;c.stroke()});c.globalAlpha=1;
   cloud(W*.2,gy*.32,26*U);cloud(W*.78,gy*.2,20*U);
@@ -428,6 +432,7 @@ function drawScene(c,type){c.drawImage(bgCanvas(type),0,0,W,H);
   var mx=W*.82,my=L.sceneTop+30*U;circ(c,mx,my,26*U);c.fillStyle='#fff6c2';c.fill();circ(c,mx+11*U,my-8*U,22*U);c.fillStyle='rgba(42,32,96,1)';c.fill();
   var R=seeded(99);for(var i=0;i<22;i++){var x=R()*W,y=SAFE.t+R()*(L.groundY-L.petH*.9-SAFE.t),tw=.5+.5*Math.sin(G.t*2+i);starPath(c,x,y,(2+tw*2.2)*U,1.2*U,4);c.fillStyle='rgba(255,250,210,'+(.5+.5*tw)+')';c.fill()}c.restore()}}
 function drawSoftBg(c){var g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#ffe3f1');g.addColorStop(1,'#e9ddff');c.fillStyle=g;c.fillRect(0,0,W,H);
+ if(CART.pick){coverArt(c,CART.pick,H,1);c.fillStyle='rgba(255,240,250,.25)';c.fillRect(0,0,W,H)}
  c.save();c.globalAlpha=.35;var R=seeded(5);for(var i=0;i<18;i++){var x=R()*W,y=(R()*H+G.t*12*(R()+.3))%(H+40)-20;heartPath(c,x,H-y,10*U+R()*10*U);c.fillStyle=i%2?'#ffb3d9':'#cdb2ff';c.fill()}c.restore()}
 
 /* ================= BUTTONS ================= */
