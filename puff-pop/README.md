@@ -1,6 +1,6 @@
 # Puff Pop
 
-A gentle bubble-shooter for kids 5-9. Aim, let go, and pop groups of three or more fluffy Puffs. Clear the board to free them all and earn a sticker. Every Puff, sticker and sound is original and drawn or synthesized in code.
+A gentle bubble-shooter for kids 5-9. Aim, let go, and pop groups of three or more fluffy Puffs. Clear the board to free them all and earn a sticker. Every Puff, sticker and sound is original and drawn or synthesized in code. The five world backdrops (`bg-*.jpg`) are original paintings rendered offline on-device with FLUX.2 Klein 4B (mflux); the game falls back to its code-drawn gradients if they ever fail to load.
 
 ## How it plays
 - **Aim:** touch the board and drag; a dotted line and a see-through "ghost" Puff show where it will land. Let go to shoot. A quick tap shoots toward the tap.

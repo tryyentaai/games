@@ -158,11 +158,13 @@ var PAL=[
  {n:'orange',b:'#ff983a',l:'#ffd8ae',d:'#e06a0c'}];
 var STONEP={b:'#9aa3b6',l:'#dde1ea',d:'#666e83'},GOLDP={b:'#ffc93c',l:'#fff6c2',d:'#d99200'};
 var WORLDS=[
- {top:'#6fb7ff',bot:'#c5e6ff',win:'rgba(255,255,255,.18)',key:0,tempo:96,deco:'cloud'},
- {top:'#ff9f7a',bot:'#ffd9a0',win:'rgba(255,255,255,.18)',key:2,tempo:92,deco:'cloud'},
- {top:'#ff8fd0',bot:'#ffd1ec',win:'rgba(255,255,255,.2)',key:5,tempo:100,deco:'heart'},
- {top:'#232a6b',bot:'#5a4aa8',win:'rgba(255,255,255,.1)',key:-3,tempo:84,deco:'star'},
- {top:'#20b6c8',bot:'#a8f0e4',win:'rgba(255,255,255,.18)',key:7,tempo:98,deco:'bubble'}];
+ {top:'#6fb7ff',bot:'#c5e6ff',win:'rgba(255,255,255,.18)',key:0,tempo:96,deco:'cloud',art:'bg-sky.jpg',panel:'rgba(235,246,255,.42)',edge:'rgba(255,255,255,.7)'},
+ {top:'#ff9f7a',bot:'#ffd9a0',win:'rgba(255,255,255,.18)',key:2,tempo:92,deco:'cloud',art:'bg-sunset.jpg',panel:'rgba(255,240,228,.42)',edge:'rgba(255,255,255,.7)'},
+ {top:'#ff8fd0',bot:'#ffd1ec',win:'rgba(255,255,255,.2)',key:5,tempo:100,deco:'heart',art:'bg-candy.jpg',panel:'rgba(255,238,248,.42)',edge:'rgba(255,255,255,.75)'},
+ {top:'#232a6b',bot:'#5a4aa8',win:'rgba(255,255,255,.1)',key:-3,tempo:84,deco:'star',art:'bg-night.jpg',panel:'rgba(26,22,72,.42)',edge:'rgba(200,196,255,.45)'},
+ {top:'#20b6c8',bot:'#a8f0e4',win:'rgba(255,255,255,.18)',key:7,tempo:98,deco:'bubble',art:'bg-sea.jpg',panel:'rgba(225,252,250,.38)',edge:'rgba(255,255,255,.7)'}];
+// Painted world backdrops (rendered offline with FLUX.2 Klein via mflux). The gradient shows until each loads, and stays if one fails.
+WORLDS.forEach(function(w){if(!w.art||typeof Image==='undefined')return;var im=new Image();im.onload=function(){w.img=im};im.src=w.art});
 function worldOf(n){return Math.floor((Math.max(1,n)-1)/4)%WORLDS.length}
 var INTRO=[null,'aim','bank','drop','rainbow','stone','swap','cloud'];
 var MASKS8=['full','V','chand','heart','pillars','wave','diamond','full'];
@@ -557,12 +559,18 @@ function hand(x,y,s,press){ctx.save();ctx.translate(x,y);var sc=press?0.88:1;ctx
 
 /* ================= RENDER ================= */
 var DECO=[];for(var di=0;di<14;di++)DECO.push({x:Math.random(),y:Math.random(),s:0.5+Math.random(),sp:0.006+Math.random()*0.01});
+function drawArt(im){var W=L.W,H=L.H,iw=im.naturalWidth,ih=im.naturalHeight,sc=Math.max(W/iw,H/ih),dw=iw*sc,dh=ih*sc;
+ // cover-fit, centered across, anchored to the bottom so the hills / reef always show
+ ctx.drawImage(im,(W-dw)/2,H-dh,dw,dh)}
 function drawBG(w){var gr=ctx.createLinearGradient(0,0,0,L.H);gr.addColorStop(0,w.top);gr.addColorStop(1,w.bot);ctx.fillStyle=gr;ctx.fillRect(0,0,L.W,L.H);
+ if(w.img){drawArt(w.img);if(w.deco==='cloud')return}
+ var soft=w.img?0.6:1;ctx.save();ctx.globalAlpha=soft;
  for(var i=0;i<DECO.length;i++){var d=DECO[i],x=((d.x+G.t*d.sp)%1.2-0.1)*L.W,y=d.y*L.H,s=d.s*30;
   if(w.deco==='star'){star(ctx,x,y,s*0.25,s*0.1,'rgba(255,255,220,'+(0.4+0.4*Math.sin(G.t*2+i))+')')}
   else if(w.deco==='heart'){ctx.fillStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.arc(x-s*0.15,y,s*0.17,0,TAU);ctx.arc(x+s*0.15,y,s*0.17,0,TAU);ctx.moveTo(x-s*0.31,y+s*0.05);ctx.lineTo(x,y+s*0.4);ctx.lineTo(x+s*0.31,y+s*0.05);ctx.fill()}
   else if(w.deco==='bubble'){ctx.strokeStyle='rgba(255,255,255,.45)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,(y-G.t*20*d.s)%L.H+L.H*(y<0?1:0),s*0.2,0,TAU);ctx.stroke()}
-  else{ctx.fillStyle='rgba(255,255,255,.55)';ctx.beginPath();ctx.arc(x,y,s*0.4,0,TAU);ctx.arc(x+s*0.4,y+s*0.08,s*0.32,0,TAU);ctx.arc(x-s*0.4,y+s*0.1,s*0.28,0,TAU);ctx.fill()}}}
+  else{ctx.fillStyle='rgba(255,255,255,.55)';ctx.beginPath();ctx.arc(x,y,s*0.4,0,TAU);ctx.arc(x+s*0.4,y+s*0.08,s*0.32,0,TAU);ctx.arc(x-s*0.4,y+s*0.1,s*0.28,0,TAU);ctx.fill()}}
+ ctx.restore()}
 function render(){ctx.setTransform(L.dpr,0,0,L.dpr,0,0);G.btns=[];
  if(ICON_MODE){renderIcon();return}
  var w=WORLDS[worldOf(G.scene==='play'||G.scene==='party'?(G.lv?G.lv.n:1):S.level)];drawBG(w);
@@ -604,7 +612,10 @@ function renderBook(){var W=L.W,H=L.H,sa=L.sa,top=sa.t+12;
 function renderPlay(w){var r=L.r,sa=L.sa,sh=G.shake>0?G.shake*r*0.25:0;
  ctx.save();if(sh)ctx.translate((rnd()-0.5)*sh,(rnd()-0.5)*sh);
  // board window
- ctx.fillStyle=w.win;rr(ctx,L.left-6,L.top-6,16*r+12,(LY+2)*r+12,18);ctx.fill();
+ if(w.img){// frosted panel so the Puffs stay crisp over the painting
+  ctx.save();ctx.shadowColor='rgba(30,20,80,.18)';ctx.shadowBlur=18;ctx.shadowOffsetY=4;ctx.fillStyle=w.panel;rr(ctx,L.left-6,L.top-6,16*r+12,(LY+2)*r+12,18);ctx.fill();ctx.restore();
+  ctx.strokeStyle=w.edge;ctx.lineWidth=2;rr(ctx,L.left-5,L.top-5,16*r+10,(LY+2)*r+10,17);ctx.stroke()}
+ else{ctx.fillStyle=w.win;rr(ctx,L.left-6,L.top-6,16*r+12,(LY+2)*r+12,18);ctx.fill()}
  // wind line (soft)
  ctx.save();ctx.setLineDash([r*0.3,r*0.4]);ctx.strokeStyle='rgba(255,255,255,.45)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ux(0.3),uy(MAXR*SQ3+0.15));ctx.lineTo(ux(15.7),uy(MAXR*SQ3+0.15));ctx.stroke();ctx.restore();
  // sleepy cloud ceiling
