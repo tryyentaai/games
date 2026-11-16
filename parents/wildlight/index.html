@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>WILDLIGHT · Amber Edition</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="description" content="An original pocket monster-collecting RPG in a translucent amber handheld. 160×144, four shades, offline.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Wildlight">
+<meta name="theme-color" content="#140a04">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  /* ---------- Palette-driven device themes ---------- */
+  :root {
+    --bg0:#1a0d05; --bg1:#070302;
+    --sh-a:rgba(255,186,84,.80); --sh-b:rgba(236,128,30,.70); --sh-c:rgba(150,60,10,.86);
+    --rim:rgba(255,226,170,.75); --ink:rgba(74,30,6,.78); --ink-soft:rgba(74,30,6,.45);
+    --pcb:rgba(70,24,0,.55); --copper:rgba(255,226,150,.55);
+    --btn:#2c160a; --btn-hi:#6a3a1e; --ab:#5e1a12; --ab-hi:#b6462c;
+    --glow:rgba(255,150,50,.30); --led:#ff5a2a;
+    --lcd0:#fff4cf; --lcd1:#f0bf48; --lcd2:#b05a2a; --lcd3:#33180e;
+    --px:2px; --mx:30%; --my:12%;
+  }
+  [data-pal="classic"] { --bg0:#07140e; --bg1:#020604; --sh-a:rgba(196,236,200,.74); --sh-b:rgba(110,190,140,.66); --sh-c:rgba(30,96,76,.84);
+    --rim:rgba(230,255,235,.75); --ink:rgba(8,40,30,.75); --ink-soft:rgba(8,40,30,.42); --pcb:rgba(4,40,26,.55); --copper:rgba(240,255,200,.5);
+    --btn:#13261e; --btn-hi:#3e6150; --ab:#22443a; --ab-hi:#5a9a80; --glow:rgba(120,220,150,.24); --led:#ff4040; }
+  [data-pal="pocket"] { --bg0:#121212; --bg1:#040404; --sh-a:rgba(236,236,228,.62); --sh-b:rgba(176,176,166,.58); --sh-c:rgba(70,70,64,.80);
+    --rim:rgba(255,255,255,.8); --ink:rgba(30,30,26,.75); --ink-soft:rgba(30,30,26,.4); --pcb:rgba(20,20,16,.55); --copper:rgba(255,240,200,.5);
+    --btn:#1d1d1b; --btn-hi:#4c4c48; --ab:#30302e; --ab-hi:#6a6a64; --glow:rgba(255,255,240,.14); --led:#ff3b30; }
+  [data-pal="night"] { --bg0:#0a0920; --bg1:#020108; --sh-a:rgba(150,160,255,.66); --sh-b:rgba(84,86,210,.64); --sh-c:rgba(28,22,96,.86);
+    --rim:rgba(220,228,255,.75); --ink:rgba(230,236,255,.82); --ink-soft:rgba(230,236,255,.45); --pcb:rgba(6,4,40,.6); --copper:rgba(190,220,255,.55);
+    --btn:#0f0c2a; --btn-hi:#3a3a8c; --ab:#26206a; --ab-hi:#7d8fdc; --glow:rgba(120,130,255,.28); --led:#7df9ff; }
+  [data-pal="sakura"] { --bg0:#1c0811; --bg1:#070205; --sh-a:rgba(255,210,224,.78); --sh-b:rgba(244,150,180,.68); --sh-c:rgba(150,52,90,.84);
+    --rim:rgba(255,240,245,.8); --ink:rgba(90,20,46,.75); --ink-soft:rgba(90,20,46,.42); --pcb:rgba(80,10,40,.5); --copper:rgba(255,240,220,.5);
+    --btn:#3e1428; --btn-hi:#8a3a5e; --ab:#7a2a4a; --ab-hi:#e07898; --glow:rgba(255,150,190,.26); --led:#ff5c8a; }
+
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  html, body { height:100%; overflow:hidden; overscroll-behavior:none; }
+  body {
+    background:
+      radial-gradient(70% 45% at 50% 108%, var(--glow), transparent 70%),
+      radial-gradient(120% 80% at 50% -10%, var(--bg0), var(--bg1) 70%);
+    background-color:var(--bg1);
+    color:#fff; touch-action:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none;
+    font-family:ui-sans-serif, system-ui, -apple-system, "SF Pro Text", "Segoe UI", sans-serif;
+    transition:background-color .6s;
+  }
+  .device {
+    position:relative; height:100vh; height:100dvh; width:100%; margin:0 auto; max-width:520px;
+    padding:calc(env(safe-area-inset-top) + 8px) calc(env(safe-area-inset-right) + 8px) calc(env(safe-area-inset-bottom) + 8px) calc(env(safe-area-inset-left) + 8px);
+  }
+
+  /* ---------- Shell ---------- */
+  .shell {
+    position:relative; height:100%; border-radius:38px; overflow:hidden; isolation:isolate;
+    background:linear-gradient(165deg, var(--sh-a) 0%, var(--sh-b) 46%, var(--sh-c) 100%);
+    box-shadow:
+      inset 0 2px 0 var(--rim), inset 0 0 0 1px rgba(255,255,255,.22), inset 0 -10px 28px rgba(0,0,0,.30), inset 10px 0 30px rgba(255,255,255,.08),
+      0 40px 80px -20px rgba(0,0,0,.75), 0 0 140px -30px var(--glow);
+    display:grid; padding:16px 18px 18px;
+    grid-template-columns:1fr 1fr;
+    grid-template-rows:14px minmax(0,1fr) var(--pad) 56px;
+    grid-template-areas:"top top" "scr scr" "dpad ab" "sel sta";
+    --pad:min(44vw, 30dvh, 214px); --abs:calc(var(--pad) * .40);
+    transition:background .6s;
+  }
+  .pcb { position:absolute; inset:0; width:100%; height:100%; z-index:-2; filter:blur(.7px); opacity:.8; }
+  .frost { position:absolute; inset:0; z-index:-1; pointer-events:none;
+    background:
+      radial-gradient(130% 60% at 50% 0%, rgba(255,255,255,.20), transparent 60%),
+      linear-gradient(165deg, rgba(255,255,255,.10), rgba(255,255,255,0) 40%, rgba(0,0,0,.10)),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode:soft-light; opacity:.9; }
+  .spec { position:absolute; inset:0; z-index:5; pointer-events:none; border-radius:inherit;
+    background:
+      radial-gradient(40% 26% at var(--mx) var(--my), rgba(255,255,255,.34), transparent 70%),
+      linear-gradient(105deg, transparent 0 18%, rgba(255,255,255,.16) 22%, transparent 30% 100%);
+    mix-blend-mode:screen; transition:background-position .3s; }
+  .breath { position:absolute; width:6px; height:6px; border-radius:50%; right:22%; top:58%; z-index:-1; background:var(--led);
+    box-shadow:0 0 8px 2px var(--led); opacity:0; filter:blur(.5px); }
+  .on .breath { animation:breath 3.2s ease-in-out infinite; }
+  @keyframes breath { 0%,100% { opacity:.12 } 50% { opacity:.6 } }
+
+  /* top edge: power switch + engraving */
+  .top { grid-area:top; display:flex; align-items:center; justify-content:space-between; padding:0 10px; font-size:8px; letter-spacing:.24em; color:var(--ink-soft); font-weight:700; }
+  .pwr { display:flex; align-items:center; gap:6px; cursor:pointer; }
+  .pwr .slot { width:30px; height:8px; border-radius:4px; background:rgba(0,0,0,.28); box-shadow:inset 0 1px 2px rgba(0,0,0,.5); position:relative; }
+  .pwr .slot::after { content:''; position:absolute; left:2px; top:1px; width:12px; height:6px; border-radius:3px; background:var(--btn-hi); box-shadow:0 1px 0 rgba(255,255,255,.3) inset; transition:left .25s cubic-bezier(.3,1.6,.5,1); }
+  .on .pwr .slot::after { left:16px; }
+
+  /* ---------- Screen ---------- */
+  .scr { grid-area:scr; position:relative; min-height:0; min-width:0; }
+  .lens { position:absolute; left:0; right:0; top:2px; display:flex; flex-direction:column; align-items:center; }
+  .bezel {
+    position:relative; width:100%; display:flex; flex-direction:column; align-items:center;
+    padding:14px 14px 0; border-radius:18px 18px 18px 18px;
+    background:radial-gradient(140% 120% at 20% 0%, #3a2a22 0%, #16100c 45%, #0b0705 100%);
+    box-shadow:0 1px 0 rgba(255,255,255,.35), 0 -1px 0 rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.12), inset 0 -3px 10px rgba(0,0,0,.6), 0 10px 24px -8px rgba(0,0,0,.55);
+  }
+  .bezel::after { /* glass sheen over the whole lens */
+    content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; z-index:4;
+    background:linear-gradient(118deg, rgba(255,255,255,.13) 0%, rgba(255,255,255,.04) 28%, transparent 29%, transparent 64%, rgba(255,255,255,.05) 65%, transparent 80%);
+  }
+  .lcd { position:relative; width:320px; height:288px; background:#15100b; overflow:hidden; border-radius:2px;
+    box-shadow:0 0 0 1px rgba(0,0,0,.6), 0 0 0 3px rgba(255,255,255,.04); }
+  .lcd canvas { position:absolute; inset:0; width:100%; height:100%; image-rendering:pixelated; image-rendering:crisp-edges; display:block; }
+  .lcd .ghost { opacity:.30; pointer-events:none; }
+  .lcd .bloom { opacity:.38; filter:blur(calc(var(--px) * 1.4)) saturate(1.2); mix-blend-mode:screen; pointer-events:none; }
+  .grid { position:absolute; inset:0; pointer-events:none;
+    background-image:
+      linear-gradient(to right, transparent 0 84%, rgba(0,0,0,.16) 84% 100%),
+      linear-gradient(to bottom, transparent 0 84%, rgba(0,0,0,.13) 84% 100%),
+      linear-gradient(to right, rgba(255,60,40,.035) 0 33%, rgba(60,255,90,.035) 33% 66%, rgba(60,110,255,.035) 66% 100%);
+    background-size:var(--px) var(--px); }
+  .vign { position:absolute; inset:0; pointer-events:none; box-shadow:inset 0 0 calc(var(--px)*8) rgba(0,0,0,.28), inset 0 0 0 1px rgba(0,0,0,.35);
+    background:radial-gradient(120% 90% at 50% 40%, rgba(255,255,255,.05), transparent 60%); }
+  .nolcd .ghost, .nolcd .bloom, .nolcd .grid { display:none; }
+  .nolcd .vign { box-shadow:inset 0 0 0 1px rgba(0,0,0,.35); background:none; }
+
+  .label { width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px; height:26px; padding:0 2px;
+    font-size:7.5px; letter-spacing:.22em; color:rgba(255,236,200,.42); font-weight:700; white-space:nowrap; overflow:hidden; }
+  .led { display:flex; align-items:center; gap:6px; }
+  .led i { width:7px; height:7px; border-radius:50%; background:#3a0f08; box-shadow:inset 0 1px 1px rgba(0,0,0,.6); transition:background .2s, box-shadow .3s; }
+  .on .led i { background:var(--led); box-shadow:0 0 6px 1px var(--led), 0 0 14px 3px color-mix(in srgb, var(--led) 40%, transparent); }
+
+  .brand { display:flex; align-items:center; gap:10px; margin-top:10px; color:var(--ink); }
+  .brand svg { width:18px; height:18px; }
+  .brand b { font-weight:900; font-style:italic; font-size:16px; letter-spacing:.32em; }
+  .brand small { font-size:7.5px; letter-spacing:.3em; font-weight:800; opacity:.7; border:1px solid var(--ink-soft); border-radius:3px; padding:2px 4px 2px 6px; }
+
+  /* boot overlay */
+  .boot { position:absolute; inset:0; z-index:3; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:#15100b; font-family:"Press Start 2P", monospace; color:var(--lcd3); transition:opacity .5s; }
+  .boot .hint { font-size:calc(var(--px) * 6); color:rgba(255,236,200,.38); letter-spacing:.1em; animation:blink 1.6s steps(2) infinite; text-align:center; line-height:1.9; }
+  .boot .mark { font-size:calc(var(--px) * 13); letter-spacing:.06em; opacity:0; transform:translateY(-260%); text-shadow:var(--px) var(--px) 0 var(--lcd1); }
+  .boot .ed { font-size:calc(var(--px) * 5); margin-top:calc(var(--px) * 6); color:var(--lcd2); letter-spacing:.2em; opacity:0; }
+  .boot .sweep { position:absolute; left:0; right:0; height:22%; top:-25%; pointer-events:none;
+    background:linear-gradient(to bottom, transparent, rgba(255,255,255,.75), transparent); mix-blend-mode:screen; opacity:0; }
+  .boot.go { background:var(--lcd0); transition:background .7s .15s, opacity .5s; }
+  .boot.go .hint { display:none; }
+  .boot.go .sweep { animation:sweep .8s ease-in forwards; }
+  .boot.go .mark { animation:drop .75s .75s cubic-bezier(.3,1.5,.55,1) forwards; }
+  .boot.go .ed { animation:fadein .4s 1.45s forwards; }
+  .boot.done { opacity:0; pointer-events:none; }
+  @keyframes sweep { 0% { top:-25%; opacity:1 } 100% { top:105%; opacity:.7 } }
+  @keyframes drop { 0% { opacity:1; transform:translateY(-260%) } 100% { opacity:1; transform:translateY(0) } }
+  @keyframes fadein { to { opacity:1 } }
+  @keyframes blink { 50% { opacity:.25 } }
+
+  /* ---------- Controls ---------- */
+  .dpad { grid-area:dpad; justify-self:center; align-self:center; width:var(--pad); height:var(--pad); position:relative; touch-action:none; cursor:pointer; }
+  .dpad .x { position:absolute; inset:9%; transition:transform .06s; transform:perspective(420px) rotateX(var(--tx,0deg)) rotateY(var(--ty,0deg)); }
+  .dpad .x::before, .dpad .x::after { content:''; position:absolute; border-radius:9px;
+    background:linear-gradient(160deg, var(--btn-hi), var(--btn) 55%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.22), inset 0 -2px 4px rgba(0,0,0,.4), 0 5px 0 rgba(0,0,0,.30), 0 9px 16px -4px rgba(0,0,0,.55); }
+  .dpad .x::before { left:33%; right:33%; top:0; bottom:0; }
+  .dpad .x::after { top:33%; bottom:33%; left:0; right:0; }
+  .dpad .hub { position:absolute; left:50%; top:50%; width:18%; height:18%; transform:translate(-50%,-50%); border-radius:50%; z-index:1;
+    background:radial-gradient(circle at 40% 35%, rgba(255,255,255,.12), rgba(0,0,0,.35)); }
+  .dpad .ar { position:absolute; width:0; height:0; z-index:1; opacity:.35; border:5px solid transparent; }
+  .ar.u { left:50%; top:13%; transform:translateX(-50%); border-bottom-color:#000; border-top-width:0; }
+  .ar.d { left:50%; bottom:13%; transform:translateX(-50%); border-top-color:#000; border-bottom-width:0; }
+  .ar.l { top:50%; left:13%; transform:translateY(-50%); border-right-color:#000; border-left-width:0; }
+  .ar.r { top:50%; right:13%; transform:translateY(-50%); border-left-color:#000; border-right-width:0; }
+  .dpad[data-dir="up"] .x { --tx:14deg; } .dpad[data-dir="down"] .x { --tx:-14deg; }
+  .dpad[data-dir="left"] .x { --ty:-14deg; } .dpad[data-dir="right"] .x { --ty:14deg; }
+  .dpad::before { content:''; position:absolute; inset:4%; border-radius:50%; background:radial-gradient(circle, rgba(0,0,0,.20) 30%, transparent 70%); }
+
+  .ab { grid-area:ab; justify-self:center; align-self:center; width:calc(var(--abs) * 2.5); height:calc(var(--abs) * 2.1); position:relative; touch-action:none; cursor:pointer; }
+  .ab .tilt { position:absolute; inset:0; transform:rotate(-24deg); }
+  .btn { position:absolute; width:var(--abs); height:var(--abs); border-radius:50%;
+    background:radial-gradient(circle at 34% 28%, var(--ab-hi), var(--ab) 62%);
+    box-shadow:inset 0 2px 1px rgba(255,255,255,.28), inset 0 -3px 6px rgba(0,0,0,.45), 0 6px 0 rgba(0,0,0,.30), 0 12px 18px -6px rgba(0,0,0,.6);
+    transition:transform .05s, box-shadow .05s; }
+  .btn::before { content:''; position:absolute; inset:-7px; border-radius:50%; background:rgba(0,0,0,.14); z-index:-1; box-shadow:inset 0 1px 2px rgba(0,0,0,.35); }
+  .btn span { position:absolute; left:50%; top:calc(100% + 12px); transform:translateX(-50%) rotate(24deg); font-size:10px; font-weight:900; letter-spacing:.15em; color:var(--ink); }
+  .btn.a { right:2%; top:4%; } .btn.b { left:2%; bottom:4%; }
+  .btn.on, .pill.on i { transform:translateY(4px); box-shadow:inset 0 2px 1px rgba(255,255,255,.18), inset 0 -1px 4px rgba(0,0,0,.5), 0 2px 0 rgba(0,0,0,.3), 0 4px 8px -4px rgba(0,0,0,.6); filter:brightness(1.15); }
+
+  .pill { display:flex; flex-direction:column; align-items:center; gap:7px; padding:8px 10px; touch-action:none; cursor:pointer; align-self:center; }
+  .pill i { display:block; width:46px; height:13px; border-radius:7px; transform:rotate(-24deg);
+    background:linear-gradient(180deg, var(--btn-hi), var(--btn)); box-shadow:inset 0 1px 0 rgba(255,255,255,.2), 0 3px 0 rgba(0,0,0,.3), 0 0 0 4px rgba(0,0,0,.10); transition:transform .05s; }
+  .pill.on i { transform:rotate(-24deg) translateY(2px); }
+  .pill span { font-size:8px; letter-spacing:.22em; font-weight:900; color:var(--ink); }
+  .sel { grid-area:sel; justify-self:end; margin-right:6px; }
+  .sta { grid-area:sta; justify-self:start; margin-left:6px; }
+
+  .spk { position:absolute; right:22px; bottom:20px; width:64px; height:44px; transform:rotate(-24deg); pointer-events:none; opacity:.85;
+    background-image:radial-gradient(circle, rgba(0,0,0,.55) 0 1.9px, transparent 2.4px); background-size:8px 8px;
+    -webkit-mask:radial-gradient(closest-side, #000 70%, transparent 100%); mask:radial-gradient(closest-side, #000 70%, transparent 100%); }
+
+  .keys { position:fixed; left:0; right:0; bottom:calc(env(safe-area-inset-bottom) + 4px); text-align:center; font-size:11px; color:rgba(255,255,255,.28); letter-spacing:.06em; display:none; pointer-events:none; }
+  @media (hover:hover) and (pointer:fine) and (min-height:700px) { .keys { display:block; } .device { padding-bottom:28px; } }
+
+  /* ---------- Landscape: controls flank the screen ---------- */
+  @media (orientation:landscape) {
+    .device { max-width:1180px; }
+    .shell { grid-template-columns:var(--side) minmax(0,1fr) var(--side); grid-template-rows:minmax(0,1fr) 54px;
+      grid-template-areas:"dpad scr ab" "sel scr sta"; padding:14px 14px 10px;
+      --side:min(27vw, 250px); --pad:min(calc(var(--side) * .82), 48dvh); --abs:calc(var(--pad) * .40); border-radius:44px; }
+    .top { display:none; }
+    .lens { top:50%; transform:translateY(-50%); }
+    .bezel { width:auto; padding:12px 14px 0; }
+    .sel, .sta { justify-self:center; margin:0; }
+    .spk { right:28px; bottom:14px; width:56px; height:36px; }
+    .brand { margin-top:6px; }
+    .brand b { font-size:13px; }
+  }
+  @media (orientation:landscape) and (max-height:430px) {
+    .brand { display:none; }
+    .shell { grid-template-rows:minmax(0,1fr) 46px; }
+  }
+  #hap { position:fixed; left:0; top:0; width:1px; height:1px; opacity:0; overflow:hidden; pointer-events:none; }
+</style>
+</head>
+<body>
+<div class="device" id="device">
+  <div class="shell" id="shell">
+    <canvas class="pcb" id="pcb"></canvas>
+    <div class="frost"></div>
+    <div class="breath"></div>
+
+    <div class="top">
+      <div class="pwr" id="pwr"><span>OFF</span><div class="slot"></div><span>ON</span></div>
+      <div>AMBER·01</div>
+    </div>
+
+    <div class="scr" id="scr">
+      <div class="lens" id="lens">
+        <div class="bezel" id="bezel">
+          <div class="lcd" id="lcd">
+            <canvas id="screen" width="160" height="144" aria-label="Game screen"></canvas>
+            <canvas class="ghost" id="ghost" width="160" height="144"></canvas>
+            <canvas class="bloom" id="bloom" width="160" height="144"></canvas>
+            <div class="grid"></div>
+            <div class="vign"></div>
+            <div class="boot" id="boot">
+              <div class="sweep"></div>
+              <div class="hint" id="hint">LOADING…</div>
+              <div class="mark">WILDLIGHT</div>
+              <div class="ed">AMBER EDITION</div>
+            </div>
+          </div>
+          <div class="label"><div class="led"><i></i>PWR</div><div>160×144 · 4-SHADE · STEREO</div></div>
+        </div>
+        <div class="brand">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3.6" fill="currentColor" stroke="none"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>
+          <b>WILDLIGHT</b><small>AMBER</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="dpad" id="dpad" aria-label="Direction pad"><div class="x"></div><div class="hub"></div><i class="ar u"></i><i class="ar d"></i><i class="ar l"></i><i class="ar r"></i></div>
+    <div class="ab" id="ab"><div class="tilt"><div class="btn b" id="btnB"><span>B</span></div><div class="btn a" id="btnA"><span>A</span></div></div></div>
+    <div class="pill sel" id="btnSel"><i></i><span>SELECT</span></div>
+    <div class="pill sta" id="btnSta"><i></i><span>START</span></div>
+    <div class="spk"></div>
+    <div class="spec" id="spec"></div>
+  </div>
+</div>
+<div class="keys">Arrows / WASD · Z or J = A · X or K = B · Enter = START · Shift = SELECT</div>
+<label id="hap" aria-hidden="true"><input type="checkbox" switch tabindex="-1"></label>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const root = document.documentElement, shell = $('shell'), device = $('device');
+  const canvas = $('screen'), ghost = $('ghost'), bloom = $('bloom'), lcd = $('lcd'), boot = $('boot'), hint = $('hint');
+  const qs = new URLSearchParams(location.search);
+
+  // ---------- Script loading (DESIGN order; missing modules must not crash) ----------
+  const FILES = ['core', 'audio', 'sprites_world', 'sprites_mons', 'data', 'menus', 'battle', 'world', 'dex', 'title'];
+  function loadScript(src) { return new Promise((res) => { const s = document.createElement('script'); s.src = src; s.onload = () => res(true); s.onerror = () => { console.warn('[wildlight] missing', src); res(false); }; document.head.appendChild(s); }); }
+  const ready = FILES.reduce((p, f) => p.then(() => loadScript('js/' + f + '.js')), Promise.resolve());
+
+  // ---------- Haptics ----------
+  const hapLabel = $('hap');
+  function tickIOS() { try { hapLabel.click(); } catch (e) {} }
+  function hapticsOn() { return !(window.G && G.opts && G.opts.haptics === false); }
+  function buzz(ms) { if (!hapticsOn()) return; if (navigator.vibrate) navigator.vibrate(ms || 7); else tickIOS(); }
+  function onHaptic(kind) {
+    if (!hapticsOn()) return;
+    if (navigator.vibrate) navigator.vibrate(kind === 'heavy' ? [22, 40, 30] : kind === 'light' ? 5 : 12);
+    else { tickIOS(); if (kind === 'heavy') { setTimeout(tickIOS, 70); setTimeout(tickIOS, 140); } }
+  }
+
+  // ---------- Integer screen scaling (in device pixels, so pixels are perfectly square on the panel) ----------
+  function fit() {
+    const dpr = window.devicePixelRatio || 1, scr = $('scr').getBoundingClientRect(), bz = getComputedStyle($('bezel'));
+    const brand = $('lens').querySelector('.brand'), label = $('bezel').querySelector('.label');
+    const brandH = brand.offsetParent ? brand.getBoundingClientRect().height + parseFloat(getComputedStyle(brand).marginTop) : 0;
+    const padX = parseFloat(bz.paddingLeft) + parseFloat(bz.paddingRight);
+    const padY = parseFloat(bz.paddingTop) + label.getBoundingClientRect().height + 4;
+    const availW = scr.width - padX, availH = scr.height - padY - brandH;
+    let k = Math.floor(Math.min((availW * dpr) / 160, (availH * dpr) / 144));
+    k = Math.max(1, k);
+    const w = (k * 160) / dpr, h = (k * 144) / dpr;
+    lcd.style.width = w + 'px'; lcd.style.height = h + 'px';
+    root.style.setProperty('--px', k / dpr + 'px');
+    drawPCB();
+  }
+
+  // ---------- Visible internals (procedural circuit board behind the frosted shell) ----------
+  function drawPCB() {
+    const cv = $('pcb'), r = shell.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+    const c = cv.getContext('2d'); c.scale(dpr, dpr);
+    const cs = getComputedStyle(root), ink = cs.getPropertyValue('--pcb').trim() || 'rgba(70,24,0,.5)', cu = cs.getPropertyValue('--copper').trim() || 'rgba(255,226,150,.5)';
+    let seed = 1337; const R = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const W = r.width, H = r.height, land = W > H;
+    c.lineCap = 'round'; c.lineJoin = 'round';
+    // traces
+    for (let i = 0; i < 46; i++) {
+      let x = R() * W, y = (land ? R() : 0.35 + R() * 0.65) * H;
+      c.strokeStyle = ink; c.lineWidth = R() < 0.2 ? 2.2 : 1.1; c.beginPath(); c.moveTo(x, y);
+      let dir = R() < 0.5 ? 0 : 1;
+      for (let s = 0; s < 3; s++) {
+        const L = 20 + R() * 90;
+        if (dir === 0) x += (R() < 0.5 ? -1 : 1) * L; else y += (R() < 0.5 ? -1 : 1) * L;
+        c.lineTo(x, y); const d = 8 + R() * 18; x += d * (R() < 0.5 ? -1 : 1); y += d; c.lineTo(x, y); dir ^= 1;
+      }
+      c.stroke();
+      c.beginPath(); c.arc(x, y, 2.4, 0, 7); c.fillStyle = cu; c.fill(); c.strokeStyle = ink; c.lineWidth = 1; c.stroke();
+    }
+    // chips
+    const chips = land ? [[0.08, 0.6, 70, 54], [0.8, 0.2, 60, 60], [0.84, 0.66, 44, 30], [0.12, 0.2, 40, 40]] : [[0.56, 0.62, 64, 64], [0.14, 0.84, 50, 30], [0.68, 0.86, 40, 26], [0.3, 0.7, 30, 22]];
+    chips.forEach(([fx, fy, w, h]) => {
+      const x = fx * W, y = fy * H;
+      c.fillStyle = 'rgba(0,0,0,.30)'; c.strokeStyle = ink; c.lineWidth = 1;
+      c.beginPath(); c.roundRect ? c.roundRect(x, y, w, h, 3) : c.rect(x, y, w, h); c.fill(); c.stroke();
+      c.fillStyle = cu;
+      for (let p = 6; p < w - 4; p += 6) { c.fillRect(x + p, y - 4, 2, 4); c.fillRect(x + p, y + h, 2, 4); }
+      for (let p = 6; p < h - 4; p += 6) { c.fillRect(x - 4, y + p, 4, 2); c.fillRect(x + w, y + p, 4, 2); }
+      c.beginPath(); c.arc(x + 6, y + 6, 1.6, 0, 7); c.fill();
+    });
+    // battery pack + crystal + screws
+    c.strokeStyle = ink; c.lineWidth = 1.4; c.setLineDash([3, 3]);
+    const bx = land ? W * 0.36 : W * 0.18, by = land ? H * 0.72 : H * 0.6, bw = land ? W * 0.28 : W * 0.32, bh = land ? H * 0.2 : H * 0.18;
+    c.beginPath(); c.roundRect ? c.roundRect(bx, by, bw, bh, 8) : c.rect(bx, by, bw, bh); c.stroke(); c.setLineDash([]);
+    c.beginPath(); c.ellipse(W * (land ? 0.9 : 0.86), H * (land ? 0.86 : 0.9), 18, 18, 0, 0, 7); c.stroke();
+    [[18, 18], [W - 18, 18], [18, H - 18], [W - 18, H - 18]].forEach(([x, y]) => { c.beginPath(); c.arc(x, y, 4, 0, 7); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill(); c.stroke(); c.beginPath(); c.moveTo(x - 2.5, y); c.lineTo(x + 2.5, y); c.stroke(); });
+  }
+
+  // ---------- Palette hook ----------
+  function applyPalette(key) {
+    root.dataset.pal = key;
+    const P = window.G && G.PALETTES && G.PALETTES[key];
+    if (P) P.c.forEach((col, i) => root.style.setProperty('--lcd' + i, col));
+    const meta = document.querySelector('meta[name=theme-color]');
+    if (meta) meta.content = getComputedStyle(root).getPropertyValue('--bg0').trim() || '#140a04';
+    drawPCB();
+  }
+
+  // ---------- Input: pointer zones with capture, multi-touch, slide between buttons ----------
+  const BTN_EL = { a: $('btnA'), b: $('btnB'), start: $('btnSta'), select: $('btnSel') };
+  const held = {}; ['up', 'down', 'left', 'right', 'a', 'b', 'start', 'select'].forEach((b) => (held[b] = new Set()));
+  const ptrs = new Map(); // pointerId -> [buttons]
+  let powered = false, booted = false;
+  const dpad = $('dpad');
+  function visual(b, on) {
+    if (BTN_EL[b]) BTN_EL[b].classList.toggle('on', on);
+    else if (on) dpad.dataset.dir = b; else if (dpad.dataset.dir === b) dpad.dataset.dir = '';
+  }
+  function press(b) { visual(b, true); buzz(); if (!powered) powerOn(); else if (booted) G.input.setVirtual(b, true); }
+  function release(b) { visual(b, false); if (booted) G.input.setVirtual(b, false); }
+  function setHeld(pid, btns) {
+    const prev = ptrs.get(pid) || [];
+    prev.forEach((b) => { if (!btns.includes(b)) { held[b].delete(pid); if (!held[b].size) release(b); } });
+    btns.forEach((b) => { if (!prev.includes(b)) { const was = held[b].size > 0; held[b].add(pid); if (!was) press(b); } });
+    if (btns.length) ptrs.set(pid, btns); else ptrs.delete(pid);
+  }
+  function dpadDirs(e, pid) {
+    const r = dpad.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+    const cur = (ptrs.get(pid) || [])[0];
+    if (dx * dx + dy * dy < (r.width * 0.08) ** 2) return cur ? [cur] : [];
+    const ax = Math.abs(dx), ay = Math.abs(dy), h = dx < 0 ? 'left' : 'right', v = dy < 0 ? 'up' : 'down';
+    if (Math.min(ax, ay) / Math.max(ax, ay) > 0.5 && (cur === h || cur === v)) return [cur]; // diagonal: keep last direction
+    return [ax > ay ? h : v];
+  }
+  function abDirs(e) {
+    const ra = BTN_EL.a.getBoundingClientRect(), rb = BTN_EL.b.getBoundingClientRect(), rad = ra.width / 2;
+    const da = Math.hypot(e.clientX - (ra.left + rad), e.clientY - (ra.top + rad)), db = Math.hypot(e.clientX - (rb.left + rad), e.clientY - (rb.top + rad));
+    if (Math.min(da, db) > rad * 2.4) return [];
+    if (da < rad * 1.25 && db < rad * 1.25 && Math.abs(da - db) < rad * 0.4) return ['a', 'b']; // thumb between = both
+    return [da < db ? 'a' : 'b'];
+  }
+  function zone(el, fn) {
+    el.addEventListener('pointerdown', (e) => { e.preventDefault(); try { el.setPointerCapture(e.pointerId); } catch (x) {} setHeld(e.pointerId, fn(e, e.pointerId)); spec(e); });
+    el.addEventListener('pointermove', (e) => { if (ptrs.has(e.pointerId)) setHeld(e.pointerId, fn(e, e.pointerId)); });
+    const up = (e) => setHeld(e.pointerId, []);
+    el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up); el.addEventListener('lostpointercapture', up);
+  }
+  zone(dpad, dpadDirs);
+  zone($('ab'), abDirs);
+  zone($('btnSta'), () => ['start']);
+  zone($('btnSel'), () => ['select']);
+  // Tapping the screen or the power switch also powers on.
+  $('lcd').addEventListener('pointerdown', () => { if (!powered) powerOn(); });
+  $('pwr').addEventListener('pointerdown', () => { if (!powered) { buzz(); powerOn(); } });
+  addEventListener('keydown', () => { if (!powered) powerOn(); });
+  // Specular highlight drifts toward the last touch / mouse.
+  function spec(e) { const r = shell.getBoundingClientRect(); shell.style.setProperty('--mx', ((e.clientX - r.left) / r.width) * 60 + 10 + '%'); shell.style.setProperty('--my', ((e.clientY - r.top) / r.height) * 30 + '%'); }
+  addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse') spec(e); });
+  // No scroll, zoom, selection, callouts.
+  ['touchmove', 'gesturestart', 'gesturechange', 'dblclick', 'contextmenu', 'selectstart'].forEach((t) => document.addEventListener(t, (e) => e.preventDefault(), { passive: false }));
+  addEventListener('blur', () => { [...ptrs.keys()].forEach((p) => setHeld(p, [])); });
+
+  // ---------- LCD effects (ghosting + backlight bloom), keyboard visual sync ----------
+  const gctx = ghost.getContext('2d'), bctx = bloom.getContext('2d');
+  let lcdOn = null;
+  const SYNC = ['a', 'b', 'start', 'select'];
+  function onFrame() {
+    const want = !!G.opts.lcd;
+    if (want !== lcdOn) { lcdOn = want; lcd.classList.toggle('nolcd', !want); }
+    if (want) {
+      gctx.globalAlpha = 0.45; gctx.drawImage(canvas, 0, 0); // exponential trail of recent frames
+      if ((G.frame & 1) === 0) { bctx.clearRect(0, 0, 160, 144); bctx.drawImage(canvas, 0, 0); }
+    }
+    for (const b of SYNC) { const d = G.input.down(b); if (BTN_EL[b].classList.contains('on') !== d) BTN_EL[b].classList.toggle('on', d); }
+    const dir = G.input.dir() || ''; if (dpad.dataset.dir !== dir) dpad.dataset.dir = dir;
+  }
+
+  // ---------- Power on + boot ----------
+  function powerOn() {
+    if (powered || !window.G || !G.boot) return;
+    powered = true;
+    try { G.audio.unlock(); } catch (e) {}
+    device.classList.add('on'); shell.classList.add('on');
+    boot.classList.add('go');
+    setTimeout(() => { try { G.audio.sfx('boot'); } catch (e) {} }, 1180); // chime as the wordmark lands
+    setTimeout(async () => {
+      try { await G.boot(canvas); booted = true; } catch (e) { console.error(e); hint.textContent = 'BOOT ERROR'; }
+      boot.classList.add('done');
+      // clear any presses made during the boot animation
+      [...ptrs.keys()].forEach((p) => setHeld(p, []));
+    }, 2500);
+  }
+
+  ready.then(() => {
+    if (!window.G || !G.boot) { hint.textContent = 'CORE MISSING'; return; }
+    G.onHaptic = onHaptic;
+    G.onPalette = applyPalette;
+    G.onFrame = onFrame;
+    applyPalette(G.opts.palette in G.PALETTES ? G.opts.palette : 'amber');
+    hint.innerHTML = 'TAP TO<br>POWER ON';
+    if (qs.has('autoboot')) powerOn();
+  });
+
+  addEventListener('resize', fit);
+  if (window.ResizeObserver) new ResizeObserver(fit).observe($('scr'));
+  if (screen.orientation) screen.orientation.addEventListener('change', () => setTimeout(fit, 120));
+  document.fonts && document.fonts.ready.then(fit);
+  fit();
+
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+})();
+</script>
+</body>
+</html>

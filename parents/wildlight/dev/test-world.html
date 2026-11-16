@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wildlight World Test</title>
+<style>
+  :root { --bg: #1b120c; --fg: #f6e7c1; --mute: #b9a37a; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.4 system-ui, sans-serif; padding: 16px; }
+  h1 { font-size: 16px; margin: 0 0 8px; }
+  .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+  canvas#screen { width: 480px; max-width: 100%; aspect-ratio: 160 / 144; image-rendering: pixelated; background: #000; }
+  #sheet { image-rendering: pixelated; width: 100%; max-width: 640px; background: #fff4cf; }
+  .panel { max-width: 340px; }
+  select, button { font: inherit; margin: 2px 0; }
+  p { color: var(--mute); margin: 4px 0; }
+</style>
+</head>
+<body>
+<h1>WILDLIGHT: world module test bench</h1>
+<div class="row">
+  <canvas id="screen"></canvas>
+  <div class="panel">
+    <p>Arrows/WASD move · Z/Space = A · X = B (hold to dash) · Enter = START</p>
+    <label>Warp: <select id="warp"></select></label> <button id="go">Go</button><br>
+    <label>Palette: <select id="pal"></select></label><br>
+    <button id="flags">Set all story flags (badges etc.)</button>
+    <button id="kit">Give VOLTKIT</button>
+    <p id="dbg"></p>
+  </div>
+</div>
+<h1>Sprite sheet</h1>
+<canvas id="sheet"></canvas>
+<script src="../js/core.js"></script>
+<script>
+  // load optional teammate modules if present (missing files are skipped), then world files, then boot.
+  const order = ['audio.js', 'sprites_world.js', 'sprites_mons.js', 'data.js', 'menus.js', 'battle.js', 'world.js', 'dex.js'];
+  (async function () {
+    for (const f of order) await new Promise((r) => { const s = document.createElement('script'); s.src = '../js/' + f; s.onload = r; s.onerror = r; document.body.appendChild(s); });
+    await G.boot(document.getElementById('screen'));
+    const W = G.World, sel = document.getElementById('warp');
+    for (const id in W.MAPS) { const o = document.createElement('option'); o.value = id; o.textContent = id; sel.appendChild(o); }
+    document.getElementById('go').onclick = () => {
+      const m = W.MAPS[sel.value];
+      let spot = null;
+      for (let y = 0; y < m.h && !spot; y++) for (let x = 0; x < m.w && !spot; x++) { const d = m.grid[y][x]; if (d && !d.solid && !d.kind) spot = [x, y]; }
+      W.warp(sel.value, spot[0], spot[1], 'down');
+    };
+    const pal = document.getElementById('pal');
+    for (const k in G.PALETTES) { const o = document.createElement('option'); o.value = k; o.textContent = k; pal.appendChild(o); }
+    pal.onchange = () => { G.setPalette(pal.value); drawSheet(); };
+    document.getElementById('flags').onclick = () => { ['got_starter', 'got_dex', 'badge_stone', 'badge_tide', 'beat_rival2'].forEach((f) => (G.state.flags[f] = true)); G.state.badges = ['STONE', 'TIDE']; };
+    document.getElementById('kit').onclick = () => { if (!G.state.party.some((m) => m.id === 'voltkit')) G.state.party.push(G.makeMon ? G.makeMon('voltkit', 5) : { id: 'voltkit', lvl: 5, hp: 20, maxhp: 20, bond: 70, moves: [] }); G.state.flags.got_starter = true; };
+    setInterval(() => { document.getElementById('dbg').textContent = JSON.stringify(W.debug()); }, 250);
+    drawSheet();
+  })();
+  function drawSheet() {
+    const all = [];
+    for (const k in G.SPR.tiles) all.push(G.SPR.tiles[k]);
+    for (const k in G.SPR.chars) for (const d of ['down', 'up', 'left', 'right']) all.push(...G.SPR.chars[k][d]);
+    for (const k in G.SPR.emotes) all.push(G.SPR.emotes[k]);
+    const cols = 16, cv = document.getElementById('sheet');
+    cv.width = cols * 18; cv.height = Math.ceil(all.length / cols) * 18;
+    const real = G.ctx; G.ctx = cv.getContext('2d');
+    G.ctx.fillStyle = G.C[0]; G.ctx.fillRect(0, 0, cv.width, cv.height);
+    all.forEach((r, i) => G.drawSpr(r, (i % cols) * 18 + 1, Math.floor(i / cols) * 18 + 1));
+    G.ctx = real;
+  }
+</script>
+</body>
+</html>

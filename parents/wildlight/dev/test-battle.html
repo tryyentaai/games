@@ -1,0 +1,40 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Battle Test</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>body{background:#222;color:#ccc;font:12px monospace;text-align:center}canvas{width:480px;height:432px;image-rendering:pixelated;margin-top:12px}a{color:#fc6;margin:0 4px}</style>
+</head><body>
+<canvas id="c"></canvas>
+<div>Arrows/WASD move · Z/Space = A · X = B · Enter = START</div>
+<div>?mode=
+<a href="?mode=wild">wild</a><a href="?mode=rival">rival</a><a href="?mode=warden">warden</a><a href="?mode=evolve">evolve</a><a href="?mode=party">party</a><a href="?mode=bag">bag</a><a href="?mode=dex">all sprites</a></div>
+<script src="../js/core.js"></script>
+<script src="../js/audio.js"></script>
+<script src="../js/sprites_mons.js"></script>
+<script src="../js/data.js"></script>
+<script src="../js/menus.js"></script>
+<script src="../js/battle.js"></script>
+<script>
+const mode = new URLSearchParams(location.search).get('mode') || 'wild';
+function again(r) { G.say('Result: ' + r + '. Press A to restart.', { onDone: launch }); }
+function launch() {
+  G.state.party = [G.makeMon('voltkit', mode === 'warden' ? 13 : 8), G.makeMon('fluffin', 7), G.makeMon('sproutle', mode === 'evolve' ? 15 : 6)];
+  G.state.bag = { potion: 3, superpotion: 2, orb: 10, greatorb: 3, antidote: 1, fullheal: 1, revive: 1, repel: 1 };
+  if (mode === 'evolve') { const s = G.state.party[2]; G.state.party = [s, G.state.party[0]]; s.xp = G.xpForLevel(16) - 3; }
+  if (mode === 'wild' || mode === 'evolve') G.Battle.start({ kind: 'wild', enemy: [[G.pick(['nibblet', 'fluffin', 'fuzzbug', 'wispurr', 'pebbit']), 5]], onEnd: again });
+  else if (mode === 'rival') { G.state.party = [G.makeMon('voltkit', 5)]; G.Battle.start({ kind: 'trainer', enemy: [['sproutle', 5]], trainer: { name: 'KAI', cls: 'RIVAL', loseText: 'No way! Next time, for sure.' }, onEnd: again }); }
+  else if (mode === 'warden') G.Battle.start({ kind: 'trainer', enemy: [['pebbit', 10], ['bouldurr', 12]], trainer: { name: 'BASALT', cls: 'WARDEN', prize: 1200, intro: 'Stone does not bend!', loseText: 'You have cracked my stone. Take this badge.' }, onEnd: again });
+  else if (mode === 'party') G.Menus.party({ mode: 'view', onPick: launch });
+  else if (mode === 'bag') G.Menus.bag({ mode: 'field' });
+  else if (mode === 'dex') {
+    let t = 0; const ids = G.DATA.dexOrder;
+    G.push({ opaque: true, update() { if (G.input.pressed('a')) t++; if (G.input.pressed('b')) t--; }, draw() {
+      G.clear(0); const id = ids[((t % ids.length) + ids.length) % ids.length], s = G.SPR.mons[id];
+      G.ctx.drawImage(G.sprCanvas(s.front), 8, 8, 64, 64); G.ctx.drawImage(G.sprCanvas(s.back), 88, 8, 64, 64); G.drawSpr(s.icon, 72, 80);
+      G.text(G.DATA.mons[id].name, 8, 104); G.text('A next  B prev', 8, 124); } });
+  }
+}
+G.Title = { start: launch };
+G.boot(document.getElementById('c'));
+</script>
+</body></html>
