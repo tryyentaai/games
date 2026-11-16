@@ -7,11 +7,12 @@ const playArea = document.querySelector('.play-area');
 const card = document.querySelector('.game-card');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const colors = ['#f25b9f', '#9562df', '#39c7bd'];
-const names = ['pink heart', 'purple star', 'teal circle'];
+const names = ['pink heart', 'purple star', 'teal circle', 'orange diamond'];
 const shapes = [
   '<path class="shape" d="M32 56S6 39 6 22C6 7 25 5 32 18 39 5 58 7 58 22 58 39 32 56 32 56Z"/><path class="shine" d="M14 17c3-5 8-5 11-2 2 2-1 3-4 2-3-1-4 3-6 3-2 0-2-1-1-3Z"/>',
   '<path class="shape" d="m32 4 8.5 17.2 19 2.8-13.8 13.4L49 56.3l-17-9-17 9 3.3-18.9L4.5 24l19-2.8L32 4Z" stroke-linejoin="round"/><path class="shine" d="m31 14-6 13-9 2 12 2 6-16c.5-2-2-2-3-1Z"/>',
-  '<circle class="shape" cx="32" cy="32" r="24"/><path class="shine" d="M16 25c2-6 7-10 13-10 3 0 3 3 0 4-5 1-7 3-9 7-1 3-5 2-4-1Z"/>'
+  '<circle class="shape" cx="32" cy="32" r="24"/><path class="shine" d="M16 25c2-6 7-10 13-10 3 0 3 3 0 4-5 1-7 3-9 7-1 3-5 2-4-1Z"/>',
+  '<path class="shape" d="M32 5 57 32 32 59 7 32Z" stroke-linejoin="round"/><path class="shine" d="M30 13 17 28c-1 2 1 3 3 2l11-14c1-2-0-4-1-3Z"/>'
 ];
 let soundOn = false;
 let paused = false;
@@ -202,6 +203,7 @@ function popChain() {
   $('board-title').textContent = result.count >= 10 ? 'You’re a sparkle superstar!' : result.count >= 6 ? 'Look at all that glitter!' : 'That was magical!';
   $('announcer').textContent = `${result.count} dots! ${result.points} sparkle points. ${result.leveledUp ? 'You earned a new star!' : ''}`;
   if (result.count >= 6) celebrate(result.count >= 15 ? 'Sparkle party!' : result.count >= 10 ? 'Rainbow storm!' : 'Glitter burst!', `+${result.points.toLocaleString()} sparkle points`, result.count >= 15 ? '🌟' : result.count >= 10 ? '🌈' : '✨');
+  else if (result.leveledUp && result.level === 3) celebrate('A new friend!', 'Orange diamonds join the sparkle party!', '🔶');
   else if (result.leveledUp) celebrate('A star for you!', `Hello, level ${Math.floor(game.score / 500) + 1}!`, '⭐');
   else {
     const rect = oldRects[Math.floor(oldRects.length / 2)];

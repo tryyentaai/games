@@ -1,4 +1,4 @@
-const CACHE = 'glitter-dot-sparkles-v2';
+const CACHE = 'glitter-dot-sparkles-v3';
 const ASSETS = ['./','./index.html','./app.js','./engine.js','./style.css','./favicon.svg','./manifest.webmanifest','./icon-180.png','./icon-192.png','./icon-512.png','./bg-pastel.jpg'];
 self.addEventListener('install', event => { event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS))); self.skipWaiting(); });
 self.addEventListener('activate', event => { event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('glitter-dot-sparkles-') && key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())); });

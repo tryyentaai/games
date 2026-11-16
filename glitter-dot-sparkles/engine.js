@@ -36,8 +36,14 @@ export class GameEngine {
     return { id: this._nextId++, type: this._randomType() };
   }
 
+  // Three kinds of dots to start; a fourth (orange diamond) joins at level 3 so chains take more planning.
+  get typeCount() {
+    return this.level >= 3 ? 4 : 3;
+  }
+
   _randomType() {
-    return Math.max(0, Math.min(2, Math.floor(this.random() * 3)));
+    const n = this.typeCount;
+    return Math.max(0, Math.min(n - 1, Math.floor(this.random() * n)));
   }
 
   _validIndex(index) {
