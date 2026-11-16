@@ -1,7 +1,7 @@
 // Mega Kick offline cache. Bump VERSION on every change.
-const VERSION = '2';
+const VERSION = '3';
 const CACHE = 'mk-' + VERSION;
-const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png', './icon-512-maskable.png'];
+const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png', './icon-512-maskable.png', './sky-field.jpg', './sky-dino.jpg', './sky-volcano.jpg', './sky-rocket.jpg', './sky-moon.jpg', './sky-meadow.jpg', './sky-cupcake.jpg', './sky-rainbow.jpg', './sky-starcastle.jpg'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
