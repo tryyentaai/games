@@ -1,6 +1,6 @@
 // Jelly Volley offline cache. Bump VERSION on every change.
-const VERSION = 'jv-v3';
-const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png', './bg-beach.jpg', './bg-park.jpg', './bg-windy.jpg', './bg-snow.jpg', './bg-lava.jpg'];
+const VERSION = 'jv-v4';
+const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png', './bg-beach.jpg', './bg-park.jpg', './bg-windy.jpg', './bg-snow.jpg', './bg-lava.jpg', './bg-moon.jpg'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
