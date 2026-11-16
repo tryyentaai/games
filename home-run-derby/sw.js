@@ -1,7 +1,7 @@
 // Moonshot Derby service worker. Scope: this folder only.
 // Cache names are prefixed "hrd-" so the other games in the repo are never touched.
-const VERSION = 'hrd-v2';
-const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png'];
+const VERSION = 'hrd-v3';
+const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png', './bg-home.jpg', './bg-beach.jpg', './bg-moon.jpg', './bg-dino.jpg', './bg-candy.jpg'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
