@@ -282,7 +282,7 @@ const MON_LIST = [
   ['hootrix', 'mountain', 'hootlet', '🍓', [420, 'hoot']],
   ['auroryx', 'cave', null, '🍊', [330, 'magic']],
 ];
-const HOLD = ['shellop', 'auroryx']; // art still rendering on the Mac; hidden until it lands
+const HOLD = []; // ids whose art isn't ready yet are hidden from play and the book
 const MON_LIST_ALL = MON_LIST.slice(); MON_LIST.splice(0, MON_LIST.length, ...MON_LIST_ALL.filter(m => !HOLD.includes(m[0])));
 const MONS = {}; MON_LIST_ALL.forEach(([id, place, base, food, cry], i) => MONS[id] = { id, place, base, food, cry, no: i });
 const PLACES = [
