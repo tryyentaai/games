@@ -128,15 +128,20 @@
     return res;
   }
 
-  /** Pick a card to peg. Returns a card from hand, or null if none playable. */
+  /** Pick a card to peg. level: 'easy' | 'normal' | 'hard'. Returns a card or null. */
   function choosePeg(hand, stack, count, o) {
-    o = Object.assign({ slip: 0 }, o || {});
+    o = Object.assign({ slip: 0, level: 'normal', seen: [] }, o || {});
     const playable = hand.filter((c) => count + val(c) <= 31);
     if (!playable.length) return null;
     if (o.slip && Math.random() < o.slip) return playable[Math.floor(Math.random() * playable.length)];
+    // ranks still unseen by this player, for the opponent-reply estimate
+    const left = new Array(14).fill(4);
+    hand.concat(o.seen).forEach((c) => left[c.r]--);
+    const totalLeft = left.reduce((a, b, i) => (i ? a + Math.max(0, b) : a), 0) || 1;
     let best = null, bestV = -1e9;
     for (const c of playable) {
-      const pts = pegScore(stack.concat([c])).total;
+      const next = stack.concat([c]);
+      const pts = pegScore(next).total;
       const nc = count + val(c);
       let v = pts * 10 + Math.random() * 0.5;
       if (nc === 5 || nc === 21) v -= 4;
@@ -145,12 +150,47 @@
         if (c.r === 5) v -= 3;
         if (val(c) <= 4) v += 1;
       }
+      if (o.level === 'hard' && nc < 31) {
+        // expected points the opponent can answer with
+        let risk = 0;
+        for (let r = 1; r <= 13; r++) {
+          const n = Math.max(0, left[r]);
+          if (!n || nc + Math.min(r, 10) > 31) continue;
+          risk += (n / totalLeft) * pegScore(next.concat([mk(r, 0)])).total;
+        }
+        v -= risk * 6;
+        // keep a card that can follow up (save low cards for go points)
+        if (hand.length > 1 && hand.filter((x) => x !== c).some((x) => nc + val(x) <= 31)) v += 0.6;
+      }
       if (v > bestV) { bestV = v; best = c; }
     }
     return best;
   }
 
-  const api = { SUITS, RANKS, mk, val, label, isRed, deck, shuffle, scoreHand, pegScore, cribHeur, chooseDiscard, choosePeg };
+  /** Turn a scoreHand() result into the spoken count: "Fifteen two, fifteen four, and a pair is six". */
+  function narrate(res) {
+    let run = 0;
+    return res.items.map((i) => {
+      run += i.pts;
+      if (i.label === 'Fifteen') return 'fifteen ' + run;
+      if (i.label === 'Pair') return 'a pair is ' + run;
+      if (i.label.indexOf('Run') === 0) return 'a run of ' + ['', '', '', 'three', 'four', 'five'][i.pts] + ' is ' + run;
+      if (i.label.indexOf('Flush') === 0) return (i.pts === 5 ? 'a five-card flush is ' : 'a flush is ') + run;
+      if (i.label === 'Nobs') return 'one for his nobs is ' + run;
+      return i.label + ' ' + run;
+    });
+  }
+
+  /** Card code from the vision model ("10H", "KS") to a card. */
+  function fromCode(code) {
+    const m = /^(10|[2-9AJQK])([CDHS])$/.exec(String(code).toUpperCase());
+    if (!m) return null;
+    const r = { A: 1, J: 11, Q: 12, K: 13 }[m[1]] || parseInt(m[1], 10);
+    const s = { S: 0, H: 1, D: 2, C: 3 }[m[2]];
+    return mk(r, s);
+  }
+
+  const api = { SUITS, RANKS, mk, val, label, isRed, deck, shuffle, scoreHand, pegScore, cribHeur, chooseDiscard, choosePeg, narrate, fromCode };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.CRIB = api;
 })(typeof window !== 'undefined' ? window : globalThis);

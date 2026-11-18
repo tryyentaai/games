@@ -4,138 +4,119 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>The Cribbage Room</title>
-<meta name="theme-color" content="#14100B">
+<meta name="description" content="Play cribbage against the house, keep score for a real game, or count a hand by photo.">
+<meta name="theme-color" content="#241611">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Cribbage">
-<meta name="description" content="Play cribbage against Sal and Walt in a New York chophouse. Loser settles the check.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --espresso:#14100B; --walnut:#2A1D12; --mahogany:#3A2618; --panel:#1E1610; --line:#4A3624;
-  --brass:#D9B36A; --brass-hi:#E8C87E; --brass-lo:#A87F3C; --garnet:#B23A48; --cream:#F0E6D2; --muted:#9C8A70;
-  --serif:'Playfair Display',Georgia,serif; --sans:'Inter',-apple-system,system-ui,sans-serif;
-}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--espresso);color:var(--cream);font-family:var(--sans);overscroll-behavior:none}
-body{min-height:100vh;min-height:100dvh;background:radial-gradient(ellipse at 50% -10%,#3b2a17 0%,var(--espresso) 55%)}
-[hidden]{display:none!important}
-#app{max-width:520px;margin:0 auto;padding:max(12px,env(safe-area-inset-top)) 12px max(16px,env(safe-area-inset-bottom))}
-button{font-family:inherit;color:inherit}
-.rule{height:1px;background:linear-gradient(90deg,transparent,var(--brass-lo),transparent);margin:14px 0;border:0}
-.btn{border:1px solid var(--line);background:var(--panel);border-radius:10px;min-height:46px;padding:0 14px;font-size:13px;font-weight:600;cursor:pointer}
-.btn.gold{background:linear-gradient(180deg,var(--brass-hi),var(--brass) 55%,var(--brass-lo));color:#241A0C;border:0;font-weight:700}
-.btn:disabled{opacity:.4}
-.muted{color:var(--muted)}
-
-/* splash */
-#splash{text-align:center;padding-top:5vh}
-.medallion{width:118px;height:118px;margin:0 auto 14px;border-radius:50%;border:3px solid var(--brass);box-shadow:inset 0 0 0 5px var(--espresso),inset 0 0 0 6px #5a4527,0 0 40px #d9b36a22;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:800;font-size:40px;color:var(--brass-hi)}
-h1{font-family:var(--serif);font-size:30px;margin:0 0 4px;letter-spacing:.01em}
-.sub{font-size:10px;letter-spacing:.3em;color:var(--muted);text-transform:uppercase}
-.tag{font-family:var(--serif);font-style:italic;color:var(--brass);margin:10px 0 18px}
-.seat{display:block;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0;cursor:pointer}
-.seat:active{border-color:var(--brass)}
-.seat .n{font-family:var(--serif);font-size:20px;font-weight:700}
-.seat .t{font-size:10px;letter-spacing:.18em;color:var(--brass);text-transform:uppercase;margin-bottom:4px}
-.seat .b{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.4}
-.seat .rec{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--muted);margin-top:8px}
-
-/* table */
-.hdr{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.hdr .ttl{font-family:var(--serif);font-weight:700;font-size:17px;background:none;border:0;padding:0;text-align:left;cursor:pointer}
-.chip{font-size:11px;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:5px 10px;color:var(--muted)}
-#board{margin:10px 0 6px;background:linear-gradient(180deg,#4a3320,#33220f);border:1px solid #5a4527;border-radius:12px;padding:6px 6px 2px}
-#board svg{display:block;width:100%;height:auto}
-.peg{transition:transform .65s cubic-bezier(.3,.7,.2,1)}
-.scores{display:flex;justify-content:space-between;font-family:var(--serif);margin:2px 4px 8px}
-.scores .s{font-size:24px;font-weight:700}
-.scores .y{color:var(--brass-hi)} .scores .o{color:#e07a86;text-align:right}
-.scores small{display:block;font-family:var(--sans);font-size:10px;letter-spacing:.14em;color:var(--muted);font-weight:500}
-#bubble{min-height:44px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--garnet);border-radius:10px;padding:8px 10px;font-size:13px;line-height:1.4}
-#bubble b{font-family:var(--serif);color:#e07a86}
-#status{font-size:12px;color:var(--muted);margin:8px 2px;min-height:18px}
-.row{display:flex;justify-content:center;gap:5px;flex-wrap:nowrap;min-height:78px;margin:6px 0}
-.card{width:52px;height:74px;border-radius:8px;background:var(--cream);color:#1a1410;border:1px solid #c9bb9f;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:17px;line-height:1.05;padding:0;flex:0 0 auto;box-shadow:0 2px 6px #0008}
-.card .su{font-size:19px}
-.card.red{color:#a8283a}
-.card.back{background:repeating-linear-gradient(45deg,#4a1d24 0 6px,#3a141b 6px 12px);border-color:#7b3a44;color:transparent}
-.card.sel{transform:translateY(-12px);outline:2px solid var(--brass)}
-.card.dim{opacity:.35}
-.card.sm{width:40px;height:56px;font-size:14px}
-.card.sm .su{font-size:15px}
-.card.start{outline:2px solid var(--brass)}
-#play{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--walnut);border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin:6px 0;min-height:84px}
-#count{font-family:var(--serif);font-size:34px;font-weight:800;color:var(--brass-hi);text-align:center;min-width:64px;line-height:1}
-#count small{display:block;font-family:var(--sans);font-size:9px;letter-spacing:.18em;color:var(--muted);font-weight:500;margin-top:3px}
-#stack{display:flex;gap:3px;flex:1;justify-content:center;flex-wrap:wrap}
-#starter{text-align:center;font-size:9px;letter-spacing:.14em;color:var(--muted)}
-#panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;margin:8px 0;font-size:13px}
-#panel .who{font-family:var(--serif);font-size:16px;font-weight:700;margin-bottom:6px}
-#panel .items{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:12.5px;margin-top:8px}
-#panel .items .p{font-family:ui-monospace,Menlo,monospace;color:var(--brass-hi);text-align:right}
-#panel .tot{font-family:var(--serif);font-size:22px;color:var(--brass-hi);text-align:right;margin-top:6px}
-#coach{font-size:12.5px;line-height:1.45;border-left:3px solid var(--brass);padding-left:10px}
-#coach b{color:var(--brass-hi)}
-#actions{display:flex;gap:8px;margin-top:8px}
-#actions .btn{flex:1}
-#overlay{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;padding:20px;z-index:10}
-.modal{background:var(--panel);border:1px solid var(--brass-lo);border-radius:16px;padding:20px;max-width:360px;width:100%;text-align:center}
-.modal h2{font-family:var(--serif);margin:0 0 6px;font-size:26px}
-.setrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);text-align:left;font-size:13px}
-.setrow small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
-.tog{width:46px;height:28px;border-radius:99px;border:1px solid var(--line);background:var(--walnut);position:relative;flex:0 0 auto}
-.tog i{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--muted);transition:.2s}
-.tog.on{background:#5a4527}.tog.on i{left:21px;background:var(--brass-hi)}
-@media (prefers-reduced-motion:reduce){.peg{transition:none}}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div id="app">
-  <section id="splash">
-    <div class="medallion">121</div>
-    <h1>The Cribbage Room</h1>
-    <div class="sub">Chophouse &amp; Card Parlor · New York · Est. 2026</div>
-    <div class="tag">Loser settles the check.</div>
-    <div id="seats"></div>
-    <div class="muted" style="font-size:11px;margin-top:14px">Pick your opponent. Cards are dealt, counted and pegged for you. Leaving mid-hand resumes at the start of that hand.</div>
+
+  <!-- HOME -->
+  <section id="home" class="screen">
+    <div class="home-board" id="homeBoard" aria-hidden="true"></div>
+    <h1 class="wordmark">The Cribbage Room</h1>
+    <p class="lede">A New York chophouse with a card table in the back. Loser settles the check.</p>
+    <div class="menu">
+      <button class="door" data-go="pick">
+        <span class="door-t">Play the house</span>
+        <span class="door-b">Walt, Sal or Vinnie deal you in</span>
+      </button>
+      <button class="door" data-go="keeper">
+        <span class="door-t">Keep score</span>
+        <span class="door-b">Peg a real game played with real cards</span>
+      </button>
+      <button class="door" data-go="counter">
+        <span class="door-t">Count a hand</span>
+        <span class="door-b">Pick five cards or snap a photo</span>
+      </button>
+    </div>
+    <button class="linkish" id="resume" hidden></button>
   </section>
 
-  <section id="table" hidden>
-    <div class="hdr">
-      <button class="ttl" id="home">The Cribbage Room</button>
-      <div style="display:flex;gap:6px;align-items:center">
-        <span class="chip" id="vs"></span>
-        <button class="chip" id="gear" aria-label="Settings">⚙</button>
+  <!-- OPPONENT PICK -->
+  <section id="pick" class="screen" hidden>
+    <header class="bar"><button class="back" data-go="home" aria-label="Back">‹</button><h2>Who's at the table</h2><span></span></header>
+    <div id="seats"></div>
+  </section>
+
+  <!-- PLAY -->
+  <section id="table" class="screen" hidden>
+    <header class="bar">
+      <button class="back" id="leave" aria-label="Leave table">‹</button>
+      <div class="vs" id="vsLine"></div>
+      <button class="iconbtn" id="gear" aria-label="Table settings">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Zm7.4-2.5a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.6a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1L11 21h4l.4-2.6a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5Z"/></svg>
+      </button>
+    </header>
+    <div class="board-wrap" id="board"></div>
+    <div class="scoreline">
+      <div class="sc you"><span class="sc-n" id="sy">0</span><span class="sc-l">You</span></div>
+      <div class="sc opp"><span class="sc-l" id="oname">Sal</span><span class="sc-n" id="so">0</span></div>
+    </div>
+    <div class="talk" id="talk" aria-live="polite"><span class="talk-who" id="talkWho"></span><span id="talkText"></span></div>
+    <div class="hand opp-hand" id="oppHand"></div>
+    <div class="mat" id="mat">
+      <div class="mat-side">
+        <div class="deckpile" id="deckPile"><div class="card back"></div></div>
+        <div class="mat-cap" id="starterCap">Cut</div>
       </div>
+      <div class="stack" id="stack"></div>
+      <div class="count" id="count"><span id="countN">0</span><span class="mat-cap">Count</span></div>
     </div>
-    <div id="board"></div>
-    <div class="scores">
-      <div class="s y"><small>YOU</small><span id="sy">0</span></div>
-      <div class="s o"><small id="oname">OPP</small><span id="so">0</span></div>
+    <div class="status" id="status" aria-live="polite"></div>
+    <div class="hand my-hand" id="myHand"></div>
+    <div class="actions" id="actions"></div>
+  </section>
+
+  <!-- SCORE KEEPER -->
+  <section id="keeper" class="screen" hidden>
+    <header class="bar"><button class="back" data-go="home" aria-label="Back">‹</button><h2>Keep score</h2><button class="iconbtn" id="kMenu" aria-label="Game options">⋯</button></header>
+    <div class="board-wrap" id="kBoard"></div>
+    <div class="kplayers" id="kPlayers"></div>
+    <div class="kpad" id="kPad"></div>
+    <div class="krow">
+      <button class="btn" id="kUndo">Undo</button>
+      <button class="btn" id="kDeal">Pass the deal</button>
+      <button class="btn gold" id="kCount">Count a hand</button>
     </div>
-    <div id="bubble"></div>
-    <div id="status"></div>
-    <div class="row" id="oppHand"></div>
-    <div id="play">
-      <div id="starter"></div>
-      <div id="stack"></div>
-      <div id="count">0<small>COUNT</small></div>
+    <details class="ledger"><summary>Score log</summary><ol id="kLog"></ol></details>
+  </section>
+
+  <!-- HAND COUNTER (sheet; used alone and from the score keeper) -->
+  <section id="counter" class="screen" hidden>
+    <header class="bar"><button class="back" id="cBack" aria-label="Back">‹</button><h2 id="cTitle">Count a hand</h2><span></span></header>
+    <div class="slots" id="cSlots"></div>
+    <div class="ctoggles">
+      <button class="pill" id="cCrib" aria-pressed="false">This is the crib</button>
+      <button class="pill" id="cClear">Clear</button>
     </div>
-    <div id="panel" hidden></div>
-    <div class="row" id="myHand"></div>
-    <div id="actions"></div>
+    <button class="btn scan" id="cScan">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M9 4 7.2 6H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3.2L15 4H9Zm3 4.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z"/></svg>
+      Scan cards with the camera
+    </button>
+    <input type="file" id="cFile" accept="image/*" capture="environment" hidden>
+    <div class="picker" id="cPicker"></div>
+    <div class="cresult" id="cResult"></div>
   </section>
 </div>
+
+<div id="fx" aria-hidden="true"></div>
 <div id="overlay" hidden></div>
 <script src="engine.js"></script>
-<script src="app.js"></script>
+<script src="ui.js"></script>
+<script src="vision.js"></script>
+<script src="play.js"></script>
+<script src="keeper.js"></script>
 <script>if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
 </body>
 </html>
