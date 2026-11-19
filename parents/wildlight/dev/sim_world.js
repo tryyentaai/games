@@ -10,7 +10,7 @@ const listeners = {}; let rafCb = null; const errors = [];
 const win = {
   addEventListener: (t, f) => ((listeners[t] = listeners[t] || []).push(f)),
   requestAnimationFrame: (f) => { rafCb = f; }, removeEventListener: () => {},
-  localStorage: { _s: {}, getItem(k) { return this._s[k] || null; }, setItem(k, v) { this._s[k] = v; } },
+  localStorage: { _s: {}, getItem(k) { return this._s[k] || null; }, setItem(k, v) { this._s[k] = v; }, removeItem(k) { delete this._s[k]; } },
   document: { addEventListener() {}, createElement: () => canvas(), fonts: { load: () => Promise.resolve(), check: () => true }, hidden: false },
   navigator: {}, console: { log: console.log, error: (...a) => { errors.push(a.join(' ')); console.log('ERR', ...a); }, warn() {} },
   setTimeout, setInterval: () => 0, Promise, Math, JSON,
@@ -135,7 +135,7 @@ function expect(c, m) { if (!c) { console.log('FAIL', m, JSON.stringify(D()), 's
   G.World.blackout(); await mashUntil(() => D().busy === 0, 60);
   expect(D().map === 'home', 'blackout returns home when lastHeal cleared (' + D().map + ')');
   // save
-  expect(G.saveGame() && JSON.parse(win.localStorage.getItem('wildlight_save_v1')).map === 'home', 'save persists map');
+  expect(G.saveGame() && JSON.parse(JSON.parse(win.localStorage.getItem('wildlight_save')).data).map === 'home', 'save persists map');
   expect(errors.length === 0, 'no console errors (' + errors.length + ')');
   console.log('playTime', G.state.playTime, 'steps', G.state.steps);
 })().catch((e) => { console.log('CRASH', e && e.stack); process.exitCode = 1; });

@@ -86,3 +86,11 @@ Display name: `mon.nick || G.DATA.mons[mon.id].name`.
 
 ### Screen conventions
 Screen 160×144. The textbox is at y=96 with h=48 and holds 2 lines of 18 chars (use `G.say`). Use `G.menu` for menus. Font cells are 8×8. Overworld tiles are 16×16, giving 10×9 visible with the player centred at (64,64)-ish. Color 0 is the lightest and 3 the darkest. Draw everything in palette indices only, so palette swapping works.
+
+### Saving (autosave)
+Progress saves on its own; the SAVE menu item still works but is never required.
+- **When:** the world writes at *safe points* only (overworld on top, no script, warp or battle running): when control returns after a battle, cutscene, menu, shop, heal or warp; right before any script starts (so a story beat never saves half-done); every ~2 s while exploring if anything changed; and on `visibilitychange` (hidden), `pagehide`, `freeze` and `beforeunload`. Mid-battle or mid-cutscene the last safe snapshot on disk is kept. `playTime` alone never triggers a write.
+- **API (core.js):** `G.autosave(force)` writes if progress changed (or always with `force`); `G.saveGame()`, `G.loadGame()`, `G.hasSave()` keep their meaning. `G.World.safe()` says whether now is a safe point. Modules should not call `localStorage` for game state directly.
+- **Format 2:** `wildlight_save` holds `{fmt:2, at, sum, data}` where `data` is the JSON state and `sum` its FNV-1a checksum. Each write is read back; the previous good save moves to `wildlight_save_bak`. A save with a bad checksum or shape is ignored and the backup is used. Format 1 (`wildlight_save_v1`, a bare state) is loaded and migrated on the next write.
+- **Safety:** every storage call is guarded, so private mode or a full disk never crashes the game (saving just returns false). Starting a NEW GAME over a save moves the old journey to `wildlight_save_archive`; `G.restoreArchive()` brings it back.
+- **Test:** `node dev/sim_autosave.js`. Bump `VERSION` in `sw.js` whenever a cached file changes.

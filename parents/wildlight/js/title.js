@@ -70,8 +70,9 @@
 
   // ---------- New game intro ----------
   function newGame() {
-    const go = () => G.fade(() => { G.clearScenes(); G.state = G.newState(); intro(); });
-    if (G.hasSave()) G.say('A saved journey already exists. Start over? It will be erased when you save.', { choices: ['YES', 'NO'], onChoice: (i) => { if (i === 0) go(); } });
+    // Autosave writes as soon as the new journey reaches a safe point, so the old one is archived first.
+    const go = () => G.fade(() => { G.clearScenes(); if (G.archiveSave) G.archiveSave(); G.state = G.newState(); intro(); });
+    if (G.hasSave()) G.say('A saved journey already exists. Start over? The old journey will be replaced.', { choices: ['YES', 'NO'], onChoice: (i) => { if (i === 0) go(); } });
     else go();
   }
   function intro() {
