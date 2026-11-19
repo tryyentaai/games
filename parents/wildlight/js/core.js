@@ -308,10 +308,77 @@
       flags: {}, playTime: 0, lastHeal: null };
   };
   G.state = G.newState();
-  const SAVE_KEY = 'wildlight_save_v1';
-  G.hasSave = function () { try { return !!localStorage.getItem(SAVE_KEY); } catch (e) { return false; } };
-  G.saveGame = function () { try { localStorage.setItem(SAVE_KEY, JSON.stringify(G.state)); return true; } catch (e) { return false; } };
-  G.loadGame = function () { try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); if (s) { G.state = Object.assign(G.newState(), s); return true; } } catch (e) {} return false; };
+  // Save format 2: an envelope { fmt, at, sum, state } in SAVE_KEY, with the previous good save kept in BAK_KEY.
+  // A save that fails its checksum or shape check is ignored and the backup is used instead. Format 1 (a bare
+  // state object under LEGACY_KEY) is read once and migrated. Every storage call is guarded: if localStorage is
+  // missing, blocked (private mode) or full, the game keeps running and saving just reports false.
+  const SAVE_FMT = 2;
+  const SAVE_KEY = 'wildlight_save', BAK_KEY = 'wildlight_save_bak', LEGACY_KEY = 'wildlight_save_v1', ARCHIVE_KEY = 'wildlight_save_archive';
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } },
+    del(k) { try { localStorage.removeItem(k); } catch (e) {} },
+  };
+  function checksum(str) { let h = 0x811c9dc5; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(16); }
+  function isObj(o) { return !!o && typeof o === 'object' && !Array.isArray(o); }
+  // Accepts a raw state object, returns a clean one with every field present, or null if it is not usable.
+  function sanitize(s) {
+    if (!isObj(s) || !Array.isArray(s.party) || typeof s.map !== 'string') return null;
+    const base = G.newState(), out = Object.assign(base, s);
+    for (const k of ['player', 'rival', 'bag', 'flags']) if (!isObj(out[k])) out[k] = G.newState()[k];
+    if (!Array.isArray(out.box)) out.box = [];
+    if (!Array.isArray(out.badges)) out.badges = [];
+    if (!isObj(out.dex)) out.dex = { seen: {}, caught: {} };
+    if (!isObj(out.dex.seen)) out.dex.seen = {};
+    if (!isObj(out.dex.caught)) out.dex.caught = {};
+    if (typeof out.money !== 'number' || !isFinite(out.money)) out.money = 3000;
+    if (typeof out.playTime !== 'number' || !isFinite(out.playTime)) out.playTime = 0;
+    out.party = out.party.filter((m) => isObj(m) && typeof m.id === 'string');
+    out.box = out.box.filter((m) => isObj(m) && typeof m.id === 'string');
+    out.v = 1;
+    return out;
+  }
+  function readSlot(k) {
+    const raw = store.get(k); if (!raw) return null;
+    try {
+      const env = JSON.parse(raw);
+      if (!isObj(env) || env.fmt !== SAVE_FMT || typeof env.data !== 'string' || checksum(env.data) !== env.sum) return null;
+      return sanitize(JSON.parse(env.data));
+    } catch (e) { return null; }
+  }
+  function readLegacy() { const raw = store.get(LEGACY_KEY); if (!raw) return null; try { return sanitize(JSON.parse(raw)); } catch (e) { return null; } }
+  function readBest() { return readSlot(SAVE_KEY) || readSlot(BAK_KEY) || readLegacy(); }
+  // The part of the state that counts as progress: playTime ticks every second and is left out so it alone never triggers a write.
+  function progressKey(st) { const t = st.playTime; st.playTime = 0; try { return JSON.stringify(st); } finally { st.playTime = t; } }
+  let lastKey = null;
+  G.lastSaveAt = 0;
+  G.hasSave = function () { return !!readBest(); };
+  G.saveGame = function () {
+    let data; try { data = JSON.stringify(G.state); } catch (e) { return false; }
+    const env = JSON.stringify({ fmt: SAVE_FMT, at: new Date().toISOString(), sum: checksum(data), data });
+    const prev = store.get(SAVE_KEY);
+    let ok = store.set(SAVE_KEY, env);
+    if (!ok) { store.del(BAK_KEY); store.del(ARCHIVE_KEY); ok = store.set(SAVE_KEY, env); } // storage full: free our own extra slots and retry
+    if (!ok) return false;
+    if (readSlot(SAVE_KEY) == null) { if (prev) store.set(SAVE_KEY, prev); return false; } // read back; never leave a bad main slot
+    if (prev && prev !== env) { try { const p = JSON.parse(prev); if (p && p.fmt === SAVE_FMT && checksum(p.data) === p.sum) store.set(BAK_KEY, prev); } catch (e) {} }
+    store.del(LEGACY_KEY);
+    lastKey = progressKey(G.state); G.lastSaveAt = Date.now();
+    return true;
+  };
+  G.loadGame = function () { const s = readBest(); if (!s) return false; G.state = s; lastKey = progressKey(s); return true; };
+  // Autosave: writes only when progress changed since the last write (or when forced, e.g. the app is being hidden).
+  // Callers decide when the state is consistent; the world calls this at safe points only.
+  G.autosave = function (force) {
+    if (!G.state || !Array.isArray(G.state.party)) return false;
+    if (!force && progressKey(G.state) === lastKey) return false;
+    const ok = G.saveGame();
+    if (ok && G.onAutosave) G.onAutosave();
+    return ok;
+  };
+  // Starting over: keep the old journey in an archive slot (one deep) so a mistaken NEW GAME can be recovered by hand.
+  G.archiveSave = function () { const raw = store.get(SAVE_KEY); if (raw) store.set(ARCHIVE_KEY, raw); store.del(SAVE_KEY); store.del(BAK_KEY); store.del(LEGACY_KEY); lastKey = null; };
+  G.restoreArchive = function () { const raw = store.get(ARCHIVE_KEY); if (!raw) return false; const p = store.get(SAVE_KEY); if (!store.set(SAVE_KEY, raw)) return false; if (p) store.set(BAK_KEY, p); return G.loadGame(); };
   G.dexSee = (id) => { G.state.dex.seen[id] = 1; };
   G.dexCatch = (id) => { G.state.dex.seen[id] = 1; G.state.dex.caught[id] = 1; };
   G.flag = (k, v) => { if (v === undefined) return !!G.state.flags[k]; G.state.flags[k] = v; };

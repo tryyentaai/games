@@ -1,5 +1,5 @@
 // Wildlight offline cache. Bump VERSION on every change.
-const VERSION = '1';
+const VERSION = '2';
 const CACHE = 'wl-' + VERSION;
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png', './icon-512-maskable.png', './js/core.js', './js/audio.js', './js/sprites_world.js', './js/sprites_mons.js', './js/data.js', './js/menus.js', './js/battle.js', './js/world.js', './js/dex.js', './js/title.js'];
 

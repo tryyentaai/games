@@ -854,7 +854,7 @@
   // =====================================================================
   // SCRIPT HELPERS (promise based)
   // =====================================================================
-  function cut(fn) { busy++; return Promise.resolve().then(fn).catch((e) => console.error('[world script]', e)).finally(() => { busy--; }); }
+  function cut(fn) { if (isSafe()) G.autosave(); busy++; return Promise.resolve().then(fn).catch((e) => console.error('[world script]', e)).finally(() => { busy--; }); }
   function say(t, o) { return new Promise((r) => { G.say(typeof t === 'function' ? t() : t, Object.assign({}, o || {}, { onDone: r })); }); }
   function ask(t, choices) { return say(t, { choices: choices || ['YES', 'NO'] }); }
   function wait(n) { return new Promise((r) => tasks.push({ t: n, f: r })); }
@@ -1322,7 +1322,7 @@
     add('BAG', () => { if (G.Menus && G.Menus.bag) G.Menus.bag({ mode: 'field' }); else cut(() => say('Your bag: ' + (Object.keys(G.state.bag).map((k) => itemName(k) + ' x' + G.state.bag[k]).join(', ') || 'empty'))); });
     add(pname().slice(0, 7), () => openCard());
     add('SAVE', (sc) => cut(async () => {
-      const i = await ask('Would you like to save your progress?');
+      const i = await ask('Your journey saves on its own. Save right now too?');
       if (i === 0) { const ok = G.saveGame(); sfx('save'); await say(ok ? '{PLAYER} saved the game!' : 'Hmm... the save failed. Is storage full?'); G.pop(sc); }
     }));
     add('OPTIONS', () => World.openOptions());
@@ -1542,6 +1542,7 @@
       const w = popup.text.length * 8 + 16, yOff = popup.t < 12 ? (popup.t - 12) * 2 : popup.t > 98 ? (98 - popup.t) * 2 : 0;
       G.box(0, yOff, w, 24); G.text(popup.text, 8, yOff + 8);
     }
+    drawSaveIcon();
   }
   function tick() {
     // tasks (timers & tickers)
@@ -1591,11 +1592,37 @@
   }
   function update() {
     if (resumeQ.length) { const f = resumeQ.shift(); f(); return; }
+    autosaveTick();
     tick();
     for (const e of ents) updNPC(e);
     if (followerOn()) { if (F.moving) advance(F); }
     updPlayer();
   }
+
+  // =====================================================================
+  // AUTOSAVE
+  // A "safe point" is when the overworld is on top and no script, warp or battle is running, so G.state is
+  // consistent. Progress is written when the game comes back to a safe point (after a battle, cutscene, menu,
+  // shop, heal or warp), right before any script starts, every couple of seconds while exploring, and when the
+  // app is hidden or closed. Mid-battle or mid-cutscene the last safe snapshot on disk is kept as is.
+  // =====================================================================
+  let wasSafe = false, safeT = 0, saveIconT = 0, lastTick = -1;
+  function isSafe() { return World.active() && G.top() === worldScene && busy === 0 && !resumeQ.length; }
+  function autosaveTick() {
+    if (saveIconT > 0) saveIconT--;
+    // update() only runs while the world is the top scene, so a gap in frames means a menu, dialog or battle was on top.
+    if (lastTick >= 0 && G.frame - lastTick > 1) wasSafe = false;
+    lastTick = G.frame;
+    if (!isSafe()) { wasSafe = false; return; }
+    if (!wasSafe) { wasSafe = true; safeT = 0; if (G.autosave()) saveIconT = 50; return; }
+    if (++safeT >= 120) { safeT = 0; G.autosave(); }
+  }
+  function drawSaveIcon() {
+    if (saveIconT <= 0 || (saveIconT < 12 && (saveIconT & 2))) return;
+    const x = 146, y = 4; // small disk glyph, palette indices only
+    G.rect(x, y, 10, 10, 3); G.rect(x + 2, y + 1, 6, 3, 0); G.rect(x + 6, y + 1, 1, 2, 3); G.rect(x + 2, y + 6, 6, 3, 1);
+  }
+  World.safe = isSafe;
 
   function makeScene() {
     return { opaque: true, world: true, update, draw: drawWorld };
@@ -1613,6 +1640,7 @@
     st.flags = st.flags || {}; st.bag = st.bag || {}; st.party = st.party || []; st.badges = st.badges || [];
     st.dex = st.dex || { seen: {}, caught: {} }; st.money = st.money == null ? 3000 : st.money; st.playTime = st.playTime || 0;
     worldScene = makeScene();
+    wasSafe = false; safeT = 0; saveIconT = 0; lastTick = -1;
     G.push(worldScene);
     if (o.newGame) {
       map = null;
@@ -1627,6 +1655,13 @@
     }
     if (!started) {
       started = true;
+      // Leaving the app (home button, tab switch, lock screen, close): write now if the state is consistent.
+      const flush = () => { if (isSafe()) G.autosave(true); };
+      if (typeof document !== 'undefined' && document.addEventListener) {
+        document.addEventListener('visibilitychange', () => { if (document.hidden) flush(); });
+        document.addEventListener('freeze', flush);
+      }
+      if (typeof addEventListener === 'function') { addEventListener('pagehide', flush); addEventListener('beforeunload', flush); }
       setInterval(() => { if (World.active() && !(typeof document !== 'undefined' && document.hidden)) G.state.playTime = (G.state.playTime || 0) + 1; }, 1000);
     }
   };
