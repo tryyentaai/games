@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:;">
+<title>Passport to Paris — a rolling tour with Henri the Horse</title>
+<style>
+  :root{
+    --ink:#2b2350; --paper:#fff8ee; --cream:#fff3d9;
+    --blue:#2e6fd8; --blue-dark:#1d4fa3; --red:#e0455a; --red-dark:#b92c40;
+    --gold:#ffc94d; --pink:#ff8fab; --teal:#2bb3a3; --good:#2f9e63;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;}
+  body{
+    font-family:"Avenir Next Rounded","Trebuchet MS","Comic Sans MS",ui-rounded,system-ui,sans-serif;
+    background:#8ec9ee; color:var(--ink);
+    user-select:none; -webkit-user-select:none; touch-action:none;
+  }
+  #wrap{position:fixed; inset:0; overflow:hidden; background:linear-gradient(180deg,#7ec3f2 0%,#a8d8f8 46%,#cfeeff 60%,#ffe9c9 100%);}
+  canvas#cv{position:absolute; inset:0; display:block;}
+
+  /* ---------- HUD ---------- */
+  #hud{position:absolute; left:0; right:0; top:0; padding:calc(8px + env(safe-area-inset-top)) 10px 0; pointer-events:none; z-index:5;}
+  #passport{
+    display:flex; gap:6px; justify-content:center; align-items:flex-start;
+    max-width:640px; margin:0 auto;
+  }
+  .stamp-slot{
+    flex:1 1 0; max-width:104px; text-align:center;
+  }
+  .stamp-circle{
+    width:clamp(40px,11vw,58px); height:clamp(40px,11vw,58px); margin:0 auto;
+    border-radius:50%; border:3px dashed rgba(43,35,80,.45);
+    background:rgba(255,248,238,.55);
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .2s;
+  }
+  .stamp-circle svg{width:72%; height:72%; opacity:.28; filter:grayscale(1);}
+  .stamp-slot .stamp-name{font-size:clamp(9px,2.6vw,12px); font-weight:800; letter-spacing:.4px; margin-top:2px; color:var(--ink); text-shadow:0 1px 0 rgba(255,255,255,.7);}
+  .stamp-slot.got .stamp-circle{
+    border:3px solid var(--red); background:var(--paper);
+    transform:rotate(-8deg);
+    box-shadow:0 3px 0 rgba(185,44,64,.35), inset 0 0 0 3px rgba(224,69,90,.25);
+  }
+  .stamp-slot.got .stamp-circle svg{opacity:1; filter:none;}
+  .stamp-slot.pop .stamp-circle{animation:stamppop .55s ease-out;}
+  @keyframes stamppop{0%{transform:scale(2.4) rotate(14deg); opacity:0;}55%{transform:scale(.92) rotate(-12deg); opacity:1;}100%{transform:scale(1) rotate(-8deg);}}
+  #scorebar{
+    display:flex; justify-content:center; gap:10px; margin-top:6px; flex-wrap:wrap;
+  }
+  .pill{
+    background:rgba(255,248,238,.92); border:2px solid #fff; border-radius:999px;
+    padding:4px 14px; font-weight:800; font-size:clamp(14px,4vw,18px);
+    box-shadow:0 3px 8px rgba(43,35,80,.18);
+  }
+  .pill .lbl{opacity:.65; font-size:.78em; font-weight:700;}
+  #legname{color:var(--blue-dark);}
+
+  /* ---------- Buttons ---------- */
+  .icon-btn{
+    pointer-events:auto; position:absolute; top:calc(8px + env(safe-area-inset-top)); z-index:8;
+    width:48px; height:48px; border-radius:50%; border:3px solid #fff; cursor:pointer;
+    background:rgba(255,248,238,.95); box-shadow:0 4px 10px rgba(43,35,80,.25);
+    font-size:22px; line-height:1; display:flex; align-items:center; justify-content:center; color:var(--ink);
+  }
+  .icon-btn:active{transform:scale(.93);}
+  #btn-sound{right:10px;}
+  #btn-pause{right:66px;}
+  .big-btn{
+    display:inline-block; border:none; cursor:pointer; border-radius:20px;
+    background:var(--red); color:#fff; font-family:inherit; font-weight:800;
+    font-size:clamp(22px,6vw,28px); padding:16px 38px;
+    box-shadow:0 7px 0 var(--red-dark); transition:transform .08s, box-shadow .08s;
+  }
+  .big-btn:active{transform:translateY(5px); box-shadow:0 2px 0 var(--red-dark);}
+  .big-btn.blue{background:var(--blue); box-shadow:0 7px 0 var(--blue-dark);}
+  .big-btn.blue:active{box-shadow:0 2px 0 var(--blue-dark);}
+
+  /* ---------- Overlays ---------- */
+  .overlay{
+    position:absolute; inset:0; z-index:10; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center;
+    padding:calc(14px + env(safe-area-inset-top)) 18px calc(14px + env(safe-area-inset-bottom));
+  }
+  .overlay.hidden{display:none;}
+  .sheet{
+    background:var(--paper); border-radius:28px; border:4px solid #fff;
+    box-shadow:0 18px 50px rgba(43,35,80,.35);
+    padding:clamp(16px,4vw,30px); max-width:520px; width:100%;
+    max-height:100%; overflow-y:auto;
+  }
+  h1.title{
+    font-size:clamp(38px,10.5vw,58px); margin:2px 0 0; line-height:1.04; color:var(--blue-dark);
+    text-shadow:0 3px 0 #fff, 0 6px 16px rgba(29,79,163,.25); letter-spacing:.5px;
+  }
+  h1.title .fr{color:var(--red);}
+  .tagline{font-size:clamp(16px,4.6vw,20px); font-weight:700; margin:8px 0 0; opacity:.85;}
+  .henri-big{width:clamp(150px,42vw,230px); height:auto; margin:6px auto 0; display:block; animation:bob 2.6s ease-in-out infinite;}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-1deg);}50%{transform:translateY(-8px) rotate(1.2deg);}}
+  .howto{
+    display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:14px 0 18px;
+  }
+  .howto .step{
+    background:#fff; border-radius:14px; padding:8px 12px; font-weight:700;
+    font-size:clamp(13px,3.8vw,15.5px); box-shadow:0 3px 8px rgba(43,35,80,.12); max-width:200px;
+  }
+  .howto .step b{color:var(--red-dark);}
+
+  /* Henri speech bubble */
+  #bubble{
+    position:absolute; z-index:9; left:50%; transform:translateX(-50%) scale(.6);
+    bottom:calc(120px + env(safe-area-inset-bottom));
+    display:flex; align-items:flex-end; gap:8px; max-width:min(92vw,430px);
+    opacity:0; pointer-events:none; transition:opacity .18s, transform .18s;
+  }
+  #bubble.show{opacity:1; transform:translateX(-50%) scale(1);}
+  #bubble .henri-mini{width:64px; height:64px; flex:0 0 auto; filter:drop-shadow(0 4px 6px rgba(43,35,80,.3));}
+  #bubble .bubble-text{
+    background:#fff; border:3px solid var(--ink); border-radius:18px; border-bottom-left-radius:4px;
+    padding:10px 14px; font-weight:800; font-size:clamp(16px,4.6vw,20px); line-height:1.25;
+    box-shadow:0 6px 16px rgba(43,35,80,.25); text-align:left;
+  }
+  #bubble .bubble-text .fr-word{color:var(--red);}
+
+  /* Big centre stamp toast */
+  #stamp-toast{
+    position:absolute; inset:0; z-index:7; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; pointer-events:none; opacity:0;
+  }
+  #stamp-toast.show{animation:toastin 2s ease-out forwards;}
+  @keyframes toastin{0%{opacity:0;}12%{opacity:1;}80%{opacity:1;}100%{opacity:0;}}
+  #stamp-toast .big-stamp{
+    width:clamp(120px,34vw,170px); height:clamp(120px,34vw,170px); border-radius:50%;
+    border:6px solid var(--red); background:rgba(255,248,238,.95);
+    display:flex; align-items:center; justify-content:center;
+    transform:rotate(-10deg); box-shadow:0 14px 34px rgba(43,35,80,.35), inset 0 0 0 5px rgba(224,69,90,.3);
+  }
+  #stamp-toast.show .big-stamp{animation:slam .45s ease-out;}
+  @keyframes slam{0%{transform:scale(2.6) rotate(16deg);}60%{transform:scale(.94) rotate(-13deg);}100%{transform:scale(1) rotate(-10deg);}}
+  #stamp-toast .big-stamp svg{width:74%; height:74%;}
+  #stamp-toast .stamp-word{
+    margin-top:14px; font-size:clamp(24px,7vw,36px); font-weight:900; color:#fff;
+    text-shadow:0 3px 0 var(--red-dark), 0 6px 18px rgba(43,35,80,.5); letter-spacing:1px;
+  }
+
+  /* Leg banner */
+  #leg-banner{
+    position:absolute; left:0; right:0; top:24%; z-index:6; text-align:center; pointer-events:none; opacity:0;
+  }
+  #leg-banner.show{animation:bannerin 2.4s ease-out forwards;}
+  @keyframes bannerin{0%{opacity:0; transform:translateY(16px) scale(.94);}14%{opacity:1; transform:none;}82%{opacity:1;}100%{opacity:0;}}
+  #leg-banner .leg-kicker{font-size:clamp(14px,4vw,18px); font-weight:900; letter-spacing:4px; color:#fff; text-shadow:0 2px 8px rgba(29,79,163,.8);}
+  #leg-banner .leg-title{font-size:clamp(30px,9vw,48px); font-weight:900; color:#fff; text-shadow:0 3px 0 var(--blue-dark), 0 8px 22px rgba(43,35,80,.55);}
+
+  /* Catch overlay */
+  #catch{ z-index:11; background:rgba(43,35,80,.25); }
+  #catch .sheet{max-width:400px;}
+  #catch .henri-big{width:clamp(120px,34vw,170px);}
+  #catch h2{margin:6px 0 2px; font-size:clamp(24px,7vw,32px); color:var(--blue-dark);}
+  #catch p{margin:4px 0 2px; font-weight:700; font-size:clamp(15px,4.4vw,18px);}
+
+  /* Finish passport page */
+  #finish .sheet{
+    background:linear-gradient(180deg,#27407c 0%,#1d3263 100%); color:#fff;
+    border:4px solid var(--gold); max-width:540px;
+  }
+  #finish h2{margin:0; font-size:clamp(28px,8vw,40px); color:var(--gold); letter-spacing:1px;}
+  #finish .sub{font-weight:700; opacity:.9; margin:6px 0 0; font-size:clamp(15px,4.4vw,18px);}
+  #finish-stamps{display:flex; gap:8px; justify-content:center; margin:18px 0 8px; flex-wrap:wrap;}
+  #finish-stamps .f-stamp{
+    width:clamp(56px,15vw,76px); height:clamp(56px,15vw,76px); border-radius:50%;
+    border:4px solid var(--gold); background:var(--paper);
+    display:flex; align-items:center; justify-content:center; transform:rotate(-8deg);
+    box-shadow:inset 0 0 0 3px rgba(224,69,90,.35);
+  }
+  #finish-stamps .f-stamp svg{width:72%; height:72%;}
+  .f-name{font-size:clamp(9px,2.6vw,11px); font-weight:800; text-align:center; margin-top:3px; color:#ffe9a8;}
+  #finish .stats{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:12px 0 18px;}
+  #finish .stats .pill{background:rgba(255,255,255,.14); border-color:rgba(255,255,255,.35); color:#fff; box-shadow:none;}
+  #finish .henri-big{width:clamp(110px,30vw,150px);}
+
+  #floaters{position:absolute; inset:0; z-index:6; pointer-events:none; overflow:hidden;}
+  .floater{
+    position:absolute; font-weight:900; font-size:26px; color:var(--gold);
+    text-shadow:0 2px 0 var(--red-dark), 0 4px 10px rgba(43,35,80,.5);
+    animation:floatup 0.9s ease-out forwards;
+  }
+  @keyframes floatup{0%{opacity:0; transform:translateY(6px) scale(.7);}18%{opacity:1;}100%{opacity:0; transform:translateY(-64px) scale(1.15);}}
+
+  #hint{
+    position:absolute; left:0; right:0; bottom:calc(14px + env(safe-area-inset-bottom)); z-index:5;
+    text-align:center; pointer-events:none; font-weight:800; font-size:clamp(14px,4.2vw,17px);
+    color:#fff; text-shadow:0 2px 6px rgba(29,79,163,.75); opacity:0; transition:opacity .4s;
+  }
+  #hint.show{opacity:.95;}
+  @media (max-width:560px){
+    #passport{padding-right:116px;}
+    .stamp-slot .stamp-name{font-size:8.5px;}
+  }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="cv"></canvas>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div id="passport" aria-label="Passport stamps"></div>
+    <div id="scorebar">
+      <span class="pill"><span class="lbl">TREATS</span> <span id="treat-count">0</span> 🥐</span>
+      <span class="pill"><span class="lbl">SCORE</span> <span id="score">0</span></span>
+      <span class="pill" id="legname">Café Street</span>
+    </div>
+  </div>
+  <button class="icon-btn" id="btn-pause" aria-label="Pause">⏸</button>
+  <button class="icon-btn" id="btn-sound" aria-label="Sound on or off">🔊</button>
+
+  <div id="leg-banner"><div class="leg-kicker" id="leg-kicker">LEG 1</div><div class="leg-title" id="leg-title">Café Street</div></div>
+
+  <div id="stamp-toast"><div class="big-stamp" id="toast-stamp-icon"></div><div class="stamp-word" id="toast-stamp-word">STAMPED!</div></div>
+
+  <div id="bubble"><span class="henri-mini" id="bubble-henri"></span><div class="bubble-text" id="bubble-text"></div></div>
+
+  <div id="floaters"></div>
+  <div id="hint">Drag left and right to steer!</div>
+
+  <!-- START -->
+  <div class="overlay" id="start-screen">
+    <div class="sheet">
+      <div id="henri-start"></div>
+      <h1 class="title">Passport<br>to <span class="fr">Paris!</span></h1>
+      <p class="tagline">Bonjour! I'm <b>Henri the Horse</b> — your Paris guide!<br>Roll your ball all over Paris and fill your passport with stamps!</p>
+      <div class="howto">
+        <div class="step">👆 <b>Drag</b> or use <b>← →</b> keys to steer</div>
+        <div class="step">🥐 Grab <b>croissants</b> &amp; <b>baguettes</b></div>
+        <div class="step">🕳️ Steer <b>around the holes</b> — I'll catch you if you fall!</div>
+      </div>
+      <button class="big-btn" id="btn-play">▶ &nbsp;Start Rolling!</button>
+    </div>
+  </div>
+
+  <!-- CATCH -->
+  <div class="overlay hidden" id="catch">
+    <div class="sheet">
+      <div id="henri-catch"></div>
+      <h2 id="catch-title">I got you!</h2>
+      <p id="catch-msg">Henri caught you in his cozy hay net. Back to the last stamp!</p>
+    </div>
+  </div>
+
+  <!-- FINISH -->
+  <div class="overlay hidden" id="finish">
+    <div class="sheet">
+      <h2>🗼 PASSPORT COMPLETE! 🗼</h2>
+      <p class="sub">You rolled all the way to the Eiffel Tower!</p>
+      <div id="henri-finish"></div>
+      <div id="finish-stamps"></div>
+      <div class="stats">
+        <span class="pill">🥐 Treats: <span id="final-treats">0</span></span>
+        <span class="pill">⭐ Score: <span id="final-score">0</span></span>
+        <span class="pill">⏱️ Time: <span id="final-time">0:00</span></span>
+      </div>
+      <button class="big-btn" id="btn-again">↻ &nbsp;Tour Paris Again!</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ================================================================
+   PASSPORT TO PARIS — a Going-Balls-style roller for kids.
+   Pseudo-3D canvas road renderer. Fully self-contained, on-device.
+   Mascot: Henri the Horse. No fail state: Henri catches you.
+   ================================================================ */
+
+/* ---------------- Henri the Horse (inline SVG) ---------------- */
+function henriSVG(){
+  return '' +
+  '<svg viewBox="0 0 240 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Henri the Horse">' +
+    /* ears */
+    '<path d="M78 58 L66 14 Q64 4 74 8 L102 26 Q108 31 102 40 L92 56 Z" fill="#a06a38" stroke="#7c4f24" stroke-width="5" stroke-linejoin="round"/>' +
+    '<path d="M162 58 L174 14 Q176 4 166 8 L138 26 Q132 31 138 40 L148 56 Z" fill="#a06a38" stroke="#7c4f24" stroke-width="5" stroke-linejoin="round"/>' +
+    '<path d="M79 44 L74 22 L92 34 Z" fill="#e8a0b4"/>' +
+    '<path d="M161 44 L166 22 L148 34 Z" fill="#e8a0b4"/>' +
+    /* head */
+    '<path d="M120 30 C 74 30 62 66 66 104 C 69 134 78 152 82 176 C 86 204 96 224 120 224 C 144 224 154 204 158 176 C 162 152 171 134 174 104 C 178 66 166 30 120 30 Z" fill="#b57e46" stroke="#7c4f24" stroke-width="5"/>' +
+    /* muzzle */
+    '<path d="M88 168 C 88 146 100 138 120 138 C 140 138 152 146 152 168 C 152 198 140 218 120 218 C 100 218 88 198 88 168 Z" fill="#eecfa5"/>' +
+    '<ellipse cx="103" cy="182" rx="6.5" ry="9" fill="#8a5a2b"/>' +
+    '<ellipse cx="137" cy="182" rx="6.5" ry="9" fill="#8a5a2b"/>' +
+    '<path d="M104 202 Q120 212 136 202" stroke="#8a5a2b" stroke-width="5" fill="none" stroke-linecap="round"/>' +
+    /* cheek blush */
+    '<ellipse cx="80" cy="140" rx="10" ry="7" fill="#f2a0a0" opacity=".65"/>' +
+    '<ellipse cx="160" cy="140" rx="10" ry="7" fill="#f2a0a0" opacity=".65"/>' +
+    /* eyes */
+    '<ellipse cx="94" cy="104" rx="10" ry="13" fill="#2b2350"/>' +
+    '<ellipse cx="146" cy="104" rx="10" ry="13" fill="#2b2350"/>' +
+    '<circle cx="97.5" cy="99" r="4" fill="#fff"/>' +
+    '<circle cx="149.5" cy="99" r="4" fill="#fff"/>' +
+    '<circle cx="91" cy="110" r="2.2" fill="#fff" opacity=".8"/>' +
+    '<circle cx="143" cy="110" r="2.2" fill="#fff" opacity=".8"/>' +
+    /* forelock mane */
+    '<path d="M84 44 Q96 16 120 22 Q144 16 156 44 Q146 30 134 40 Q126 24 114 38 Q100 26 92 44 Q86 52 84 44 Z" fill="#6b4423"/>' +
+    /* beret */
+    '<g transform="rotate(-13 152 26)">' +
+      '<ellipse cx="152" cy="27" rx="47" ry="15" fill="#d43d4f" stroke="#a32436" stroke-width="4"/>' +
+      '<rect x="148" y="6" width="8" height="11" rx="4" fill="#a32436"/>' +
+    '</g>' +
+    /* scarf */
+    '<path d="M84 216 Q120 236 156 216 L160 234 Q120 254 80 234 Z" fill="#2e6fd8"/>' +
+    '<path d="M96 224 L100 240 M120 229 L120 246 M144 224 L140 240" stroke="#fff" stroke-width="5" stroke-linecap="round"/>' +
+  '</svg>';
+}
+
+/* ---------------- Landmark mini icons ---------------- */
+const ICONS = {
+  cafe:  '<svg viewBox="0 0 60 60"><path d="M12 24 h30 v12 a10 10 0 0 1 -10 10 h-10 a10 10 0 0 1 -10 -10 Z" fill="#b57e46"/><path d="M42 27 q10 2 0 12" fill="none" stroke="#b57e46" stroke-width="4"/><path d="M18 16 q3 -5 0 -9 M28 16 q3 -5 0 -9" stroke="#e0455a" stroke-width="3.4" fill="none" stroke-linecap="round"/><rect x="8" y="50" width="40" height="4" rx="2" fill="#7c4f24"/></svg>',
+  arc:   '<svg viewBox="0 0 60 60"><path d="M8 54 V20 a6 6 0 0 1 6 -6 h32 a6 6 0 0 1 6 6 v34 h-13 V34 a9 9 0 0 0 -18 0 v20 Z" fill="#d9c39a" stroke="#a68d5b" stroke-width="2.4"/><rect x="6" y="8" width="48" height="6" rx="2" fill="#a68d5b"/></svg>',
+  seine: '<svg viewBox="0 0 60 60"><path d="M4 40 q7 -7 14 0 t14 0 t14 0 t14 0" fill="none" stroke="#2e6fd8" stroke-width="4.4" stroke-linecap="round"/><path d="M4 50 q7 -7 14 0 t14 0 t14 0 t14 0" fill="none" stroke="#57a7e8" stroke-width="4.4" stroke-linecap="round"/><path d="M10 32 v-8 a20 12 0 0 1 40 0 v8" fill="none" stroke="#8a5a2b" stroke-width="4"/></svg>',
+  market:'<svg viewBox="0 0 60 60"><path d="M8 22 L16 10 h28 l8 12 q-4 5 -8 0 q-4 5 -8 0 q-4 5 -8 0 q-4 5 -8 0 q-4 5 -8 0 q-4 5 -4 0Z" fill="#e0455a"/><path d="M14 26 v22 M46 26 v22" stroke="#8a5a2b" stroke-width="4"/><rect x="18" y="36" width="9" height="8" rx="2" fill="#ffc94d"/><rect x="31" y="33" width="9" height="11" rx="2" fill="#7ac74f"/><circle cx="24" cy="30" r="4" fill="#e0455a"/><circle cx="37" cy="28" r="4" fill="#ff8fab"/></svg>',
+  eiffel:'<svg viewBox="0 0 60 60"><path d="M30 4 L40 34 L46 54 h-8 L34 40 h-8 L22 54 h-8 L20 34 Z" fill="#5b5680"/><path d="M17 44 h26 M21 32 h18" stroke="#5b5680" stroke-width="3"/><rect x="27" y="1" width="6" height="6" rx="2" fill="#ffc94d"/></svg>'
+};
+
+/* ---------------- Audio (WebAudio bleeps, no files) ---------------- */
+let AC = null, soundOn = true;
+function audioInit(){ if(!AC){ try{ AC = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ AC = null; } } if(AC && AC.state==='suspended') AC.resume(); }
+function tone(freq, dur, type, vol, delay, slideTo){
+  if(!AC || !soundOn) return;
+  const t0 = AC.currentTime + (delay||0);
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = type||'sine'; o.frequency.setValueAtTime(freq, t0);
+  if(slideTo) o.frequency.exponentialRampToValueAtTime(Math.max(30,slideTo), t0+dur);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(vol||0.14, t0+0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+  o.connect(g); g.connect(AC.destination); o.start(t0); o.stop(t0+dur+0.05);
+}
+const sfx = {
+  collect(){ tone(880,.09,'sine',.13); tone(1318,.13,'sine',.13,.07); },
+  baguette(){ tone(784,.09,'triangle',.15); tone(1046,.1,'triangle',.15,.06); tone(1568,.16,'triangle',.15,.12); },
+  bonk(){ tone(170,.18,'square',.10,0,70); },
+  stamp(){ tone(392,.1,'triangle',.16); tone(659,.12,'triangle',.16,.08); tone(988,.22,'triangle',.16,.16); tone(196,.16,'sine',.12,.02); },
+  catchIt(){ tone(300,.4,'sine',.14,0,920); },
+  fall(){ tone(700,.35,'sine',.10,0,160); },
+  fanfare(){ [523,659,784,1046,784,1046,1318].forEach((f,i)=>tone(f,.22,'triangle',.15,i*.13)); },
+  click(){ tone(660,.06,'sine',.1); }
+};
+/* ---------------- Canvas ---------------- */
+const wrap = document.getElementById('wrap');
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let W = 0, H = 0;
+function resize(){
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  W = wrap.clientWidth; H = wrap.clientHeight;
+  cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr);
+  cv.style.width = W+'px'; cv.style.height = H+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener('resize', resize);
+
+/* ---------------- Track construction ---------------- */
+const SEG = 200;                 // segment length (world units)
+const RUMBLE = 3;                // segments per colour band
+const DRAW = 26;                 // segments drawn ahead
+const CAM_H = 1080;              // camera height
+const FOV = 100;
+const CAM_DEPTH = 1/Math.tan((FOV/2)*Math.PI/180);
+const PLAYER_Z = CAM_H * CAM_DEPTH;
+const CENTRIFUGAL = 0.30;
+
+let segments = [];
+let curLeg = 0;
+let curWidth = 2400;
+let rngState = 1234567;
+function rnd(){ rngState = (rngState*1103515245 + 12345) & 0x7fffffff; return rngState/0x7fffffff; }
+function lastSeg(){ return segments[segments.length-1]; }
+function addSegment(curve, opts){
+  opts = opts || {};
+  const n = segments.length;
+  segments.push({
+    index: n, curve: curve || 0,
+    width: opts.width !== undefined ? opts.width : curWidth,
+    leg: curLeg,
+    color: Math.floor(n/RUMBLE)%2 ? 'dark' : 'light',
+    sprites: [], hole: opts.hole || 0,
+    landmark: opts.landmark || null,
+    river: !!opts.river, bridge: !!opts.bridge
+  });
+}
+function easeIn(a,b,p){ return a + (b-a)*p*p; }
+function easeInOut(a,b,p){ return a + (b-a)*(-Math.cos(p*Math.PI)/2 + .5); }
+function addRoad(enter, hold, leave, curve, opts){
+  opts = opts || {};
+  const w0 = curWidth, w1 = (opts.width !== undefined ? opts.width : curWidth);
+  const total = enter+hold+leave;
+  let done = 0;
+  for(let i=0;i<enter;i++,done++) addSegment(easeIn(0,curve,i/enter), {width: w0+(w1-w0)*(done/total)});
+  for(let i=0;i<hold;i++,done++)  addSegment(curve, {width: w0+(w1-w0)*(done/total)});
+  for(let i=0;i<leave;i++,done++) addSegment(easeInOut(curve,0,i/leave), {width: w0+(w1-w0)*(done/total)});
+  curWidth = w1;
+}
+function addHoleRun(len, side){
+  // striped warning segment first, then the hole
+  addSegment(lastSeg() ? lastSeg().curve : 0, {});
+  lastSeg().sprites.push({type:'warn', offset: side*0.55});
+  for(let i=0;i<len;i++) addSegment(0, {hole: side});
+}
+function findSegment(z){
+  let i = Math.floor(z/SEG) % segments.length;
+  if(i < 0) i = 0;
+  return segments[i];
+}
+
+/* Landmarks: segIndex filled in during build */
+const LANDMARKS = [
+  {id:'cafe',   name:'Café',           word:'Bonjour!',     seg:-1},
+  {id:'arc',    name:'Arc de Triomphe',word:'Magnifique!',  seg:-1},
+  {id:'seine',  name:'River Seine',    word:'Ooh là là!',   seg:-1},
+  {id:'market', name:'Market',         word:'Allez!',       seg:-1},
+  {id:'eiffel', name:'Eiffel Tower',   word:'Bravo!',       seg:-1}
+];
+const LEGS = [
+  {name:'Café Street',       kicker:'LEG 1', maxSpeed:2500, start:0},
+  {name:'River Seine Run',   kicker:'LEG 2', maxSpeed:2800, start:0},
+  {name:'Eiffel Tower Climb',kicker:'LEG 3', maxSpeed:3100, start:0}
+];
+
+function sprinkle(from, to){
+  // scenery + treats + obstacles between segment indices [from,to)
+  for(let i=from;i<to && i<segments.length;i++){
+    const s = segments[i], leg = s.leg;
+    if(s.hole) continue;
+    // scenery
+    if(rnd() < 0.55){
+      const side = rnd() < 0.5 ? -1 : 1;
+      let type;
+      if(leg===0) type = ['tree','lamp','building','cafeTable','flowers'][Math.floor(rnd()*5)];
+      else if(leg===1) type = s.river ? (rnd()<0.5?'lamp':'boat') : ['tree','lamp','flowers','building'][Math.floor(rnd()*4)];
+      else type = ['tree','lamp','flowers','fence'][Math.floor(rnd()*4)];
+      s.sprites.push({type:'scenery:'+type, offset: side*(1.55+rnd()*0.9), scenery:true});
+    }
+    // treat trails
+    if(i%14===5){
+      for(let k=0;k<4 && i+k<to;k++){
+        if(segments[i+k].hole) continue;
+        segments[i+k].sprites.push({type: rnd()<0.22 ? 'baguette' : 'croissant', offset: Math.sin((i+k)*0.35)*0.45, treat:true});
+      }
+    }
+    if(i%37===19) s.sprites.push({type:'baguette', offset: (rnd()<0.5?-0.55:0.55), treat:true});
+    // obstacles — gentle in leg 1, more later; never two on one segment
+    const density = leg===0 ? 0.05 : leg===1 ? 0.085 : 0.11;
+    if(i > from+8 && rnd() < density && !s.sprites.some(sp=>sp.obstacle)){
+      const types = leg===0 ? ['cone','flowerpot'] : ['cone','flowerpot','haybale'];
+      s.sprites.push({type: types[Math.floor(rnd()*types.length)], offset: (Math.floor(rnd()*3)-1)*0.52, obstacle:true});
+    }
+  }
+}
+
+let TRACK_LEN = 0, FINISH_Z = 0;
+function buildTrack(){
+  segments = []; curLeg = 0; curWidth = 2400; rngState = 1234567;
+
+  /* ----- LEG 1: Café Street (wide, gentle) ----- */
+  LEGS[0].start = 0;
+  addRoad(24, 24, 24, 0);
+  LANDMARKS[0].seg = 10; segments[10].landmark = 'cafe';
+  addRoad(26, 26, 26, 1);
+  addRoad(26, 26, 26, -1);
+  addRoad(30, 30, 30, 2);
+  addRoad(22, 22, 22, 0);
+  addRoad(26, 26, 26, -2);
+  addRoad(18, 18, 18, 0, {width: 2320});
+  LANDMARKS[1].seg = segments.length - 6;
+  segments[LANDMARKS[1].seg].landmark = 'arc';
+
+  /* ----- LEG 2: River Seine Run ----- */
+  curLeg = 1; LEGS[1].start = segments.length;
+  addRoad(22, 22, 22, 1, {width: 2250});
+  addRoad(28, 28, 28, -3);
+  addRoad(24, 24, 24, 0);
+  addHoleRun(4, -1);
+  addRoad(26, 26, 26, 3);
+  // Seine bridge stretch: river on both sides
+  const riverStart = segments.length;
+  addRoad(20, 30, 20, 0);
+  for(let i=riverStart;i<segments.length;i++){ segments[i].river = true; segments[i].bridge = true; }
+  LANDMARKS[2].seg = riverStart + 30; segments[LANDMARKS[2].seg].landmark = 'seine';
+  addRoad(28, 28, 28, -2);
+  addHoleRun(4, 1);
+  addRoad(26, 26, 26, 2);
+  addRoad(22, 22, 22, 0, {width: 2180});
+  LANDMARKS[3].seg = segments.length - 8;
+  segments[LANDMARKS[3].seg].landmark = 'market';
+  // market stalls scenery near the market landmark
+  for(let i=LANDMARKS[3].seg-14;i<LANDMARKS[3].seg+10 && i<segments.length;i++){
+    if(i>=0 && i%3===0) segments[i].sprites.push({type:'scenery:stall', offset: (i%6===0?-1.7:1.7), scenery:true});
+  }
+
+  /* ----- LEG 3: Eiffel Tower Climb ----- */
+  curLeg = 2; LEGS[2].start = segments.length;
+  addRoad(24, 24, 24, -2, {width: 2080});
+  addRoad(28, 28, 28, 4);
+  addHoleRun(4, 1);
+  addRoad(24, 24, 24, 0);
+  addRoad(28, 28, 28, -4);
+  addHoleRun(4, -1);
+  addRoad(26, 26, 26, 3);
+  addRoad(22, 22, 22, 0);
+  addHoleRun(5, 1);
+  addRoad(26, 26, 26, -3);
+  addRoad(20, 20, 20, 0, {width: 2000});
+  LANDMARKS[4].seg = segments.length - 4;
+  segments[LANDMARKS[4].seg].landmark = 'eiffel';
+
+  TRACK_LEN = segments.length * SEG;
+  FINISH_Z = (LANDMARKS[4].seg + 6) * SEG;
+
+  sprinkle(LEGS[0].start+16, LEGS[1].start-2);
+  sprinkle(LEGS[1].start+6, LEGS[2].start-2);
+  sprinkle(LEGS[2].start+6, segments.length-8);
+}
+
+/* ---------------- Game state ---------------- */
+let state = 'menu';            // menu | play | fall | catch | pause | finish
+let position = 0, playerX = 0, speed = 0;
+let steer = 0;                 // -1..1 from keys
+let dragSteer = 0;             // from pointer drag velocity
+let treats = 0, score = 0, runTime = 0;
+let stampsGot = {}, nextLandmark = 0;
+let checkpointZ = 0, checkpointLandmark = -1;
+let legIndex = 0, wobble = 0, bonkCooldown = 0, safeTimer = 0;
+let fallT = 0, catchT = 0, fallY = 0;
+let skyOffset = 0, ballSpin = 0;
+let hintShown = false;
+
+function legAt(z){ const s = findSegment(z + PLAYER_Z); return s ? s.leg : 0; }
+function legMaxSpeed(){ return LEGS[legIndex].maxSpeed; }
+
+function resetGame(){
+  position = 0; playerX = 0; speed = 0; steer = 0; dragSteer = 0;
+  treats = 0; score = 0; runTime = 0;
+  stampsGot = {}; nextLandmark = 0;
+  checkpointZ = 0; checkpointLandmark = -1;
+  legIndex = 0; wobble = 0; bonkCooldown = 0; safeTimer = 0;
+  update._lastLeg = undefined;
+  fallT = 0; catchT = 0; fallY = 0; ballSpin = 0;
+  // restore collected treats
+  for(const s of segments) for(const sp of s.sprites){ if(sp.treat) sp.gone = false; if(sp.obstacle) sp.hitAt = -9; }
+  buildPassportUI();
+  updateHUD();
+  document.getElementById('legname').textContent = LEGS[0].name;
+}
+/* ---------------- Projection & rendering ---------------- */
+function project(p, camX, camY, camZ, w, h){
+  const cz = Math.max(1, p.world.z - camZ);
+  p.scale = CAM_DEPTH / cz;
+  p.sx = (w/2) + (p.scale * (p.world.x - camX) * w/2);
+  p.sy = (h*0.46) - (p.scale * (p.world.y - camY) * h/2);
+  p.sw = p.scale * p.world.w * w/2;
+}
+function poly(x1,y1,x2,y2,x3,y3,x4,y4,color){
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.lineTo(x3,y3); ctx.lineTo(x4,y4);
+  ctx.closePath(); ctx.fill();
+}
+
+const PAL = {
+  sky1:'#6fb6ef', sky2:'#bfe6ff',
+  grassL:'#8fd07a', grassD:'#7cc466',
+  riverL:'#4d9fd6', riverD:'#4393cc',
+  roadL:'#cbb9a6', roadD:'#c2ab94',
+  sideL:'#f3e3cd', sideD:'#ecd9bd',
+  line:'#fff6e6'
+};
+
+function drawSkyline(horizonY, eiffelScale){
+  // distant Paris rooftops, parallaxed by accumulated curve
+  const off = -((skyOffset % 260) + 260) % 260;
+  ctx.fillStyle = 'rgba(120,140,190,0.55)';
+  for(let x = off - 260; x < W + 260; x += 130){
+    const bw = 118, bh = 34 + ((Math.abs(Math.sin(x*12.9898))*38)|0);
+    ctx.fillRect(x, horizonY - bh, bw, bh);
+    ctx.beginPath();
+    ctx.moveTo(x-4, horizonY-bh); ctx.lineTo(x+bw/2, horizonY-bh-16); ctx.lineTo(x+bw+4, horizonY-bh);
+    ctx.closePath(); ctx.fill();
+  }
+  // the Eiffel Tower silhouette, growing as leg 3 progresses
+  if(eiffelScale > 0.02){
+    const ex = W*0.72 - skyOffset*0.35, base = horizonY + 2;
+    const th = 120*eiffelScale, tw = 74*eiffelScale;
+    ctx.fillStyle = 'rgba(70,66,110,0.75)';
+    ctx.beginPath();
+    ctx.moveTo(ex, base - th);
+    ctx.lineTo(ex + tw*0.16, base - th*0.42);
+    ctx.lineTo(ex + tw/2, base);
+    ctx.lineTo(ex + tw*0.28, base);
+    ctx.lineTo(ex + tw*0.09, base - th*0.30);
+    ctx.lineTo(ex - tw*0.09, base - th*0.30);
+    ctx.lineTo(ex - tw*0.28, base);
+    ctx.lineTo(ex - tw/2, base);
+    ctx.lineTo(ex - tw*0.16, base - th*0.42);
+    ctx.closePath(); ctx.fill();
+    ctx.fillRect(ex - tw*0.30, base - th*0.44, tw*0.60, th*0.045);
+    ctx.fillRect(ex - tw*0.20, base - th*0.68, tw*0.40, th*0.04);
+  }
+}
+
+function drawCroissant(x, y, s){
+  ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
+  ctx.fillStyle = '#e2a44f'; ctx.strokeStyle = '#b97c2c'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(0, 2, 15, Math.PI*0.15, Math.PI*0.85, false); ctx.arc(0, -6, 11, Math.PI*0.95, Math.PI*0.1, true); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(0,-1,7.5,9.5,0,0,Math.PI*2); ctx.fillStyle = '#f0bc66'; ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-4,-8) ; ctx.quadraticCurveTo(0,-4,4,-8); ctx.moveTo(-4.5,1); ctx.quadraticCurveTo(0,5,4.5,1); ctx.stroke();
+  ctx.restore();
+}
+function drawBaguette(x, y, s){
+  ctx.save(); ctx.translate(x,y); ctx.rotate(-0.5); ctx.scale(s,s);
+  ctx.fillStyle = '#e8b566'; ctx.strokeStyle = '#c08c3e'; ctx.lineWidth = 3;
+  roundRect(-7,-24,14,48,7); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = '#c08c3e'; ctx.lineWidth = 2.6;
+  for(const yy of [-14,-4,6,16]){ ctx.beginPath(); ctx.moveTo(-5,yy); ctx.lineTo(4,yy+5); ctx.stroke(); }
+  ctx.restore();
+}
+function roundRect(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+}
+
+function drawSpriteShape(type, x, y, s){
+  // x,y = ground anchor (bottom centre). s = scale (1 ≈ ball size)
+  ctx.save(); ctx.translate(x,y);
+  switch(type){
+    case 'croissant': ctx.restore(); drawCroissant(x, y - 16*s, s*0.95); ctx.save(); ctx.translate(x,y); break;
+    case 'baguette':  ctx.restore(); drawBaguette(x, y - 18*s, s*0.9); ctx.save(); ctx.translate(x,y); break;
+    case 'cone': {
+      ctx.fillStyle = '#f2703d'; ctx.strokeStyle = '#c24e22'; ctx.lineWidth = 2.4*s;
+      ctx.beginPath(); ctx.moveTo(0,-34*s); ctx.lineTo(13*s,0); ctx.lineTo(-13*s,0); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#fff'; ctx.fillRect(-7.5*s,-20*s,15*s,6*s);
+      ctx.fillStyle = '#c24e22'; ctx.fillRect(-16*s,-2.5*s,32*s,4.5*s);
+      break; }
+    case 'flowerpot': {
+      ctx.fillStyle = '#c96f4a'; ctx.strokeStyle = '#9c4f2e'; ctx.lineWidth = 2.2*s;
+      ctx.beginPath(); ctx.moveTo(-12*s,-16*s); ctx.lineTo(12*s,-16*s); ctx.lineTo(9*s,0); ctx.lineTo(-9*s,0); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#e0455a';
+      for(const dx of [-8,0,8]){ ctx.beginPath(); ctx.arc(dx*s,-22*s,5.4*s,0,Math.PI*2); ctx.fill(); }
+      ctx.fillStyle = '#3f9e4d';
+      for(const dx of [-5,5]){ ctx.beginPath(); ctx.ellipse(dx*s,-19*s,3*s,6*s,dx*0.06,0,Math.PI*2); ctx.fill(); }
+      break; }
+    case 'haybale': {
+      ctx.fillStyle = '#ecc964'; ctx.strokeStyle = '#c9a23e'; ctx.lineWidth = 2.4*s;
+      ctx.beginPath(); ctx.ellipse(0,-11*s,17*s,11*s,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(0,-11*s,10*s,6.4*s,0,0,Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(0,-11*s,4.4*s,2.8*s,0,0,Math.PI*2); ctx.stroke();
+      break; }
+    case 'warn': {
+      ctx.fillStyle = '#fff'; ctx.strokeStyle = '#e0455a'; ctx.lineWidth = 3*s;
+      roundRect(-15*s,-46*s,30*s,30*s,5*s); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#e0455a'; ctx.font = '900 ' + (26*s) + 'px Trebuchet MS, sans-serif';
+      ctx.textAlign = 'center'; ctx.fillText('!', 0, -22*s);
+      ctx.fillStyle = '#8a5a2b'; ctx.fillRect(-2.4*s,-16*s,4.8*s,16*s);
+      break; }
+    case 'tree': {
+      ctx.fillStyle = '#8a5a2b'; ctx.fillRect(-3.4*s,-16*s,6.8*s,16*s);
+      ctx.fillStyle = '#57ab4e';
+      ctx.beginPath(); ctx.arc(0,-32*s,16*s,0,Math.PI*2); ctx.arc(-11*s,-22*s,11*s,0,Math.PI*2); ctx.arc(11*s,-22*s,11*s,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#e0455a';
+      ctx.beginPath(); ctx.arc(-6*s,-30*s,2.6*s,0,Math.PI*2); ctx.arc(8*s,-24*s,2.6*s,0,Math.PI*2); ctx.fill();
+      break; }
+    case 'lamp': {
+      ctx.fillStyle = '#3d4466'; ctx.fillRect(-2*s,-52*s,4*s,52*s);
+      ctx.beginPath(); ctx.moveTo(0,-52*s); ctx.quadraticCurveTo(12*s,-54*s,13*s,-46*s); ctx.strokeStyle = '#3d4466'; ctx.lineWidth = 3.4*s; ctx.stroke();
+      ctx.fillStyle = '#ffd873'; ctx.beginPath(); ctx.arc(13*s,-43*s,6*s,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#3d4466'; ctx.lineWidth = 1.8*s; ctx.stroke();
+      break; }
+    case 'building': {
+      ctx.fillStyle = '#f0dfC0'.toLowerCase(); ctx.strokeStyle = '#c9b18a'; ctx.lineWidth = 2*s;
+      ctx.fillRect(-24*s,-86*s,48*s,86*s); ctx.strokeRect(-24*s,-86*s,48*s,86*s);
+      ctx.fillStyle = '#5b6a86'; ctx.beginPath(); ctx.moveTo(-28*s,-86*s); ctx.lineTo(0,-102*s); ctx.lineTo(28*s,-86*s); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#7fb2e0';
+      for(const wy of [-72,-52,-32]) for(const wx of [-14,2]) ctx.fillRect(wx*s,wy*s,10*s,13*s);
+      ctx.fillStyle = '#e0455a'; ctx.fillRect(-24*s,-18*s,48*s,7*s);
+      break; }
+    case 'cafeTable': {
+      ctx.fillStyle = '#8a5a2b'; ctx.fillRect(-2*s,-20*s,4*s,20*s);
+      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(0,-22*s,15*s,5*s,0,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#c9b18a'; ctx.lineWidth = 1.6*s; ctx.stroke();
+      ctx.fillStyle = '#e0455a';
+      ctx.beginPath(); ctx.moveTo(0,-40*s); ctx.lineTo(14*s,-24*s); ctx.lineTo(-14*s,-24*s); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#8a5a2b'; ctx.beginPath(); ctx.moveTo(0,-40*s); ctx.lineTo(0,-24*s); ctx.stroke();
+      break; }
+    case 'flowers': {
+      ctx.fillStyle = '#a4713e'; ctx.fillRect(-14*s,-8*s,28*s,8*s);
+      const cols = ['#e0455a','#ff8fab','#ffc94d','#fff'];
+      for(let i=0;i<6;i++){ ctx.fillStyle = cols[i%4]; ctx.beginPath(); ctx.arc((-11+i*4.6)*s,-11*s,3*s,0,Math.PI*2); ctx.fill(); }
+      ctx.fillStyle = '#3f9e4d'; ctx.fillRect(-13*s,-10*s,26*s,3.4*s);
+      break; }
+    case 'fence': {
+      ctx.fillStyle = '#e8e2d4'; ctx.strokeStyle = '#b9b0a0'; ctx.lineWidth = 1.6*s;
+      for(const fx of [-16,-5,6,17]){ ctx.fillRect(fx*s-2.4*s,-20*s,4.8*s,20*s); ctx.strokeRect(fx*s-2.4*s,-20*s,4.8*s,20*s); }
+      ctx.fillRect(-19*s,-15*s,38*s,3.4*s); ctx.fillRect(-19*s,-7*s,38*s,3.4*s);
+      break; }
+    case 'boat': {
+      ctx.fillStyle = '#e8e2d4'; ctx.beginPath(); ctx.moveTo(-20*s,-12*s); ctx.lineTo(20*s,-12*s); ctx.lineTo(14*s,0); ctx.lineTo(-14*s,0); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#8a5a2b'; ctx.lineWidth = 2*s; ctx.stroke();
+      ctx.fillStyle = '#e0455a'; ctx.fillRect(-16*s,-20*s,32*s,8*s);
+      break; }
+    case 'stall': {
+      ctx.fillStyle = '#a4713e'; ctx.fillRect(-22*s,-30*s,44*s,30*s);
+      ctx.fillStyle = '#8a5a2b'; ctx.fillRect(-22*s,-30*s,44*s,5*s);
+      for(let i=0;i<5;i++){ ctx.fillStyle = i%2 ? '#fff' : '#e0455a'; ctx.fillRect((-22+i*8.8)*s,-46*s,8.8*s,13*s); }
+      ctx.fillStyle = '#ffc94d'; ctx.beginPath(); ctx.arc(-10*s,-18*s,5*s,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#e0455a'; ctx.beginPath(); ctx.arc(2*s,-16*s,5*s,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#7ac74f'; ctx.beginPath(); ctx.arc(13*s,-19*s,5*s,0,Math.PI*2); ctx.fill();
+      break; }
+  }
+  ctx.restore();
+}
+
+function drawLandmark(id, x, groundY, s){
+  // big landmark spanning / beside the road at its segment; s ≈ scale where 1 = ~90px tall unit
+  ctx.save(); ctx.translate(x, groundY);
+  if(id==='cafe'){
+    ctx.scale(s,s);
+    ctx.fillStyle = '#f6e7c8'; ctx.fillRect(-95,-120,190,120);
+    ctx.fillStyle = '#5b6a86'; ctx.beginPath(); ctx.moveTo(-104,-120); ctx.lineTo(0,-152); ctx.lineTo(104,-120); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#8fc3ea'; ctx.fillRect(-70,-100,34,36); ctx.fillRect(36,-100,34,36);
+    for(let i=0;i<6;i++){ ctx.fillStyle = i%2 ? '#fff' : '#e0455a'; ctx.fillRect(-98+i*33,-58,33,16); }
+    ctx.fillStyle = '#7c4f24'; ctx.font = '900 25px Trebuchet MS, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('CAFÉ', 0, -70);
+    ctx.fillStyle = '#8a5a2b'; ctx.fillRect(-16,-42,32,42);
+  } else if(id==='arc'){
+    ctx.scale(s,s);
+    ctx.fillStyle = '#e3cfa3'; ctx.strokeStyle = '#b39b6d'; ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(-100,0); ctx.lineTo(-100,-140); ctx.quadraticCurveTo(0,-162,100,-140); ctx.lineTo(100,0);
+    ctx.lineTo(52,0); ctx.lineTo(52,-64); ctx.quadraticCurveTo(0,-84,-52,-64); ctx.lineTo(-52,0);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#b39b6d'; ctx.fillRect(-104,-148,208,10);
+    ctx.fillRect(-70,-104,140,7);
+  } else if(id==='seine'){
+    ctx.scale(s,s);
+    ctx.fillStyle = '#8a5a2b';
+    ctx.fillRect(-120,-64,16,64); ctx.fillRect(104,-64,16,64);
+    ctx.strokeStyle = '#8a5a2b'; ctx.lineWidth = 7;
+    ctx.beginPath(); ctx.moveTo(-112,-60); ctx.quadraticCurveTo(0,-104,112,-60); ctx.stroke();
+    ctx.fillStyle = '#ffd873';
+    ctx.beginPath(); ctx.arc(-112,-70,8,0,Math.PI*2); ctx.arc(112,-70,8,0,Math.PI*2); ctx.fill();
+  } else if(id==='market'){
+    ctx.scale(s,s);
+    for(const dx of [-88, 88]){
+      ctx.fillStyle = '#a4713e'; ctx.fillRect(dx-40,-56,80,56);
+      for(let i=0;i<5;i++){ ctx.fillStyle = i%2 ? '#fff' : '#e0455a'; ctx.fillRect(dx-42+i*17,-82,17,20); }
+      ctx.fillStyle = '#ffc94d'; ctx.beginPath(); ctx.arc(dx-16,-32,9,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#e0455a'; ctx.beginPath(); ctx.arc(dx+6,-28,9,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#7ac74f'; ctx.beginPath(); ctx.arc(dx+24,-34,9,0,Math.PI*2); ctx.fill();
+    }
+  } else if(id==='eiffel'){
+    ctx.scale(s,s);
+    ctx.fillStyle = '#4c4668';
+    ctx.beginPath();
+    ctx.moveTo(0,-300); ctx.lineTo(16,-190); ctx.lineTo(58,0); ctx.lineTo(30,0); ctx.lineTo(11,-96);
+    ctx.lineTo(-11,-96); ctx.lineTo(-30,0); ctx.lineTo(-58,0); ctx.lineTo(-16,-190);
+    ctx.closePath(); ctx.fill();
+    ctx.fillRect(-34,-148,68,9); ctx.fillRect(-24,-208,48,8); ctx.fillRect(-13,-258,26,7);
+    ctx.fillStyle = '#ffc94d'; ctx.beginPath(); ctx.arc(0,-308,9,0,Math.PI*2); ctx.fill();
+    // finish banner
+    ctx.fillStyle = '#2e6fd8'; ctx.fillRect(-118,-196,64,34);
+    ctx.fillStyle = '#fff'; ctx.fillRect(-54,-196,64,34);
+    ctx.fillStyle = '#e0455a'; ctx.fillRect(10,-196,64,34);
+    ctx.strokeStyle = '#3d4466'; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(-118,-196); ctx.lineTo(-118,0); ctx.moveTo(74,-196); ctx.lineTo(74,0); ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.font = '900 21px Trebuchet MS, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('FINISH!', -21, -172);
+  }
+  ctx.restore();
+}
+
+function render(){
+  const horizonY = H*0.46;
+  // sky
+  const sky = ctx.createLinearGradient(0,0,0,horizonY*1.25);
+  sky.addColorStop(0, PAL.sky1); sky.addColorStop(1, PAL.sky2);
+  ctx.fillStyle = sky; ctx.fillRect(0,0,W,horizonY+2);
+  // sun + clouds
+  ctx.fillStyle = '#fff3b0'; ctx.beginPath(); ctx.arc(W*0.86, H*0.11, Math.min(34,W*0.05), 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  const cloudOff = (skyOffset*0.22) % (W+260);
+  for(const [cx,cy,cs] of [[0.16,0.10,1],[0.52,0.06,0.7],[0.94,0.20,0.8]]){
+    let x = cx*W - cloudOff; if(x < -140) x += W+260;
+    ctx.beginPath();
+    ctx.ellipse(x, cy*H, 44*cs, 15*cs, 0, 0, Math.PI*2);
+    ctx.ellipse(x+26*cs, cy*H+3, 30*cs, 12*cs, 0, 0, Math.PI*2);
+    ctx.ellipse(x-28*cs, cy*H+4, 26*cs, 10*cs, 0, 0, Math.PI*2);
+    ctx.fill();
+  }
+  // ground base
+  const baseSeg = findSegment(position);
+  ctx.fillStyle = baseSeg.river ? PAL.riverL : PAL.grassL;
+  ctx.fillRect(0, horizonY, W, H-horizonY);
+
+  const leg3Progress = legIndex===2 ? Math.min(1, Math.max(0, (position/SEG - LEGS[2].start) / Math.max(1,(segments.length - LEGS[2].start)))) : (legIndex>2 ? 1 : 0);
+  drawSkyline(horizonY, legIndex>=2 ? 0.35 + 0.65*leg3Progress : 0);
+
+  const basePercent = (position % SEG)/SEG;
+  const playerSeg = findSegment(position + PLAYER_Z);
+  const playerPercent = ((position + PLAYER_Z) % SEG)/SEG;
+  let x = 0, dx = -(baseSeg.curve * basePercent);
+  let maxY = H;
+
+  const p1 = {world:{x:0,y:0,z:0,w:0}, scale:0, sx:0, sy:0, sw:0};
+  const p2 = {world:{x:0,y:0,z:0,w:0}, scale:0, sx:0, sy:0, sw:0};
+  const drawn = [];
+
+  for(let n=0;n<DRAW;n++){
+    const seg = segments[baseSeg.index + n];
+    if(!seg) break;
+    const looped = 0;
+    const camZ = position - looped;
+    p1.world.z = seg.index*SEG;       p1.world.w = seg.width;
+    p2.world.z = (seg.index+1)*SEG;   p2.world.w = (segments[seg.index+1] ? segments[seg.index+1].width : seg.width);
+    const camX = playerX * seg.width - x;
+    project(p1, camX, CAM_H, camZ, W, H);
+    project(p2, camX - dx, CAM_H, camZ, W, H);
+    x += dx; dx += seg.curve;
+    seg._sx1 = p1.sx; seg._sy1 = p1.sy; seg._sw1 = p1.sw;
+    seg._sx2 = p2.sx; seg._sy2 = p2.sy; seg._sw2 = p2.sw;
+    seg._scale = p1.scale; seg._clip = maxY;
+    seg._road = false;
+    if(p2.sy >= p1.sy || p2.sy >= maxY){ drawn.push(seg); continue; }
+    // ground / river strip
+    const gnd = seg.river ? (seg.color==='light' ? PAL.riverL : PAL.riverD) : (seg.color==='light' ? PAL.grassL : PAL.grassD);
+    poly(0, p2.sy, W, p2.sy, W, p1.sy, 0, p1.sy, gnd);
+    // sidewalk edges
+    const side = seg.color==='light' ? PAL.sideL : PAL.sideD;
+    poly(p1.sx-p1.sw*1.14, p1.sy, p1.sx-p1.sw, p1.sy, p2.sx-p2.sw, p2.sy, p2.sx-p2.sw*1.14, p2.sy, seg.bridge ? '#9c6b43' : side);
+    poly(p1.sx+p1.sw, p1.sy, p1.sx+p1.sw*1.14, p1.sy, p2.sx+p2.sw*1.14, p2.sy, p2.sx+p2.sw, p2.sy, seg.bridge ? '#9c6b43' : side);
+    // road
+    if(seg.hole === 0){
+      poly(p1.sx-p1.sw, p1.sy, p1.sx+p1.sw, p1.sy, p2.sx+p2.sw, p2.sy, p2.sx-p2.sw, p2.sy, seg.color==='light' ? PAL.roadL : PAL.roadD);
+      // centre dashes
+      if(Math.floor(seg.index/2)%2===0){
+        const w1 = p1.sw*0.022, w2 = p2.sw*0.022;
+        poly(p1.sx-w1, p1.sy, p1.sx+w1, p1.sy, p2.sx+w2, p2.sy, p2.sx-w2, p2.sy, PAL.line);
+      }
+    } else {
+      // road with a hole on one side: draw only the safe portion + striped broken edge
+      const hx1a = seg.hole<0 ? p1.sx - p1.sw*0.08 : p1.sx - p1.sw;
+      const hx1b = seg.hole<0 ? p1.sx + p1.sw : p1.sx + p1.sw*0.08;
+      const hx2a = seg.hole<0 ? p2.sx - p2.sw*0.08 : p2.sx - p2.sw;
+      const hx2b = seg.hole<0 ? p2.sx + p2.sw : p2.sx + p2.sw*0.08;
+      poly(hx1a, p1.sy, hx1b, p1.sy, hx2b, p2.sy, hx2a, p2.sy, seg.color==='light' ? PAL.roadL : PAL.roadD);
+      const ex1 = seg.hole<0 ? p1.sx - p1.sw*0.08 : p1.sx + p1.sw*0.08;
+      const ex2 = seg.hole<0 ? p2.sx - p2.sw*0.08 : p2.sx + p2.sw*0.08;
+      ctx.strokeStyle = (seg.index%2 ? '#e0455a' : '#ffffff');
+      ctx.lineWidth = Math.max(1.5, p1.sw*0.02);
+      ctx.beginPath(); ctx.moveTo(ex1, p1.sy); ctx.lineTo(ex2, p2.sy); ctx.stroke();
+    }
+    maxY = p1.sy;
+    seg._road = true;
+    drawn.push(seg);
+  }
+
+  // sprites + landmarks, far to near
+  for(let i=drawn.length-1;i>=0;i--){
+    const seg = drawn[i];
+    if(seg._sy1 === undefined || !seg._road) continue;
+    if(seg.landmark){
+      const ls = seg._sw1/95;
+      drawLandmark(seg.landmark, seg._sx1, seg._sy1, ls);
+    }
+    for(const sp of seg.sprites){
+      if(sp.gone) continue;
+      const sx = seg._sx1 + sp.offset * seg._sw1;
+      if(sx < -80 || sx > W+80) continue;
+      const sc = Math.max(0.06, seg._sw1/300);
+      const bobA = sp.treat ? Math.sin(runTime*5 + seg.index)*seg._sw1*0.03 : 0;
+      drawSpriteShape(sp.type.replace('scenery:',''), sx, seg._sy1 + bobA, sc);
+    }
+  }
+
+  /* ----- the ball ----- */
+  const ps = playerSeg;
+  if(ps && ps._sx1 !== undefined){
+    const ix = ps._sx1 + (ps._sx2 - ps._sx1)*playerPercent;
+    const iy = ps._sy1 + (ps._sy2 - ps._sy1)*playerPercent;
+    const iw = ps._sw1 + (ps._sw2 - ps._sw1)*playerPercent;
+    const ballX = ix + playerX * iw;
+    const ballR = Math.max(15, Math.min(52, iw*0.17));
+    let ballY = iy - ballR*0.92;
+    if(state==='fall') ballY += fallY;
+    const wob = wobble > 0 ? Math.sin(runTime*40)*ballR*0.10*wobble : 0;
+    // shadow
+    ctx.fillStyle = 'rgba(43,35,80,0.30)';
+    ctx.beginPath(); ctx.ellipse(ballX, iy + ballR*0.10, ballR*0.92, ballR*0.26, 0, 0, Math.PI*2); ctx.fill();
+    // ball body
+    const g = ctx.createRadialGradient(ballX-ballR*0.35, ballY-ballR*0.4, ballR*0.2, ballX, ballY, ballR*1.05);
+    g.addColorStop(0, '#ff8f9e'); g.addColorStop(0.55, '#ef4456'); g.addColorStop(1, '#c22a3e');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(ballX + wob, ballY, ballR, 0, Math.PI*2); ctx.fill();
+    // rolling stripes (rotate with travel)
+    ctx.save();
+    ctx.beginPath(); ctx.arc(ballX + wob, ballY, ballR, 0, Math.PI*2); ctx.clip();
+    ctx.strokeStyle = 'rgba(255,246,230,0.9)'; ctx.lineWidth = ballR*0.20;
+    const off = (ballSpin % (ballR*2.4));
+    for(let k=-1;k<3;k++){
+      const yy = ballY - ballR + k*ballR*1.2 + off*0.55;
+      ctx.beginPath(); ctx.moveTo(ballX-ballR, yy); ctx.quadraticCurveTo(ballX + wob, yy + ballR*0.24, ballX+ballR, yy); ctx.stroke();
+    }
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.beginPath(); ctx.ellipse(ballX-ballR*0.36 + wob, ballY-ballR*0.44, ballR*0.20, ballR*0.12, -0.6, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(140,20,40,0.55)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(ballX + wob, ballY, ballR-1, 0, Math.PI*2); ctx.stroke();
+  }
+}
+/* ---------------- UI helpers ---------------- */
+const $ = id => document.getElementById(id);
+const LANDMARK_BY_ID = {};
+for(const lm of LANDMARKS) LANDMARK_BY_ID[lm.id] = lm;
+
+function buildPassportUI(){
+  const pp = $('passport'); pp.innerHTML = '';
+  for(const lm of LANDMARKS){
+    const slot = document.createElement('div');
+    slot.className = 'stamp-slot' + (stampsGot[lm.id] ? ' got' : '');
+    slot.id = 'slot-' + lm.id;
+    slot.innerHTML = '<div class="stamp-circle">' + ICONS[lm.id] + '</div><div class="stamp-name">' + lm.name.toUpperCase() + '</div>';
+    pp.appendChild(slot);
+  }
+  const fs = $('finish-stamps'); fs.innerHTML = '';
+  for(const lm of LANDMARKS){
+    const d = document.createElement('div');
+    d.innerHTML = '<div class="f-stamp">' + ICONS[lm.id] + '</div><div class="f-name">' + lm.name.toUpperCase() + '</div>';
+    fs.appendChild(d);
+  }
+}
+function updateHUD(){
+  $('treat-count').textContent = treats;
+  $('score').textContent = score;
+}
+let bubbleTimer = 0;
+function showBubble(html, secs){
+  $('bubble-text').innerHTML = html;
+  $('bubble').classList.add('show');
+  bubbleTimer = secs || 2.2;
+}
+function showLegBanner(leg){
+  $('leg-kicker').textContent = leg.kicker;
+  $('leg-title').textContent = leg.name;
+  $('legname').textContent = leg.name;
+  const b = $('leg-banner');
+  b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
+}
+function floater(text, x, y){
+  const f = document.createElement('div');
+  f.className = 'floater'; f.textContent = text;
+  f.style.left = x+'px'; f.style.top = y+'px';
+  $('floaters').appendChild(f);
+  setTimeout(()=>f.remove(), 950);
+}
+function stampLandmark(lm){
+  stampsGot[lm.id] = true;
+  checkpointZ = lm.seg * SEG;
+  checkpointLandmark = LANDMARKS.indexOf(lm);
+  const slot = $('slot-' + lm.id);
+  if(slot){ slot.classList.add('got'); slot.classList.add('pop'); setTimeout(()=>slot.classList.remove('pop'), 600); }
+  $('toast-stamp-icon').innerHTML = ICONS[lm.id];
+  $('toast-stamp-word').textContent = lm.name.toUpperCase() + ' — STAMPED!';
+  const t = $('stamp-toast');
+  t.classList.remove('show'); void t.offsetWidth; t.classList.add('show');
+  showBubble('<span class="fr-word">' + lm.word + '</span> ' + stampMessage(lm.id), 2.6);
+  sfx.stamp();
+  score += 50; updateHUD();
+}
+function stampMessage(id){
+  switch(id){
+    case 'cafe': return 'A café stamp! The tour begins!';
+    case 'arc': return 'You rolled under the Arc de Triomphe!';
+    case 'seine': return 'Over the River Seine — splashy!';
+    case 'market': return 'Through the market! Smell those baguettes?';
+    case 'eiffel': return 'The Eiffel Tower! You made it!';
+  }
+  return '';
+}
+
+/* ---------------- Flow ---------------- */
+function startGame(){
+  audioInit(); sfx.click();
+  buildTrack();
+  resetGame();
+  $('start-screen').classList.add('hidden');
+  $('finish').classList.add('hidden');
+  state = 'play';
+  showLegBanner(LEGS[0]);
+  showBubble('<span class="fr-word">Bonjour!</span> Follow me — roll to the Eiffel Tower!', 3);
+  if(!hintShown){ $('hint').classList.add('show'); hintShown = true; setTimeout(()=>$('hint').classList.remove('show'), 4200); }
+}
+function finishGame(){
+  state = 'finish';
+  sfx.fanfare();
+  $('final-treats').textContent = treats;
+  $('final-score').textContent = score;
+  const m = Math.floor(runTime/60), s = Math.floor(runTime%60);
+  $('final-time').textContent = m + ':' + (s<10?'0':'') + s;
+  $('finish').classList.remove('hidden');
+}
+function triggerFall(){
+  if(state !== 'play') return;
+  state = 'fall'; fallT = 0; fallY = 0;
+  sfx.fall();
+}
+function doRespawn(){
+  position = checkpointZ;
+  playerX = 0; speed = legMaxSpeed()*0.25;
+  safeTimer = 1.2; fallY = 0;
+  $('catch').classList.add('hidden');
+  state = 'play';
+  showBubble('<span class="fr-word">Hop là!</span> Back on the track — allez!', 2);
+}
+
+/* ---------------- Update ---------------- */
+function update(dt){
+  if(bubbleTimer > 0){ bubbleTimer -= dt; if(bubbleTimer <= 0) $('bubble').classList.remove('show'); }
+  if(state === 'fall'){
+    fallT += dt; fallY += dt*dt*900 + dt*160;
+    speed = Math.max(0, speed - dt*3000);
+    position += speed*dt;
+    if(fallT > 0.75){
+      state = 'catch'; catchT = 0;
+      sfx.catchIt();
+      $('catch-msg').textContent = 'Henri caught you in his cozy hay net. Back to the ' +
+        (checkpointLandmark >= 0 ? LANDMARKS[checkpointLandmark].name : 'start') + ' stamp!';
+      $('catch').classList.remove('hidden');
+    }
+    return;
+  }
+  if(state === 'catch'){
+    catchT += dt;
+    if(catchT > 1.5) doRespawn();
+    return;
+  }
+  if(state !== 'play') return;
+
+  runTime += dt;
+  const pSeg = findSegment(position + PLAYER_Z);
+  legIndex = pSeg.leg;
+  const maxSpeed = legMaxSpeed();
+  const speedPercent = speed / maxSpeed;
+
+  // steering: keys + drag
+  const steerInput = Math.max(-1, Math.min(1, steer + dragSteer));
+  playerX += steerInput * dt * (1.6 + 1.1*speedPercent);
+  dragSteer *= Math.pow(0.0015, dt); // fast decay
+  // curve push (gentle)
+  playerX -= pSeg.curve * speedPercent * dt * CENTRIFUGAL;
+  // wobble after a bonk
+  if(wobble > 0){ wobble = Math.max(0, wobble - dt*1.6); playerX += Math.sin(runTime*30)*0.14*dt*wobble*4; }
+  if(bonkCooldown > 0) bonkCooldown -= dt;
+  if(safeTimer > 0) safeTimer -= dt;
+
+  // speed: gentle acceleration, soft braking on hard steering
+  const accel = maxSpeed/3.2;
+  speed = Math.min(maxSpeed, speed + accel*dt);
+  if(Math.abs(steerInput) > 0.92) speed = Math.max(maxSpeed*0.55, speed - dt*maxSpeed*0.25);
+
+  position += speed * dt;
+  ballSpin += speed * dt * 0.06;
+  skyOffset += pSeg.curve * speedPercent * dt * 14;
+
+  // keep the ball near the world; falling happens past the edge
+  if(Math.abs(playerX) > 1.32 && safeTimer <= 0){ triggerFall(); return; }
+  playerX = Math.max(-1.6, Math.min(1.6, playerX));
+
+  // holes
+  if(pSeg.hole !== 0 && safeTimer <= 0){
+    const inHole = pSeg.hole < 0 ? (playerX < 0.02) : (playerX > -0.02);
+    if(inHole){ triggerFall(); return; }
+  }
+
+  // sprites on the player's segment: treats + obstacles
+  for(const sp of pSeg.sprites){
+    if(sp.gone) continue;
+    const dxp = Math.abs(playerX - sp.offset);
+    if(sp.treat && dxp < 0.34){
+      sp.gone = true;
+      treats++;
+      if(sp.type === 'baguette'){ score += 25; sfx.baguette(); floater('+25', W/2 + playerX*W*0.22, H*0.62); }
+      else { score += 10; sfx.collect(); floater('+10', W/2 + playerX*W*0.22, H*0.62); }
+      updateHUD();
+    } else if(sp.obstacle && dxp < 0.30 && bonkCooldown <= 0){
+      sp.hitAt = runTime; bonkCooldown = 0.9; wobble = 1;
+      speed *= 0.38;
+      sfx.bonk();
+      showBubble('<span class="fr-word">Ouf!</span> Bonk! Mind the ' + (sp.type==='cone' ? 'cone' : sp.type==='flowerpot' ? 'flowers' : 'hay') + '!', 1.4);
+    }
+  }
+
+  // leg changes
+  const newLeg = pSeg.leg;
+  if(newLeg !== update._lastLeg && update._lastLeg !== undefined){
+    showLegBanner(LEGS[newLeg]);
+    showBubble(newLeg===1 ? '<span class="fr-word">Regarde!</span> The River Seine!' : '<span class="fr-word">Presque!</span> Almost there — the Tower is close!', 2.4);
+  }
+  update._lastLeg = newLeg;
+
+  // landmarks
+  if(nextLandmark < LANDMARKS.length){
+    const lm = LANDMARKS[nextLandmark];
+    if(position + PLAYER_Z >= lm.seg * SEG){
+      stampLandmark(lm);
+      nextLandmark++;
+      if(lm.id === 'eiffel'){ setTimeout(finishGame, 900); state = 'finish-pending'; }
+    }
+  }
+
+  // safety: absolute end of track
+  if(position >= FINISH_Z && state === 'play'){ finishGame(); }
+}
+
+/* ---------------- Main loop ---------------- */
+let lastT = 0;
+function frame(ts){
+  requestAnimationFrame(frame);
+  if(!lastT) lastT = ts;
+  let dt = Math.min(0.05, (ts - lastT)/1000);
+  lastT = ts;
+  if(state === 'finish-pending'){ /* let the stamp moment breathe */ }
+  else update(dt);
+  render();
+}
+requestAnimationFrame(frame);
+
+/* ---------------- Input ---------------- */
+const keys = {};
+window.addEventListener('keydown', e => {
+  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key)) e.preventDefault();
+  keys[e.key.toLowerCase()] = true;
+  refreshSteer();
+});
+window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; refreshSteer(); });
+function refreshSteer(){
+  steer = ((keys['arrowright']||keys['d']) ? 1 : 0) - ((keys['arrowleft']||keys['a']) ? 1 : 0);
+}
+let pointerDown = false, lastPX = 0;
+cv.addEventListener('pointerdown', e => { pointerDown = true; lastPX = e.clientX; cv.setPointerCapture(e.pointerId); });
+cv.addEventListener('pointermove', e => {
+  if(!pointerDown) return;
+  const dxp = e.clientX - lastPX; lastPX = e.clientX;
+  dragSteer = Math.max(-1.4, Math.min(1.4, dragSteer + dxp*0.045));
+  playerX += dxp * 0.0016 * (W < 500 ? 1.5 : 1);
+});
+function endPointer(){ pointerDown = false; }
+cv.addEventListener('pointerup', endPointer);
+cv.addEventListener('pointercancel', endPointer);
+
+/* ---------------- Buttons & boot ---------------- */
+$('henri-start').innerHTML = '<span class="henri-big" style="display:block">' + henriSVG() + '</span>';
+$('henri-catch').innerHTML = '<span class="henri-big" style="display:block">' + henriSVG() + '</span>';
+$('henri-finish').innerHTML = '<span class="henri-big" style="display:block">' + henriSVG() + '</span>';
+$('bubble-henri').innerHTML = henriSVG();
+$('btn-play').addEventListener('click', startGame);
+$('btn-again').addEventListener('click', () => { $('finish').classList.add('hidden'); startGame(); });
+$('btn-sound').addEventListener('click', () => {
+  soundOn = !soundOn;
+  $('btn-sound').textContent = soundOn ? '🔊' : '🔇';
+  if(soundOn){ audioInit(); sfx.click(); }
+});
+let pausedFrom = null;
+$('btn-pause').addEventListener('click', () => {
+  if(state === 'play'){ pausedFrom = 'play'; state = 'pause'; $('btn-pause').textContent = '▶'; showBubble('Paused! Tap ▶ to keep rolling.', 10); }
+  else if(state === 'pause'){ state = 'play'; $('btn-pause').textContent = '⏸'; bubbleTimer = 0.1; }
+});
+document.addEventListener('visibilitychange', () => {
+  if(document.hidden && state === 'play'){ state = 'pause'; $('btn-pause').textContent = '▶'; }
+});
+
+buildTrack();
+resetGame();
+resize();
+
+/* Debug/verification hook (harmless, on-device only) */
+window.P2P = {
+  get state(){ return state; },
+  get info(){ return { state, position, playerX, speed, treats, score, stamps: Object.keys(stampsGot), leg: legIndex, nextLandmark, segments: segments.length, finishZ: FINISH_Z }; },
+  start: startGame,
+  setPos(z){ position = z; },
+  setX(x){ playerX = x; },
+  setSpeed(s){ speed = s; },
+  fall: triggerFall,
+  steer(v){ steer = v; }
+};
+</script>
+</body>
+</html>
