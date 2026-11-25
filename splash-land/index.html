@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:;">
+<title>Splash Land! — Paint the Whole Canvas</title>
+<!--
+  DESIGN BRIEF — Splash Land! (concept label: Whim, Ryan's direct ask, queued after Passport to Paris)
+  Loop: glide a paint blob around a giant white canvas, leave a trail, loop home to claim the enclosed
+        area (real grid flood-fill capture). Cross a rival's exposed trail to tag them; if yours is
+        crossed, you pop home and lose a small bite — never eliminated. First to 30% = Grand Painter.
+  Who: Caroline (7) & Jack (5). Session target: 2–4 min to the goal. Touch-first drag steering,
+        mouse drag + arrows/WASD on desktop. Constant gentle glide, Paper.io-style.
+  Art: flat paper-canvas look by design; polish budget spent on buttery turning, rounded trails,
+        sweep-in fill animation, confetti, squash-and-stretch blobs. Sound: WebAudio pops/sweeps.
+  Smart Mode: NO (bots are simple readable state machines; variety is not the fun here).
+  Safety: fully on-device, no accounts, no network. Best % kept in localStorage only.
+-->
+<style>
+  :root{
+    --ink:#2d2350; --paper:#fffdf4; --ruby:#ef4456; --ruby-dark:#c22f42;
+    --card:#ffffff; --sun:#ffc94d;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:none;}
+  html,body{margin:0;padding:0;overflow:hidden;height:100%;}
+  body{
+    font-family:"Avenir Next Rounded","Trebuchet MS","Comic Sans MS",ui-rounded,system-ui,sans-serif;
+    background:#dcefff; color:var(--ink);
+    -webkit-user-select:none; user-select:none;
+  }
+  #game{position:fixed; inset:0; display:block;}
+  /* ---------- HUD ---------- */
+  #hud{position:fixed; inset:0; pointer-events:none; display:none;}
+  #hud.on{display:block;}
+  #topbar{position:absolute; top:calc(8px + env(safe-area-inset-top)); left:10px; right:10px;
+    display:flex; align-items:flex-start; gap:10px;}
+  #pctbox{background:rgba(255,255,255,.92); border:3px solid #fff; border-radius:16px;
+    box-shadow:0 4px 14px rgba(45,35,80,.18); padding:6px 14px 8px; min-width:128px;}
+  #pctbox .lbl{font-size:11px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase; color:var(--ruby-dark);}
+  #pct{font-size:30px; font-weight:900; line-height:1; color:var(--ink);}
+  #goalwrap{flex:1; max-width:340px; margin:4px auto 0; background:rgba(255,255,255,.92);
+    border:3px solid #fff; border-radius:999px; box-shadow:0 4px 14px rgba(45,35,80,.18); padding:6px 12px 8px;}
+  #goalwrap .lbl{font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; text-align:center; color:#7a6fb0;}
+  #goalbar{height:12px; border-radius:999px; background:#e9e4f7; overflow:hidden; margin-top:3px;}
+  #goalfill{height:100%; width:0%; border-radius:999px; background:linear-gradient(90deg,#ff7d8c,var(--ruby));
+    transition:width .35s ease;}
+  .hbtns{display:flex; gap:8px; pointer-events:auto;}
+  .icon-btn{width:46px; height:46px; border-radius:14px; border:3px solid #fff; cursor:pointer;
+    background:rgba(255,255,255,.92); box-shadow:0 4px 14px rgba(45,35,80,.18);
+    display:flex; align-items:center; justify-content:center; padding:0;}
+  .icon-btn:active{transform:scale(.93);}
+  .icon-btn svg{width:22px; height:22px; fill:var(--ink);}
+  #board{position:absolute; top:calc(86px + env(safe-area-inset-top)); right:10px; display:flex;
+    flex-direction:column; gap:6px;}
+  .chip{display:flex; align-items:center; gap:7px; background:rgba(255,255,255,.88); border-radius:999px;
+    padding:4px 11px 4px 6px; font-weight:800; font-size:14px; box-shadow:0 3px 10px rgba(45,35,80,.14);
+    border:2px solid #fff;}
+  .chip .dot{width:16px; height:16px; border-radius:50%; border:2px solid rgba(45,35,80,.25);}
+  .chip.me{outline:3px solid var(--ink);}
+  .chip .nm{max-width:74px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  #banner{position:absolute; top:calc(96px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%) scale(.9);
+    background:var(--ink); color:#fff; font-weight:800; font-size:clamp(16px,4.4vw,21px);
+    padding:10px 20px; border-radius:999px; box-shadow:0 8px 22px rgba(45,35,80,.35);
+    opacity:0; transition:opacity .18s, transform .18s; white-space:nowrap; max-width:92vw;
+    overflow:hidden; text-overflow:ellipsis;}
+  #banner.show{opacity:1; transform:translateX(-50%) scale(1);}
+  /* ---------- Screens ---------- */
+  .screen{position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+    background:rgba(34,27,71,.45); padding:16px; z-index:5;}
+  .screen.on{display:flex;}
+  .panel{background:var(--paper); border-radius:26px; border:4px solid #fff;
+    box-shadow:0 18px 50px rgba(45,35,80,.35); max-width:430px; width:100%;
+    padding:26px 24px 24px; text-align:center; max-height:92dvh; overflow:auto;}
+  .panel h1{font-size:clamp(38px,10vw,54px); margin:0; line-height:1.02; color:var(--ink);
+    text-shadow:0 3px 0 #fff, 0 6px 16px rgba(45,35,80,.18);}
+  .panel h1 .splash{color:var(--ruby);}
+  .panel h2{font-size:clamp(28px,7.5vw,38px); margin:0 0 6px;}
+  .tagline{font-size:17px; font-weight:700; opacity:.85; margin:8px 0 0;}
+  .hero{width:150px; height:150px; margin:10px auto 2px;}
+  .howto{text-align:left; font-size:16.5px; line-height:1.45; margin:14px auto 6px; max-width:340px;}
+  .howto li{margin:7px 0;}
+  .howto b{color:var(--ruby-dark);}
+  .big-btn{display:block; width:100%; border:none; cursor:pointer; border-radius:18px; margin-top:14px;
+    background:var(--ruby); color:#fff; font-family:inherit; font-weight:900;
+    font-size:24px; padding:15px 20px; box-shadow:0 6px 0 var(--ruby-dark);
+    transition:transform .08s, box-shadow .08s;}
+  .big-btn:active{transform:translateY(4px); box-shadow:0 2px 0 var(--ruby-dark);}
+  .big-btn.alt{background:#fff; color:var(--ink); box-shadow:0 6px 0 #cfc6ec; border:3px solid #e4defa;}
+  .big-btn.alt:active{box-shadow:0 2px 0 #cfc6ec;}
+  .bestline{font-weight:800; font-size:15px; color:#7a6fb0; margin-top:12px; min-height:20px;}
+  .stats{display:flex; gap:10px; justify-content:center; margin:14px 0 2px; flex-wrap:wrap;}
+  .stat{background:#fff; border:3px solid #efeaff; border-radius:16px; padding:8px 14px; min-width:86px;}
+  .stat .v{font-size:23px; font-weight:900;}
+  .stat .k{font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:#7a6fb0;}
+  .crown-emoji{font-size:44px; line-height:1;}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="hud">
+  <div id="topbar">
+    <div id="pctbox"><div class="lbl">Ruby paints</div><div id="pct">0.0%</div></div>
+    <div id="goalwrap"><div class="lbl">Goal: 30% — Grand Painter!</div><div id="goalbar"><div id="goalfill"></div></div></div>
+    <div class="hbtns">
+      <button class="icon-btn" id="btn-sound" aria-label="Sound on or off"></button>
+      <button class="icon-btn" id="btn-pause" aria-label="Pause"></button>
+    </div>
+  </div>
+  <div id="board"></div>
+  <div id="banner"></div>
+</div>
+
+<div class="screen on" id="scr-menu">
+  <div class="panel">
+    <h1>Splash <span class="splash">Land!</span></h1>
+    <svg class="hero" viewBox="0 0 200 200" aria-hidden="true">
+      <path d="M30 168 Q60 150 92 166 T170 162" stroke="#3a7bd5" stroke-width="13" fill="none" stroke-linecap="round" opacity=".55"/>
+      <path d="M24 150 Q70 128 118 144 T182 138" stroke="#f7b731" stroke-width="13" fill="none" stroke-linecap="round" opacity=".5"/>
+      <circle cx="100" cy="98" r="58" fill="#ef4456"/>
+      <circle cx="100" cy="98" r="58" fill="url(#hg)"/>
+      <defs><radialGradient id="hg" cx=".38" cy=".3" r="1"><stop offset="0" stop-color="#fff" stop-opacity=".38"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>
+      <circle cx="80" cy="90" r="10.5" fill="#fff"/><circle cx="120" cy="90" r="10.5" fill="#fff"/>
+      <circle cx="83" cy="93" r="5.4" fill="#2d2350"/><circle cx="123" cy="93" r="5.4" fill="#2d2350"/>
+      <path d="M84 116 Q100 130 116 116" stroke="#2d2350" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+      <circle cx="66" cy="110" r="7" fill="#ff9db0" opacity=".8"/><circle cx="134" cy="110" r="7" fill="#ff9db0" opacity=".8"/>
+      <path d="M78 34 Q100 14 122 34 L114 44 Q100 34 86 44 Z" fill="#ffc94d" stroke="#e09f1f" stroke-width="3"/>
+    </svg>
+    <p class="tagline">You are <b>Ruby</b>, the red paint blob.<br>Paint the whole canvas!</p>
+    <ul class="howto">
+      <li><b>Drag</b> (or use arrow keys) to steer Ruby. She never stops gliding!</li>
+      <li>Loop back into <b>your own color</b> to claim everything inside your trail.</li>
+      <li>Cross a rival's trail to <b>tag them</b> — but if they cross yours, you pop home!</li>
+      <li>First blob to paint <b>30%</b> becomes the Grand Painter.</li>
+    </ul>
+    <button class="big-btn" id="btn-play">Start Painting!</button>
+    <div class="bestline" id="menu-best"></div>
+  </div>
+</div>
+
+<div class="screen" id="scr-pause">
+  <div class="panel">
+    <h2>Paused</h2>
+    <p class="tagline">Ruby is holding very, very still.</p>
+    <button class="big-btn" id="btn-resume">Keep Painting</button>
+    <button class="big-btn alt" id="btn-restart2">Start Over</button>
+  </div>
+</div>
+
+<div class="screen" id="scr-win">
+  <div class="panel">
+    <div class="crown-emoji" aria-hidden="true">
+      <svg width="72" height="54" viewBox="0 0 72 54"><path d="M6 46 L2 14 L22 28 L36 6 L50 28 L70 14 L66 46 Z" fill="#ffc94d" stroke="#e09f1f" stroke-width="3.5" stroke-linejoin="round"/><rect x="6" y="46" width="60" height="6" rx="3" fill="#e09f1f"/></svg>
+    </div>
+    <h2>Grand Painter!</h2>
+    <p class="tagline">Ruby painted <b id="win-pct">30%</b> of the whole canvas.<br>That is a LOT of red.</p>
+    <div class="stats">
+      <div class="stat"><div class="v" id="win-time">0:00</div><div class="k">Time</div></div>
+      <div class="stat"><div class="v" id="win-tags">0</div><div class="k">Tags</div></div>
+      <div class="stat"><div class="v" id="win-pops">0</div><div class="k">Pops</div></div>
+    </div>
+    <button class="big-btn" id="btn-keep">Keep Painting!</button>
+    <button class="big-btn alt" id="btn-again">Play Again</button>
+    <div class="bestline" id="win-best"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ================= constants ================= */
+const GW = 100, GH = 100, N = GW * GH;      // territory grid, cells
+const CELLPX = 4;                            // territory offscreen px per cell
+const GOAL = 30;                             // % to win
+const PLAYER_SPEED = 9.6, BOT_SPEED = 7.3;   // cells per second
+const PLAYER_TURN = 3.6, BOT_TURN = 3.1;     // radians per second
+const PLAYER_BITE = 0.02, BOT_BITE = 0.03;   // arena fraction lost when tagged
+const START_CELLS = 64;                      // 8x8 home block, also the shrink floor
+
+const DEFS = [
+  {name:'Ruby',   color:'#ef4456', dark:'#c22f42', light:'#ff8b99', sx:16, sy:80},
+  {name:'Bleu',   color:'#3a7bd5', dark:'#2b5ea6', light:'#82b0ef', sx:78, sy:14},
+  {name:'Sunny',  color:'#f7b731', dark:'#cf8a12', light:'#ffd166', sx:78, sy:80},
+  {name:'Violet', color:'#8b5cf6', dark:'#6d3fd4', light:'#bd9fff', sx:16, sy:14},
+  {name:'Minty',  color:'#2bb3a3', dark:'#1d7f73', light:'#74e0d2', sx:44, sy:48},
+];
+
+/* ================= tiny utils ================= */
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const lerp=(a,b,t)=>a+(b-a)*t;
+const idx=(x,y)=>y*GW+x;
+function angLerp(a,b,t){ let d=(b-a)%(Math.PI*2); if(d>Math.PI)d-=Math.PI*2; if(d<-Math.PI)d+=Math.PI*2; return a+d*clamp(t,0,1); }
+function fmtTime(s){ const m=Math.floor(s/60), r=Math.floor(s%60); return m+':'+String(r).padStart(2,'0'); }
+
+/* ================= audio (all synthesized) ================= */
+let AC=null, muted=false;
+function ac(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ AC=null; } }
+  if(AC&&AC.state==='suspended') AC.resume(); return AC; }
+function tone(f0,f1,dur,type,vol,delay){
+  if(muted) return; const c=ac(); if(!c) return;
+  const t=c.currentTime+(delay||0), o=c.createOscillator(), g=c.createGain();
+  o.type=type; o.frequency.setValueAtTime(f0,t);
+  o.frequency.exponentialRampToValueAtTime(Math.max(30,f1),t+dur);
+  g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+dur+.02);
+}
+const sfx={
+  click(){ tone(520,760,.07,'triangle',.12); },
+  capture(big){ tone(360,880,.28,'sine',.16); tone(540,1240,.34,'triangle',.10,.05); if(big) tone(720,1680,.4,'sine',.10,.1); },
+  tag(){ [880,1174,1568].forEach((f,i)=>tone(f,f,.11,'sine',.14,i*.06)); },
+  popped(){ tone(300,90,.22,'sawtooth',.10); tone(190,70,.26,'square',.06,.02); },
+  trailCut(){ tone(700,240,.16,'triangle',.12); },
+  win(){ [523,659,784,1046,1318].forEach((f,i)=>tone(f,f,.22,'triangle',.14,i*.11)); },
+};
+
+/* ================= game state ================= */
+const owner=new Uint8Array(N);   // 0 = blank canvas, else entity id (1..5)
+const trailG=new Uint8Array(N);  // 0 = no trail, else entity id whose trail covers the cell
+const counts=[0,0,0,0,0,0];
+let entities=[], state='menu', won=false, elapsed=0;
+let stats={tags:0, pops:0};
+let best=0; try{ best=parseFloat(localStorage.getItem('splashland-best')||'0')||0; }catch(e){}
+const cam={x:50,y:50,viewH:34};
+let particles=[], floats=[], shake=0;
+let fillAnims=[];   // {id, canvas, cx, cy, maxDist, t}
+let bannerTimer=null;
+
+function makeEntities(){
+  entities=DEFS.map((d,i)=>({
+    id:i+1, name:d.name, color:d.color, dark:d.dark, light:d.light,
+    x:d.sx+4, y:d.sy+4, heading:Math.atan2(50-(d.sy+4),50-(d.sx+4)),
+    desired:0, speed:i===0?PLAYER_SPEED:BOT_SPEED*(0.94+((i*37)%10)/100),
+    turn:i===0?PLAYER_TURN:BOT_TURN,
+    trailCells:[], trailPts:[], out:false, lastCell:-1,
+    ai:{mode:'home', cool:1+i*0.7, tx:0, ty:0, phase:Math.random()*6.28, traveled:0},
+    bounce:Math.random()*6.28,
+  }));
+  entities.forEach(e=>{ e.desired=e.heading; });
+}
+function seedTerritory(){
+  owner.fill(0); trailG.fill(0); counts.fill(0);
+  entities.forEach(e=>{
+    const d=DEFS[e.id-1];
+    for(let y=d.sy;y<d.sy+8;y++) for(let x=d.sx;x<d.sx+8;x++){ owner[idx(x,y)]=e.id; counts[e.id]++; }
+  });
+}
+function pct(id){ return counts[id]/N*100; }
+
+/* ================= territory rendering (offscreen) ================= */
+const terrCv=document.createElement('canvas'); terrCv.width=GW*CELLPX; terrCv.height=GH*CELLPX;
+const terrCx=terrCv.getContext('2d');
+function paintCell(c,ci){
+  const x=ci%GW, y=(ci/GW)|0, e=entities[owner[ci]-1];
+  c.fillStyle=e.color; c.fillRect(x*CELLPX,y*CELLPX,CELLPX,CELLPX);
+  /* whisper-subtle checker so the paint reads as paint, not gingham */
+  if(((x+y)&1)===0){ c.fillStyle='rgba(255,255,255,0.055)'; c.fillRect(x*CELLPX,y*CELLPX,CELLPX,CELLPX); }
+}
+function bakeCells(c,cells){ for(const ci of cells) if(owner[ci]) paintCell(c,ci); }
+function rebakeAll(){
+  terrCx.clearRect(0,0,terrCv.width,terrCv.height);
+  for(let ci=0;ci<N;ci++) if(owner[ci]) paintCell(terrCx,ci);
+}
+
+/* ================= territory engine ================= */
+function clearTrail(e){
+  for(const ci of e.trailCells) if(trailG[ci]===e.id) trailG[ci]=0;
+  e.trailCells.length=0; e.trailPts.length=0; e.out=false;
+}
+function centroidOf(id){
+  let sx=0, sy=0, n=0;
+  for(let ci=0;ci<N;ci++) if(owner[ci]===id){ sx+=ci%GW; sy+=(ci/GW)|0; n++; }
+  return n? {x:sx/n+.5, y:sy/n+.5} : {x:50,y:50};
+}
+function nearestOwnCell(id,x,y){
+  let bd=1e12, bx=x, by=y;
+  for(let ci=0;ci<N;ci++) if(owner[ci]===id){
+    const cx=ci%GW+.5, cy=((ci/GW)|0)+.5, d=(cx-x)*(cx-x)+(cy-y)*(cy-y);
+    if(d<bd){ bd=d; bx=cx; by=cy; }
+  }
+  return {x:bx,y:by};
+}
+function homePos(id){
+  const c=centroidOf(id); return nearestOwnCell(id,c.x,c.y);
+}
+function relocate(e){
+  const h=homePos(e.id); e.x=h.x; e.y=h.y;
+  e.heading=Math.atan2(50-e.y,50-e.x); e.desired=e.heading; e.lastCell=-1;
+}
+function shrinkTerritory(e,frac){
+  const owned=counts[e.id]; if(!owned) return;
+  let bite=Math.min(Math.floor(N*frac), Math.floor(owned*0.30));
+  if(owned-bite<START_CELLS) bite=Math.max(0,owned-START_CELLS);
+  if(bite<=0) return;
+  const c=centroidOf(e.id), cells=[];
+  for(let ci=0;ci<N;ci++) if(owner[ci]===e.id){
+    const dx=ci%GW+.5-c.x, dy=((ci/GW)|0)+.5-c.y;
+    cells.push([dx*dx+dy*dy,ci]);
+  }
+  cells.sort((a,b)=>b[0]-a[0]);
+  for(let i=0;i<bite;i++){ owner[cells[i][1]]=0; counts[e.id]--; }
+  rebakeAll();
+}
+/* Tag entity o (its trail was crossed by `by`, or it was caught inside a capture). */
+function tagEntity(o,by,quiet){
+  const ox=o.x, oy=o.y;
+  clearTrail(o);
+  shrinkTerritory(o, o.id===1?PLAYER_BITE:BOT_BITE);
+  relocate(o);
+  if(o.ai){ o.ai.mode='home'; o.ai.cool=1+Math.random()*1.2; }
+  if(quiet) return;
+  if(by && by.id===1 && o.id!==1){
+    stats.tags++; burst(ox,oy,by.color,30); sfx.tag();
+    showBanner('You tagged '+o.name+'!'); addFloat(ox,oy-1.6,'TAGGED!','#'+'fff');
+  }else if(o.id===1){
+    stats.pops++; shake=Math.max(shake,7); sfx.popped();
+    showBanner((by?by.name:'A rival')+' crossed your trail — pop! Back home.');
+  }
+}
+/* The heart of the game: e has returned to its own territory with a live trail.
+   Trail becomes land, then a flood fill from the arena border through everything
+   that is NOT e's land finds the outside — every unreached cell is enclosed and
+   is captured. Real enclosure math, no shortcuts. */
+function doCapture(e){
+  const id=e.id, newCells=[];
+  for(const ci of e.trailCells){
+    if(trailG[ci]===id) trailG[ci]=0;
+    if(owner[ci]!==id){ if(owner[ci]) counts[owner[ci]]--; owner[ci]=id; counts[id]++; newCells.push(ci); }
+  }
+  e.trailCells.length=0; e.trailPts.length=0; e.out=false;
+  const vis=new Uint8Array(N), stack=[];
+  const pushIf=(x,y)=>{ const ci=idx(x,y); if(!vis[ci]&&owner[ci]!==id){ vis[ci]=1; stack.push(ci); } };
+  for(let x=0;x<GW;x++){ pushIf(x,0); pushIf(x,GH-1); }
+  for(let y=0;y<GH;y++){ pushIf(0,y); pushIf(GW-1,y); }
+  while(stack.length){
+    const ci=stack.pop(), cx=ci%GW, cy=(ci/GW)|0;
+    if(cx>0)pushIf(cx-1,cy); if(cx<GW-1)pushIf(cx+1,cy);
+    if(cy>0)pushIf(cx,cy-1); if(cy<GH-1)pushIf(cx,cy+1);
+  }
+  const cutTrails=new Set();
+  for(let ci=0;ci<N;ci++){
+    if(!vis[ci]&&owner[ci]!==id){
+      if(trailG[ci]!==0&&trailG[ci]!==id) cutTrails.add(trailG[ci]);
+      if(owner[ci]) counts[owner[ci]]--;
+      owner[ci]=id; counts[id]++; newCells.push(ci);
+    }
+  }
+  /* rivals whose trails were painted over lose the whole trail */
+  for(const oid of cutTrails){
+    const o=entities[oid-1];
+    if(o.trailCells.length){ clearTrail(o); if(oid===1){ sfx.trailCut(); showBanner('Your trail got painted over!'); } }
+  }
+  /* rivals caught standing on freshly captured land */
+  const newSet=new Set(newCells);
+  for(const o of entities){
+    if(o.id===id) continue;
+    const hc=idx(clamp(Math.floor(o.x),0,GW-1),clamp(Math.floor(o.y),0,GH-1));
+    if(newSet.has(hc)){
+      if(o.out) tagEntity(o,e);
+      else relocate(o);
+    }
+  }
+  /* sweep-in fill animation on a temp canvas, baked when the sweep completes */
+  if(newCells.length){
+    const cv=document.createElement('canvas'); cv.width=GW*CELLPX; cv.height=GH*CELLPX;
+    bakeCells(cv.getContext('2d'),newCells);
+    let maxD=1;
+    for(const ci of newCells){ const dx=ci%GW+.5-e.x, dy=((ci/GW)|0)+.5-e.y, d=Math.hypot(dx,dy); if(d>maxD)maxD=d; }
+    fillAnims.push({id,canvas:cv,cx:e.x,cy:e.y,maxDist:maxD,t:0});
+    const gained=newCells.length/N*100;
+    if(id===1){
+      sfx.capture(gained>=2); burst(e.x,e.y,e.color,Math.min(34,8+gained*4));
+      addFloat(e.x,e.y-1.8,'+'+gained.toFixed(1)+'%','#fff');
+    }
+  }
+  updateHUD();
+}
+/* One grid step for entity e into cell (cx,cy): tag checks, capture, trail laying. */
+function processCell(e,cx,cy){
+  const ci=idx(cx,cy);
+  if(trailG[ci]!==0&&trailG[ci]!==e.id) tagEntity(entities[trailG[ci]-1],e);
+  if(owner[ci]===e.id){
+    if(e.trailCells.length) doCapture(e);
+  }else{
+    if(trailG[ci]!==e.id){ trailG[ci]=e.id; e.trailCells.push(ci); }
+    e.out=true;
+  }
+}
+function stepEntity(e,dt){
+  /* turn smoothly toward desired heading */
+  const maxTurn=e.turn*dt;
+  let d=(e.desired-e.heading)%(Math.PI*2);
+  if(d>Math.PI)d-=Math.PI*2; if(d<-Math.PI)d+=Math.PI*2;
+  e.heading+=clamp(d,-maxTurn,maxTurn);
+  const nx=e.x+Math.cos(e.heading)*e.speed*dt;
+  const ny=e.y+Math.sin(e.heading)*e.speed*dt;
+  /* rasterize the path in sub-cell steps so no cell is ever skipped */
+  const dist=Math.hypot(nx-e.x,ny-e.y), steps=Math.max(1,Math.ceil(dist/0.3));
+  for(let s=1;s<=steps;s++){
+    const px=lerp(e.x,nx,s/steps), py=lerp(e.y,ny,s/steps);
+    const cx=clamp(Math.floor(px),0,GW-1), cy=clamp(Math.floor(py),0,GH-1), ci=idx(cx,cy);
+    if(ci!==e.lastCell){ processCell(e,cx,cy); e.lastCell=ci; }
+    if((s%2===0||s===steps)&&e.out) e.trailPts.push({x:px,y:py});
+  }
+  e.x=clamp(nx,0.6,GW-0.6); e.y=clamp(ny,0.6,GH-0.6);
+  if(e.trailPts.length>900) e.trailPts.splice(0,e.trailPts.length-900);
+  e.bounce+=dt*9;
+}
+/* ================= bot brains =================
+   Readable state machines: rest at home, venture out on a wobbly heading,
+   come home when the loop is long enough. They never aim at anyone's trail. */
+function botThink(e,dt){
+  const ai=e.ai; ai.cool-=dt;
+  const inOwn=owner[idx(clamp(Math.floor(e.x),0,GW-1),clamp(Math.floor(e.y),0,GH-1))]===e.id;
+  if(ai.mode==='home'){
+    if(!e.out&&ai.cool<=0){
+      const a=Math.random()*Math.PI*2, dist=26+Math.random()*20;
+      ai.tx=clamp(e.x+Math.cos(a)*dist,7,GW-7); ai.ty=clamp(e.y+Math.sin(a)*dist,7,GH-7);
+      ai.mode='out'; ai.traveled=0;
+    }else{
+      /* drift gently inside home land toward its heart */
+      const c=centroidOf(e.id);
+      e.desired=Math.atan2(c.y-e.y,c.x-e.x)+Math.sin(performance.now()/900+ai.phase)*0.7;
+    }
+  }else if(ai.mode==='out'){
+    ai.traveled+=e.speed*dt;
+    e.desired=Math.atan2(ai.ty-e.y,ai.tx-e.x)+Math.sin(performance.now()/620+ai.phase)*0.32;
+    if(Math.hypot(ai.tx-e.x,ai.ty-e.y)<3||e.trailCells.length>46||ai.traveled>52) ai.mode='return';
+    if(e.trailCells.length===0&&ai.traveled>8) ai.mode='return';
+  }else{ /* return */
+    const h=nearestOwnCell(e.id,e.x,e.y);
+    e.desired=Math.atan2(h.y-e.y,h.x-e.x);
+    if(!e.out){ ai.mode='home'; ai.cool=0.7+Math.random()*1.6; }
+  }
+  /* soft wall steer: blend the desired heading away from nearby edges */
+  let vx=Math.cos(e.desired), vy=Math.sin(e.desired);
+  if(e.x<8)vx+=(8-e.x)*0.22; if(e.x>GW-8)vx-=(e.x-(GW-8))*0.22;
+  if(e.y<8)vy+=(8-e.y)*0.22; if(e.y>GH-8)vy-=(e.y-(GH-8))*0.22;
+  e.desired=Math.atan2(vy,vx);
+}
+
+/* ================= effects ================= */
+const cv=document.getElementById('game'), ctx=cv.getContext('2d');
+let W=0,H=0,DPR=1;
+function resize(){
+  DPR=Math.min(2,window.devicePixelRatio||1);
+  W=window.innerWidth; H=window.innerHeight;
+  cv.width=W*DPR; cv.height=H*DPR; cv.style.width=W+'px'; cv.style.height=H+'px';
+}
+window.addEventListener('resize',resize); resize();
+function burst(x,y,color,n){
+  const cols=[color,'#ffffff','#ffc94d'];
+  for(let i=0;i<n;i++){
+    const a=Math.random()*6.283, sp=2+Math.random()*7;
+    particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-2.5,rot:Math.random()*6.28,
+      vr:(Math.random()-.5)*9,color:cols[i%3],size:.28+Math.random()*.4,t:0,life:.7+Math.random()*.5});
+  }
+}
+function confettiRain(){
+  const p=entities[0];
+  for(let i=0;i<130;i++){
+    burst(p.x+(Math.random()-.5)*36,p.y-14-Math.random()*10,
+      DEFS[i%DEFS.length].color,1);
+  }
+}
+function addFloat(x,y,text,color){ floats.push({x,y,text,color,t:0}); }
+function showBanner(text){
+  const b=document.getElementById('banner');
+  b.textContent=text; b.classList.add('show');
+  clearTimeout(bannerTimer);
+  bannerTimer=setTimeout(()=>b.classList.remove('show'),2300);
+}
+
+/* ================= HUD ================= */
+const elPct=document.getElementById('pct'), elFill=document.getElementById('goalfill'),
+      elBoard=document.getElementById('board');
+let boardTimer=0;
+function updateHUD(){
+  const p=pct(1);
+  elPct.textContent=p.toFixed(1)+'%';
+  elFill.style.width=clamp(p/GOAL*100,0,100)+'%';
+}
+function updateBoard(){
+  const rows=entities.map(e=>({e,p:pct(e.id)})).sort((a,b)=>b.p-a.p);
+  elBoard.innerHTML=rows.map((r,i)=>
+    '<div class="chip'+(r.e.id===1?' me':'')+'"><span class="dot" style="background:'+r.e.color+'"></span>'+
+    (i===0?'<svg width="15" height="12" viewBox="0 0 72 54"><path d="M6 46 L2 14 L22 28 L36 6 L50 28 L70 14 L66 46 Z" fill="#ffc94d" stroke="#e09f1f" stroke-width="5"/></svg>':'')+
+    '<span class="nm">'+r.e.name+'</span><span>'+r.p.toFixed(1)+'%</span></div>').join('');
+}
+
+/* ================= rendering ================= */
+function drawBlob(e){
+  const sq=1+Math.sin(e.bounce)*0.045;
+  ctx.save(); ctx.translate(e.x,e.y);
+  /* soft shadow */
+  ctx.fillStyle='rgba(45,35,80,0.18)';
+  ctx.beginPath(); ctx.ellipse(0.1,0.95,0.78,0.24,0,0,6.283); ctx.fill();
+  ctx.scale(2-sq,sq); /* squash inverse on x for a jelly feel */
+  const g=ctx.createRadialGradient(-0.3,-0.35,0.15,0,0,1.05);
+  g.addColorStop(0,e.light); g.addColorStop(0.55,e.color); g.addColorStop(1,e.color);
+  ctx.fillStyle=g;
+  ctx.beginPath(); ctx.arc(0,0,0.88,0,6.283); ctx.fill();
+  ctx.lineWidth=0.07; ctx.strokeStyle=e.dark; ctx.stroke();
+  ctx.restore();
+  /* face looks where it is heading */
+  const lx=Math.cos(e.heading)*0.13, ly=Math.sin(e.heading)*0.13;
+  ctx.save(); ctx.translate(e.x,e.y);
+  for(const s of [-1,1]){
+    ctx.fillStyle='#fff';
+    ctx.beginPath(); ctx.arc(s*0.31,-0.14,0.185,0,6.283); ctx.fill();
+    ctx.fillStyle='#2d2350';
+    ctx.beginPath(); ctx.arc(s*0.31+lx,-0.14+ly,0.095,0,6.283); ctx.fill();
+  }
+  ctx.strokeStyle='#2d2350'; ctx.lineWidth=0.075; ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(lx*0.6,0.14+ly*0.6,0.30,Math.PI*0.18,Math.PI*0.82); ctx.stroke();
+  ctx.fillStyle='rgba(255,120,150,0.5)';
+  ctx.beginPath(); ctx.arc(-0.52,0.16,0.13,0,6.283); ctx.arc(0.52,0.16,0.13,0,6.283); ctx.fill();
+  ctx.restore();
+  /* name tag */
+  ctx.save(); ctx.translate(e.x,e.y-1.45);
+  ctx.font='800 0.58px "Trebuchet MS",sans-serif'; ctx.textAlign='center';
+  ctx.lineWidth=0.16; ctx.strokeStyle='rgba(255,255,255,0.9)';
+  const label=(e.id===1?'Ruby (you)':e.name);
+  ctx.strokeText(label,0,0); ctx.fillStyle=e.dark; ctx.fillText(label,0,0);
+  ctx.restore();
+}
+function draw(){
+  const p=entities[0];
+  const targetView=clamp(33+pct(1)*0.62,33,54);
+  cam.viewH=lerp(cam.viewH,targetView,0.02);
+  cam.x=lerp(cam.x,p.x,0.12); cam.y=lerp(cam.y,p.y,0.12);
+  const scale=H/cam.viewH, viewW=cam.viewH*(W/H);
+  cam.x=clamp(cam.x,viewW/2-12,GW-viewW/2+12);
+  cam.y=clamp(cam.y,cam.viewH/2-12,GH-cam.viewH/2+12);
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.fillStyle='#dcefff'; ctx.fillRect(0,0,W,H);
+  let shx=0, shy=0;
+  if(shake>0){ shx=(Math.random()-.5)*shake*0.14; shy=(Math.random()-.5)*shake*0.14; shake*=0.86; if(shake<0.4)shake=0; }
+  ctx.translate(W/2,H/2); ctx.scale(scale,scale); ctx.translate(-cam.x+shx,-cam.y+shy);
+  /* the giant white canvas */
+  ctx.fillStyle='#fffdf6';
+  ctx.fillRect(0,0,GW,GH);
+  ctx.fillStyle='rgba(58,123,213,0.10)';
+  const gx0=Math.max(0,Math.floor(cam.x-viewW/2)), gx1=Math.min(GW,cam.x+viewW/2+1);
+  const gy0=Math.max(0,Math.floor(cam.y-cam.viewH/2)), gy1=Math.min(GH,cam.y+cam.viewH/2+1);
+  for(let gy=gy0;gy<=gy1;gy++) for(let gx=gx0;gx<=gx1;gx++){
+    ctx.beginPath(); ctx.arc(gx,gy,0.055,0,6.283); ctx.fill();
+  }
+  /* territory */
+  ctx.imageSmoothingEnabled=true;
+  ctx.drawImage(terrCv,0,0,GW,GH);
+  /* fill-in sweep animations (temp art revealed by a growing circle) */
+  for(const a of fillAnims){
+    ctx.save();
+    ctx.beginPath(); ctx.arc(a.cx,a.cy,Math.max(0.01,(a.t/0.55)*(a.maxDist+3)),0,6.283); ctx.clip();
+    ctx.drawImage(a.canvas,0,0,GW,GH);
+    ctx.restore();
+  }
+  /* trails: dark edge, then bright wet-paint core */
+  for(const e of entities){
+    if(e.trailPts.length<2) continue;
+    for(const pass of [0,1]){
+      ctx.beginPath();
+      ctx.moveTo(e.trailPts[0].x,e.trailPts[0].y);
+      for(let i=1;i<e.trailPts.length;i++) ctx.lineTo(e.trailPts[i].x,e.trailPts[i].y);
+      ctx.lineTo(e.x,e.y);
+      ctx.lineJoin='round'; ctx.lineCap='round';
+      if(pass===0){ ctx.strokeStyle=e.dark; ctx.globalAlpha=0.5; ctx.lineWidth=0.66; }
+      else{ ctx.strokeStyle=e.light; ctx.globalAlpha=0.95; ctx.lineWidth=0.46; }
+      ctx.stroke(); ctx.globalAlpha=1;
+    }
+  }
+  /* arena frame */
+  ctx.lineWidth=0.55; ctx.strokeStyle='#2d2350';
+  ctx.strokeRect(0,0,GW,GH);
+  ctx.lineWidth=0.16; ctx.strokeStyle='rgba(255,255,255,0.85)';
+  ctx.strokeRect(-0.5,-0.5,GW+1,GH+1);
+  /* blobs: rivals first, Ruby on top */
+  const sorted=[...entities].sort((a,b)=>(a.id===1?1:0)-(b.id===1?1:0));
+  for(const e of sorted) drawBlob(e);
+  /* particles */
+  for(const pt of particles){
+    ctx.save(); ctx.translate(pt.x,pt.y); ctx.rotate(pt.rot);
+    ctx.globalAlpha=clamp(1-pt.t/pt.life,0,1); ctx.fillStyle=pt.color;
+    ctx.fillRect(-pt.size/2,-pt.size/2,pt.size,pt.size*0.62);
+    ctx.restore();
+  }
+  ctx.globalAlpha=1;
+  /* floating texts */
+  ctx.textAlign='center';
+  for(const f of floats){
+    ctx.font='900 1.05px "Trebuchet MS",sans-serif';
+    ctx.globalAlpha=clamp(1-f.t/1.15,0,1);
+    ctx.lineWidth=0.22; ctx.strokeStyle='rgba(45,35,80,0.85)';
+    const yy=f.y-f.t*1.5;
+    ctx.strokeText(f.text,f.x,yy); ctx.fillStyle=f.color; ctx.fillText(f.text,f.x,yy);
+  }
+  ctx.globalAlpha=1;
+  ctx.setTransform(1,0,0,1,0,0);
+  /* speed vignette when Ruby is flying across the canvas */
+  if(state==='play'&&p.out){
+    const v=ctx.createRadialGradient(W/2,H/2,H*0.42,W/2,H/2,H*0.78);
+    v.addColorStop(0,'rgba(45,35,80,0)'); v.addColorStop(1,'rgba(45,35,80,0.16)');
+    ctx.fillStyle=v; ctx.fillRect(0,0,W,H);
+  }
+}
+
+/* ================= input ================= */
+const keys=new Set();
+let pointerDown=false, pointerPos=null;
+function screenToWorld(sx,sy){
+  const scale=H/cam.viewH;
+  return { x:cam.x+(sx-W/2)/scale, y:cam.y+(sy-H/2)/scale };
+}
+cv.addEventListener('pointerdown',e=>{ pointerDown=true; pointerPos={x:e.clientX,y:e.clientY}; ac(); });
+window.addEventListener('pointermove',e=>{ if(pointerDown) pointerPos={x:e.clientX,y:e.clientY}; });
+window.addEventListener('pointerup',()=>{ pointerDown=false; });
+window.addEventListener('pointercancel',()=>{ pointerDown=false; });
+window.addEventListener('keydown',e=>{
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
+  keys.add(e.key.toLowerCase());
+});
+window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
+function playerSteer(){
+  const p=entities[0];
+  if(pointerDown&&pointerPos){
+    const w=screenToWorld(pointerPos.x,pointerPos.y);
+    if(Math.hypot(w.x-p.x,w.y-p.y)>0.7) p.desired=Math.atan2(w.y-p.y,w.x-p.x);
+    return;
+  }
+  let vx=0, vy=0;
+  if(keys.has('arrowleft')||keys.has('a'))vx-=1;
+  if(keys.has('arrowright')||keys.has('d'))vx+=1;
+  if(keys.has('arrowup')||keys.has('w'))vy-=1;
+  if(keys.has('arrowdown')||keys.has('s'))vy+=1;
+  if(vx||vy) p.desired=Math.atan2(vy,vx);
+}
+
+/* ================= screens & flow ================= */
+const $=id=>document.getElementById(id);
+const ICON_SND_ON='<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16 8.8a4.5 4.5 0 010 6.4M18.5 6a8 8 0 010 12" stroke="#2d2350" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
+const ICON_SND_OFF='<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16 9l6 6M22 9l-6 6" stroke="#2d2350" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
+const ICON_PAUSE='<svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1.4"/><rect x="14" y="5" width="4" height="14" rx="1.4"/></svg>';
+function setSoundIcon(){ $('btn-sound').innerHTML=muted?ICON_SND_OFF:ICON_SND_ON; }
+function showScreen(id){
+  for(const s of ['scr-menu','scr-pause','scr-win']) $(s).classList.toggle('on',s===id);
+  $('hud').classList.toggle('on',state==='play'||state==='pause');
+}
+function startGame(){
+  makeEntities(); seedTerritory(); rebakeAll();
+  fillAnims=[]; particles=[]; floats=[];
+  won=false; elapsed=0; stats={tags:0,pops:0};
+  cam.x=entities[0].x; cam.y=entities[0].y; cam.viewH=34;
+  state='play'; updateHUD(); updateBoard(); showScreen(null);
+  showBanner('Paint, Ruby, paint!');
+}
+function endWin(){
+  won=true; state='win'; sfx.win(); confettiRain();
+  const p=pct(1);
+  if(p>best){ best=p; try{ localStorage.setItem('splashland-best',String(best)); }catch(e){} }
+  $('win-pct').textContent=p.toFixed(1)+'%';
+  $('win-time').textContent=fmtTime(elapsed);
+  $('win-tags').textContent=stats.tags;
+  $('win-pops').textContent=stats.pops;
+  $('win-best').textContent='Best ever: '+best.toFixed(1)+'%';
+  showScreen('scr-win');
+}
+$('btn-play').addEventListener('click',()=>{ sfx.click(); startGame(); });
+$('btn-pause').innerHTML=ICON_PAUSE;
+$('btn-pause').addEventListener('click',()=>{ if(state==='play'){ state='pause'; showScreen('scr-pause'); } });
+$('btn-resume').addEventListener('click',()=>{ sfx.click(); state='play'; showScreen(null); });
+$('btn-restart2').addEventListener('click',()=>{ sfx.click(); startGame(); });
+$('btn-again').addEventListener('click',()=>{ sfx.click(); startGame(); });
+$('btn-keep').addEventListener('click',()=>{ sfx.click(); state='play'; showScreen(null); showBanner('Endless painting — go for 50%!'); });
+$('btn-sound').addEventListener('click',()=>{ muted=!muted; setSoundIcon(); if(!muted)sfx.click(); });
+window.addEventListener('blur',()=>{ if(state==='play'){ state='pause'; showScreen('scr-pause'); } });
+setSoundIcon();
+if(best>0) $('menu-best').textContent='Best ever: '+best.toFixed(1)+'% painted';
+
+/* ================= main loop ================= */
+let lastT=performance.now(), timeScale=1;
+function frame(now){
+  requestAnimationFrame(frame);
+  let dt=Math.min(0.033,(now-lastT)/1000); lastT=now;
+  dt*=timeScale;
+  if(state==='play'){
+    elapsed+=dt;
+    playerSteer();
+    for(const e of entities){
+      if(e.id!==1) botThink(e,dt);
+      stepEntity(e,dt);
+    }
+    boardTimer-=dt; if(boardTimer<=0){ updateBoard(); updateHUD(); boardTimer=0.25; }
+    if(!won&&pct(1)>=GOAL) endWin();
+  }
+  /* fill animations advance in every state so menus never freeze mid-sweep */
+  for(let i=fillAnims.length-1;i>=0;i--){
+    const a=fillAnims[i]; a.t+=dt;
+    if(a.t>=0.55){
+      terrCx.drawImage(a.canvas,0,0);
+      fillAnims.splice(i,1);
+    }
+  }
+  for(let i=particles.length-1;i>=0;i--){
+    const pt=particles[i]; pt.t+=dt;
+    pt.x+=pt.vx*dt; pt.y+=pt.vy*dt; pt.vy+=7*dt; pt.vx*=0.99; pt.rot+=pt.vr*dt;
+    if(pt.t>=pt.life) particles.splice(i,1);
+  }
+  for(let i=floats.length-1;i>=0;i--){ floats[i].t+=dt; if(floats[i].t>1.15) floats.splice(i,1); }
+  if(entities.length) draw();
+}
+makeEntities(); seedTerritory(); rebakeAll();
+cam.x=entities[0].x; cam.y=entities[0].y;
+requestAnimationFrame(frame);
+
+/* ================= test/debug handle (used by headless verification) ================= */
+window.SPLASH={
+  get state(){ return state; },
+  get entities(){ return entities; },
+  get won(){ return won; },
+  get elapsed(){ return elapsed; },
+  get stats(){ return stats; },
+  pct, counts, owner, trailG,
+  start:startGame,
+  setHeading(a){ entities[0].desired=a; },
+  teleport(id,x,y){ const e=entities[id-1]; e.x=x; e.y=y; e.lastCell=-1; },
+  setTimeScale(v){ timeScale=v; },
+  setSpeed(id,v){ entities[id-1].speed=v; },
+  get fillAnims(){ return fillAnims.length; },
+  cellOwner(x,y){ return owner[idx(x,y)]; },
+  cellTrail(x,y){ return trailG[idx(x,y)]; },
+};
+</script>
+</body>
+</html>
